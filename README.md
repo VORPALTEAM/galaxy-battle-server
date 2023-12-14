@@ -1,0 +1,2 @@
+# Vorpal Galaxy Battle Server
+
