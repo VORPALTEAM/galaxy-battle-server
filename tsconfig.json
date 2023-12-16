@@ -3,7 +3,10 @@
         "module": "ESNext",
         "moduleResolution": "Node",
         "target": "ES2018",
-        "lib": ["ES6"],
+        "lib": [
+            "ES2018",
+            "ES6"
+        ],
         "baseUrl": "./",
         "rootDir": "./src",
         "outDir": "./build",
@@ -13,7 +16,12 @@
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,
         "sourceMap": true,
-        "removeComments": true
+        "removeComments": true,
+        // "paths": {
+        //     "@/*": [
+        //         "src/*"
+        //     ],
+        // }
     },
     "include": [
         "src/**/*"

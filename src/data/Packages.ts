@@ -1,7 +1,11 @@
 
 export enum PackTitle {
-    auth = 'auth',
-    requestGame = 'requestGame',
+    // for lobby
+    sign = 'sign',
+    startSearchGame = 'startSearchGame', // request
+    stopSearchGame = 'stopSearchGame', // request
+    gameSearching = 'gameSearching', // status, update, info
+    // for game
     objectCreate = 'objectCreate',
     objectUpdate = 'objectUpdate',
     objectDestroy = 'objectDestroy',

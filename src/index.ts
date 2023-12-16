@@ -1,20 +1,26 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { BattleServer } from './BattleServer.js';
+import { BattleServer } from './controllers/BattleServer.js';
 import { LogMng } from './utils/LogMng.js';
 import dotenv from 'dotenv';
 
 if (process.env.NODE_ENV === 'development') {
     LogMng.setMode(LogMng.MODE_DEBUG);
     dotenv.config({ path: '.env.development' });
-} else if (process.env.NODE_ENV === 'production') {
+}
+else if (process.env.NODE_ENV === 'production') {
+    LogMng.setMode(LogMng.MODE_RELEASE);
     dotenv.config({ path: '.env.production' });
-} else {
+}
+else {
+    LogMng.setMode(LogMng.MODE_RELEASE);
     dotenv.config();
 }
 
-LogMng.system(`LogMng Mode = ${LogMng.mode}`);
+LogMng.system(`LogMng.mode = ${LogMng.mode}`);
+
+const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3078';
 
 const app = express();
 const server = http.createServer(app);
@@ -29,8 +35,6 @@ app.get('/', (req, res) => {
 });
 
 let battleServer = new BattleServer(io);
-
-const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3078';
 
 server.listen(PORT, () => {
     console.log(`Vorpal Galaxy Battle Server listening at port ${PORT}`);
