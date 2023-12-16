@@ -3,6 +3,8 @@ import { Game } from "./Game";
 import { PackTitle } from "../data/Packages.js";
 import { ILogger } from "../interfaces/ILogger";
 import { LogMng } from "../utils/LogMng.js";
+import { SignService } from "../services/SignService.js";
+import { PackSender } from "../services/PackSender.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
@@ -50,16 +52,11 @@ export class Matchmaker implements ILogger {
         this._clients.set(aClient.id, aClient);
 
         // send game searching started
-        aClient.socket.emit(PackTitle.gameSearching, {
-            status: 'started'
-        });
-
+        PackSender.getInstance().startGameSearch(aClient.socket);
+        
         // check sign of this client
         if (!aClient.isSigned && !aClient.isSignPending) {
-            // request sign
-            aClient.socket.emit(PackTitle.sign, {
-                status: 'request'
-            });
+            SignService.getInstance().sendRequest(aClient);
         }
 
     }

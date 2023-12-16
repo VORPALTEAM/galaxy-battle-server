@@ -1,4 +1,6 @@
 import { Socket } from "socket.io";
+import { ILogger } from "../interfaces/ILogger.js";
+import { LogMng } from "../utils/LogMng.js";
 
 export enum ClientState {
     idle = 'idle',
@@ -6,9 +8,9 @@ export enum ClientState {
     game = 'game'
 }
 
-export class Client {
+export class Client implements ILogger {
     private _socket: Socket;
-    private _publicKey: string;
+    private _walletId: string;
     private _state: ClientState;
     // flags
     private _isSigned = false;
@@ -17,6 +19,16 @@ export class Client {
     constructor(aSocket: Socket) {
         this._socket = aSocket;
         this._state = ClientState.idle;
+    }
+
+    logDebug(aMsg: string, aData?: any): void {
+        LogMng.debug(`Client: ${aMsg}`, aData);
+    }
+    logWarn(aMsg: string, aData?: any): void {
+        LogMng.warn(`Client: ${aMsg}`, aData);
+    }
+    logError(aMsg: string, aData?: any): void {
+        LogMng.error(`Client: ${aMsg}`, aData);
     }
 
     public get socket(): Socket {
@@ -39,13 +51,14 @@ export class Client {
         this._isSignPending = value;
     }
 
-    public get publicKey(): string {
-        return this._publicKey;
+    public get walletId(): string {
+        return this._walletId;
     }
 
     sign(aPublicKey: string) {
-        this._publicKey = aPublicKey;
+        this._walletId = aPublicKey;
         this._isSigned = true;
+        this.logDebug(`signed...`);
     }
 
 }

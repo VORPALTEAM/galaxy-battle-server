@@ -19,7 +19,7 @@ export class Web3Service {
         return 'auth_' + String(dt - (dt % 600000));
     }
 
-    getPublicKey(aSignature: string): string {
+    getWalletId(aSignature: string): string {
         const recoverMsg = this.authMsg();
         const publicKey: string = this._web3.eth.accounts.recover(recoverMsg, aSignature).toLowerCase();
         return publicKey;

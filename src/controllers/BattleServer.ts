@@ -4,18 +4,16 @@ import { PackTitle } from "../data/Packages.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Matchmaker } from "./Matchmaker.js";
 import { ILogger } from "src/interfaces/ILogger.js";
-import { SignMng } from "./SignMng.js";
+import { SignService } from "../services/SignService.js";
 
 export class BattleServer implements ILogger {
     private _server: Server;
     private _clients: Map<string, Client>;
-    private _signMng: SignMng;
     private _matchmaker: Matchmaker;
 
     constructor(aServerIO: Server) {
         this._server = aServerIO;
         this._clients = new Map();
-        this._signMng = new SignMng();
         this._matchmaker = new Matchmaker();
         this.initListeners();
         this.logDebug(`started...`);
@@ -42,14 +40,12 @@ export class BattleServer implements ILogger {
     private onConnect(socket: Socket) {
         const clientId = socket.id;
         const client = new Client(socket);
-
+        
         // add to hash table
         this._clients.set(clientId, client);
 
-        this.logDebug(`Client connected: ${clientId}`);
-
-        // add to SignMng
-        this._signMng.addClient(client);
+        // add to SignService
+        SignService.getInstance().addClient(client);
 
         socket.on(PackTitle.startSearchGame, () => {
             this.onStartSearchGame(client);
@@ -58,7 +54,8 @@ export class BattleServer implements ILogger {
         socket.on('disconnect', () => {
             this.onDisconnect(clientId);
         });
-        
+
+        this.logDebug(`Client connected: ${clientId}`);
     }
 
     private onStartSearchGame(aClient: Client) {
@@ -67,7 +64,7 @@ export class BattleServer implements ILogger {
 
     private onDisconnect(aClientId: string) {
         this._matchmaker.removeClient(aClientId);
-        this._signMng.removeClient(aClientId);
+        SignService.getInstance().removeClient(aClientId);
         this._clients.delete(aClientId);
         this.logDebug(`Client disconnected: ${aClientId}`);
     }
