@@ -1,4 +1,4 @@
-import { MyMath } from "./MyMath";
+import { MyMath } from "./MyMath.js";
 
 export class InterpolationUtils {
 

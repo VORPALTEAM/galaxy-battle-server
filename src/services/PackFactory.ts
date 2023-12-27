@@ -1,4 +1,4 @@
-import { PackTitle } from "../data/Packages";
+import { ObjectCreateData, PackTitle } from "../data/Types";
 
 export class PackFactory {
     private static _instance: PackFactory;
@@ -12,30 +12,7 @@ export class PackFactory {
         return PackFactory._instance;
     }
 
-    objectCreate(aList: {
-
-        // common params
-        id: string,
-        owner: string,
-        // type: ObjectType,
-        radius?: number,
-        position?: { x: number, y: number },
-        rotation?: number,
-        hp?: number,
-
-        /**
-         * special data for planets
-         */
-        planetData?: {
-            orbitRadius?: number,
-            orbitCenter?: { x: number, y: number },
-            startOrbitAngle?: number,
-            year?: number,
-            rotationSpeed?: number,
-            orbitSpeed?: number,
-        }
-
-    }[]): string {
+    objectCreate(aList: ObjectCreateData[]): string {
         return JSON.stringify({
             title: PackTitle.objectCreate,
             list: aList

@@ -1,10 +1,10 @@
 import { Server, Socket } from "socket.io";
 import { Client } from "../models/Client.js";
-import { PackTitle } from "../data/Packages.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Matchmaker } from "./Matchmaker.js";
 import { ILogger } from "src/interfaces/ILogger.js";
 import { SignService } from "../services/SignService.js";
+import { PackTitle } from "../data/Types.js";
 
 export class BattleServer implements ILogger {
     private _server: Server;
@@ -47,7 +47,9 @@ export class BattleServer implements ILogger {
         // add to SignService
         SignService.getInstance().addClient(client);
 
-        socket.on(PackTitle.startSearchGame, () => {
+        socket.on(PackTitle.startSearchGame, (aData?: { withBot: boolean }) => {
+            this.logDebug(`search game with bot request...`);
+            client.withBot = aData?.withBot;
             this.onStartSearchGame(client);
         });
 

@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
+import { PackTitle } from "../data/Types.js";
 
 export enum ClientState {
     idle = 'idle',
@@ -9,26 +10,29 @@ export enum ClientState {
 }
 
 export class Client implements ILogger {
+    protected _className: string;
     private _socket: Socket;
     private _walletId: string;
     private _state: ClientState;
     // flags
-    private _isSigned = false;
-    private _isSignPending = false;
+    protected _isSigned = false;
+    protected _isSignPending = false;
+    withBot = false;
     
     constructor(aSocket: Socket) {
+        this._className = 'Client';
         this._socket = aSocket;
         this._state = ClientState.idle;
     }
 
     logDebug(aMsg: string, aData?: any): void {
-        LogMng.debug(`Client: ${aMsg}`, aData);
+        LogMng.debug(`${this._className}: ${aMsg}`, aData);
     }
     logWarn(aMsg: string, aData?: any): void {
-        LogMng.warn(`Client: ${aMsg}`, aData);
+        LogMng.warn(`${this._className}: ${aMsg}`, aData);
     }
     logError(aMsg: string, aData?: any): void {
-        LogMng.error(`Client: ${aMsg}`, aData);
+        LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
     public get socket(): Socket {
@@ -61,4 +65,36 @@ export class Client implements ILogger {
         this.logDebug(`signed...`);
     }
 
+    sendPack(aPackTitle: PackTitle, aData: any) {
+        this._socket.emit(aPackTitle, aData);
+    }
+
+    signRequest() {
+        this.sendPack(PackTitle.sign, {
+            cmd: 'request'
+        });
+    }
+
+    signReject(aMsg?: string) {
+        this.sendPack(PackTitle.sign, {
+            cmd: 'reject',
+            message: aMsg
+        });
+    }
+
+    signSuccess(aWalletId: string) {
+        this.sendPack(PackTitle.sign, {
+            cmd: 'success',
+            walletId: aWalletId
+        });
+    }
+
+    startGameSearch() {
+        this.sendPack(PackTitle.gameSearching, {
+            cmd: 'start'
+        });
+    }
+
+    
+    
 }

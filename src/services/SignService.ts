@@ -1,7 +1,7 @@
 import { PackSender } from "./PackSender.js";
-import { PackTitle } from "../data/Packages.js";
 import { Client } from "../models/Client.js";
 import { Web3Service } from "./Web3Service.js";
+import { PackTitle } from "../data/Types.js";
 
 /**
  * Sign Service for signing clients
@@ -23,20 +23,18 @@ export class SignService {
 
     private onSignRecv(aClient: Client, aSignature: string) {
         const walletId = Web3Service.getInstance().getWalletId(aSignature);
-        const socket = aClient.socket;
 
         // check the player in connections
         this._clients.forEach((client) => {
             if (client.walletId === walletId) {
-                PackSender.getInstance().signReject(socket, 'Sign failed, client with this key is already online');
+                aClient.signReject('Sign failed, client with this key is already online');
                 return;
             }
         });
 
         // update client
         aClient.sign(walletId);
-
-        PackSender.getInstance().signSuccess(socket, walletId);
+        aClient.signSuccess(walletId);
     }
 
     addClient(aClient: Client) {
@@ -53,7 +51,7 @@ export class SignService {
     }
 
     sendRequest(aClient: Client) {
-        PackSender.getInstance().signRequest(aClient.socket);
+        aClient.signRequest();
     }
 
 

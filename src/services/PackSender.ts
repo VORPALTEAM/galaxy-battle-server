@@ -1,5 +1,13 @@
 import { Socket } from "socket.io";
-import { PackTitle } from "../data/Packages.js";
+import { ObjectType, PackTitle, StarCreateData } from "../data/Types.js";
+import { Client } from "src/models/Client.js";
+
+export type StartGameData = {
+    cmd?: 'start',
+    timer: number,
+    playerPosition: 'top' | 'bot'
+}
+
 
 export class PackSender {
     private static _instance: PackSender;
@@ -13,30 +21,20 @@ export class PackSender {
         return PackSender._instance;
     }
 
-    signRequest(aSocket: Socket) {
-        aSocket.emit(PackTitle.sign, {
-            cmd: 'request'
-        });
+    private sendData(aClients: Client[], aPackTitle: PackTitle, aData: any) {
+        for (let i = 0; i < aClients.length; i++) {
+            const client = aClients[i];
+            client.sendPack(aPackTitle, aData);
+        }
+    }
+    
+    gameStart(aClients: Client[], aData: StartGameData) {
+        aData.cmd = 'start';
+        this.sendData(aClients, PackTitle.gameStart, aData);
     }
 
-    signReject(aSocket: Socket, aMsg?: string) {
-        aSocket.emit(PackTitle.sign, {
-            cmd: 'reject',
-            message: aMsg
-        });
-    }
-
-    signSuccess(aSocket: Socket, aWalletId: string) {
-        aSocket.emit(PackTitle.sign, {
-            cmd: 'success',
-            walletId: aWalletId
-        });
-    }
-
-    startGameSearch(aSocket: Socket) {
-        aSocket.emit(PackTitle.gameSearching, {
-            cmd: 'start'
-        });
+    starCreate(aClients: Client[], aData: StarCreateData) {
+        this.sendData(aClients, PackTitle.objectCreate, aData);
     }
 
     objectCreate(aList: {

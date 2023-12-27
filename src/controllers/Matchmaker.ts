@@ -1,10 +1,11 @@
 import { Client } from "../models/Client";
-import { Game } from "./Game";
-import { PackTitle } from "../data/Packages.js";
+import { Game } from "./Game.js";
 import { ILogger } from "../interfaces/ILogger";
 import { LogMng } from "../utils/LogMng.js";
 import { SignService } from "../services/SignService.js";
 import { PackSender } from "../services/PackSender.js";
+import { Config } from "../data/Config.js";
+import { BotClient } from "../models/BotClient.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
@@ -17,6 +18,10 @@ export class Matchmaker implements ILogger {
         this._clients = new Map();
         this._games = [];
         this.startLoop();
+
+        // tests
+        if (Config.TESTS) this.tests();
+
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -29,6 +34,13 @@ export class Matchmaker implements ILogger {
 
     logError(aMsg: string, aData?: any): void {
         LogMng.error(`Matchmaker: ${aMsg}`, aData);
+    }
+
+    private tests() {
+        this.logDebug('game test...');
+        let game = new Game(null, null);
+        game.tests();
+        this._games.push(game);
     }
 
     private startLoop() {
@@ -46,13 +58,16 @@ export class Matchmaker implements ILogger {
 
     private createGame(aClientA: Client, aClientB: Client) {
         this.logDebug('game creation...');
+        let game = new Game(aClientA, aClientB);
+        game.start();
+        this._games.push(game);
     }
 
     addClient(aClient: Client) {
         this._clients.set(aClient.id, aClient);
 
         // send game searching started
-        PackSender.getInstance().startGameSearch(aClient.socket);
+        aClient.startGameSearch();
         
         // check sign of this client
         if (!aClient.isSigned && !aClient.isSignPending) {
@@ -71,14 +86,30 @@ export class Matchmaker implements ILogger {
      */
     update(dt: number) {
 
+        // who ready start with bots
+        let readyBotClientIds: string[] = [];
+        // normal ready start
         let readyClientIds: string[] = [];
 
         // find ready clients
         this._clients.forEach(client => {
             if (client.isSigned) {
-                readyClientIds.push(client.id);
+                if (client.withBot) {
+                    readyBotClientIds.push(client.id);
+                }
+                else {
+                    readyClientIds.push(client.id);
+                }
             }
         });
+
+        for (let i = 0; i < readyBotClientIds.length; i++) {
+            const id = readyBotClientIds[i];
+            let client = this._clients.get(id);
+            let bot = new BotClient();
+            this.removeClient(id);
+            this.createGame(client, bot);
+        }
 
         if (readyClientIds.length >= 2) {
             // match the game with first 2 players
