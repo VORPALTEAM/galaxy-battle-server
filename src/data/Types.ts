@@ -42,3 +42,7 @@ export type ObjectCreateData = ObjectUpdateData & {
 export type StarCreateData = ObjectCreateData & {
 
 }
+
+export type FighterCreateData = ObjectCreateData & {
+    
+}

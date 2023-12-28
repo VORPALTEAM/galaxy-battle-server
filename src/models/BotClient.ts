@@ -1,5 +1,3 @@
-import { Socket } from "socket.io";
-import { LogMng } from "../utils/LogMng.js";
 import { Client } from "./Client.js";
 import { PackTitle } from "src/data/Types.js";
 

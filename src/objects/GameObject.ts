@@ -1,31 +1,37 @@
+import * as THREE from 'three';
 import { IUpdatable } from "../interfaces/IUpdatable.js";
 import { ObjectCreateData, ObjectUpdateData } from "../data/Types.js";
 import { Vec2 } from "../utils/MyMath.js";
 
 export type GameObjectParams = {
-    ownerWalletId: string,
+    owner: string,
     id: number,
-    position: Vec2 | { x: number, y: number },
-    radius: number
+    position: THREE.Vector3 | { x: number, y: number },
+    radius: number,
+    hp?: number
     
 }
 
 export class GameObject implements IUpdatable {
-    ownerWalletId: string;
+    // owner wallet id
+    owner: string;
+    // game object id
     id: number;
-    position: Vec2;
+    position: THREE.Vector3;
     radius: number;
+    hp: number;
 
     constructor(aParams: GameObjectParams) {
-        this.ownerWalletId = aParams.ownerWalletId;
+        this.owner = aParams.owner;
         this.id = aParams.id;
-        if (aParams.position instanceof Vec2) {
+        if (aParams.position instanceof THREE.Vector3) {
             this.position = aParams.position;
         }
         else {
-            this.position = Vec2.getVec2(aParams.position.x, aParams.position.y);
+            this.position = new THREE.Vector3(aParams.position.x, aParams.position.y, 0);
         }
         this.radius = aParams.radius;
+        this.hp = aParams.hp;
     }
 
     getCreateData(): ObjectCreateData {
