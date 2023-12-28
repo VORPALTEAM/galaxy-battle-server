@@ -7,6 +7,7 @@ export enum PackTitle {
     gameSearching = 'gameSearching', // status, update, info
     gameStart = 'gameStart',
     // for game
+    fieldInit = 'fieldInit',
     objectCreate = 'objectCreate',
     objectUpdate = 'objectUpdate',
     objectDestroy = 'objectDestroy',
@@ -19,8 +20,7 @@ export type ObjectUpdateData = {
     id?: number,
     pos?: {
         x: number,
-        y: number,
-        z: number
+        y: number
     },
     q?: {
         x: number,
@@ -34,7 +34,9 @@ export type ObjectCreateData = ObjectUpdateData & {
     type: ObjectType,
     owner?: string, // owner id
     radius?: number,
-    hp?: number
+    hp?: number,
+    lookAt?: { x: number, y: number }
+    
 }
 
 export type StarCreateData = ObjectCreateData & {

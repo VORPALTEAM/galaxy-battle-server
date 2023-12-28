@@ -18,7 +18,7 @@ export class Star extends GameObject {
             owner: this.ownerWalletId,
             hp: 1000,
             id: this.id,
-            pos: { x: 0, y: 0, z: 0 },
+            pos: this.position,
             radius: 5
         };
     }

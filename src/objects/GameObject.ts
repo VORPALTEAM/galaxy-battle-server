@@ -5,7 +5,7 @@ import { Vec2 } from "../utils/MyMath.js";
 export type GameObjectParams = {
     ownerWalletId: string,
     id: number,
-    cellPos: Vec2,
+    position: Vec2 | { x: number, y: number },
     radius: number
     
 }
@@ -13,13 +13,18 @@ export type GameObjectParams = {
 export class GameObject implements IUpdatable {
     ownerWalletId: string;
     id: number;
-    cellPos: Vec2;
+    position: Vec2;
     radius: number;
 
     constructor(aParams: GameObjectParams) {
         this.ownerWalletId = aParams.ownerWalletId;
         this.id = aParams.id;
-        this.cellPos = aParams.cellPos;
+        if (aParams.position instanceof Vec2) {
+            this.position = aParams.position;
+        }
+        else {
+            this.position = Vec2.getVec2(aParams.position.x, aParams.position.y);
+        }
         this.radius = aParams.radius;
     }
 

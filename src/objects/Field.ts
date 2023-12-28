@@ -141,7 +141,7 @@ export class Field {
         return null; // Путь не найден
     }
 
-    private heuristic(start: { x, y }, end: { x, y }): number {
+    private heuristic(start: { x: number, y: number }, end: { x: number, y: number }): number {
         // Эвристика: расстояние между точками по прямой (эвклидово расстояние)
         const dx = Math.abs(start.x - end.x);
         const dy = Math.abs(start.y - end.y);
@@ -154,7 +154,7 @@ export class Field {
         }
     }
 
-    cellPosToCoordinates(cx: number, cy: number): { x, y } {
+    cellPosToCoordinates(cx: number, cy: number): { x: number, y: number } {
         const isEvenRow = cy % 2 === 0;
         let c = {
             x: cx * this._params.size.sectorWidth,
@@ -164,7 +164,7 @@ export class Field {
         return c;
     }
 
-    coordinatesToCellPos(x: number, y: number): { x, y } {
+    coordinatesToCellPos(x: number, y: number): { x: number, y: number } {
         let c = {
             x: Math.trunc(x / this._params.size.sectorWidth),
             y: Math.trunc(y / this._params.size.sectorHeight)

@@ -5,6 +5,9 @@ import { Client } from "src/models/Client.js";
 export type StartGameData = {
     cmd?: 'start',
     timer: number,
+}
+
+export type FieldInitData = {
     playerPosition: 'top' | 'bot'
 }
 
@@ -35,6 +38,10 @@ export class PackSender {
 
     starCreate(aClients: Client[], aData: StarCreateData) {
         this.sendData(aClients, PackTitle.objectCreate, aData);
+    }
+
+    fieldInit(aClients: Client[], aData: FieldInitData) {
+        this.sendData(aClients, PackTitle.fieldInit, aData);
     }
 
     objectCreate(aList: {

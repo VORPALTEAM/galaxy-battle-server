@@ -81,9 +81,10 @@ export class Game implements ILogger {
         let star1 = new Star({
             ownerWalletId: this._clients[0].walletId,
             id: this.generateObjId(),
-            cellPos: Vec2.getVec2(),
+            position: this._field.cellPosToCoordinates(3, 1),
             radius: SETTINGS.star1.radius
         });
+        this._field.takeCell(3, 1);
 
         PackSender.getInstance().starCreate(this._clients, star1.getCreateData());
 
@@ -94,11 +95,15 @@ export class Game implements ILogger {
     start() {
         PackSender.getInstance().gameStart([this._clients[0]], {
             timer: SETTINGS.beginTimer,
-            playerPosition: 'top'
         });
-
         PackSender.getInstance().gameStart([this._clients[1]], {
             timer: SETTINGS.beginTimer,
+        });
+
+        PackSender.getInstance().fieldInit([this._clients[0]], {
+            playerPosition: 'top'
+        });
+        PackSender.getInstance().fieldInit([this._clients[1]], {
             playerPosition: 'bot'
         });
 
