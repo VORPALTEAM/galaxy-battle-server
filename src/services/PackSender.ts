@@ -8,6 +8,7 @@ export type StartGameData = {
 }
 
 export type FieldInitData = {
+    fieldParams: any,
     playerPosition: 'top' | 'bot'
 }
 

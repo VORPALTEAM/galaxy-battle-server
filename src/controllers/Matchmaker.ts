@@ -108,7 +108,7 @@ export class Matchmaker implements ILogger {
             let client = this._clients.get(id);
             let bot = new BotClient();
             this.removeClient(id);
-            this.createGame(client, bot);
+            this.createGame(bot, client);
         }
 
         if (readyClientIds.length >= 2) {

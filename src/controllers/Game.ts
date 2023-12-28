@@ -15,21 +15,20 @@ const SETTINGS = {
     field: {
         size: {
             cols: 8,
-            rows: 10,
+            rows: 11,
             sectorWidth: 10,
             sectorHeight: 3 / 4 * 10
         },
     },
 
-    star1: {
+    stars: [{
         pos: { cx: 3, cy: 1 },
         radius: 5,
     },
-
-    star2: {
-        pos: { cx: 3, cy: 8 },
+    {
+        pos: { cx: 3, cy: 9 },
         radius: 5,
-    }
+    }],
 
 }
 
@@ -77,16 +76,18 @@ export class Game implements ILogger {
         this._field = new Field(SETTINGS.field);
 
         // create stars
-
-        let star1 = new Star({
-            ownerWalletId: this._clients[0].walletId,
-            id: this.generateObjId(),
-            position: this._field.cellPosToCoordinates(3, 1),
-            radius: SETTINGS.star1.radius
-        });
-        this._field.takeCell(3, 1);
-
-        PackSender.getInstance().starCreate(this._clients, star1.getCreateData());
+        const stars = SETTINGS.stars;
+        for (let i = 0; i < stars.length; i++) {
+            const starData = stars[i];
+            let star = new Star({
+                ownerWalletId: this._clients[i].walletId,
+                id: this.generateObjId(),
+                position: this._field.cellPosToCoordinates(starData.pos.cx, starData.pos.cy),
+                radius: starData.radius
+            });
+            this._field.takeCell(starData.pos.cx, starData.pos.cy);
+            PackSender.getInstance().starCreate(this._clients, star.getCreateData());
+        }
 
         // create planets
 
@@ -101,9 +102,11 @@ export class Game implements ILogger {
         });
 
         PackSender.getInstance().fieldInit([this._clients[0]], {
+            fieldParams: SETTINGS.field,
             playerPosition: 'top'
         });
         PackSender.getInstance().fieldInit([this._clients[1]], {
+            fieldParams: SETTINGS.field,
             playerPosition: 'bot'
         });
 
