@@ -1,4 +1,7 @@
+import * as THREE from 'three';
 import { FieldCell } from "./FieldCell.js";
+import { LogMng } from '../utils/LogMng.js';
+import { ILogger } from '../interfaces/ILogger.js';
 
 export type FieldParams = {
     size: {
@@ -9,13 +12,23 @@ export type FieldParams = {
     }
 }
 
-export class Field {
+export class Field implements ILogger {
     private _params: FieldParams;
     private _field: Map<string, any>;
 
     constructor(aParams: FieldParams) {
         this._params = aParams;
         this.createField();
+    }
+
+    logDebug(aMsg: string, aData?: any): void {
+        LogMng.debug(`Field: ${aMsg}`, aData);
+    }
+    logWarn(aMsg: string, aData?: any): void {
+        LogMng.warn(`Field: ${aMsg}`, aData);
+    }
+    logError(aMsg: string, aData?: any): void {
+        LogMng.error(`Field: ${aMsg}`, aData);
     }
 
     private getCellKey(x: number, y: number): string {
@@ -42,8 +55,10 @@ export class Field {
         return this._field.get(key);
     }
 
-    private getNeighbors(x: number, y: number): FieldCell[] {
-        const neighbors: any[] = [];
+    getNeighbors(aCellPos: { x: number, y: number }, aOnlyFree = false): FieldCell[] {
+        const x = aCellPos.x;
+        const y = aCellPos.y;
+        const neighbors: FieldCell[] = [];
         const isEvenRow = y % 2 === 0;
 
         if (isEvenRow) {
@@ -70,10 +85,15 @@ export class Field {
         }
 
         // remove undefined
-        return neighbors.filter((neighbor) => neighbor !== undefined);
+        return neighbors.filter((neighbor) => {
+            let res = aOnlyFree ?
+                neighbor !== undefined && !neighbor.isTaken :
+                neighbor !== undefined;
+            return res;
+        });
     }
 
-    findPath(startX: number, startY: number, targetX: number, targetY: number): any[] | null {
+    findPath(startX: number, startY: number, targetX: number, targetY: number): FieldCell[] | null {
         const startCell = this.getCell(startX, startY);
         const targetCell = this.getCell(targetX, targetY);
 
@@ -114,10 +134,10 @@ export class Field {
             }
 
             // Получаем всех соседей текущей ячейки
-            const neighbors = this.getNeighbors(currentNode.x, currentNode.y);
+            const neighbors = this.getNeighbors(currentNode);
 
             neighbors.forEach((neighbor) => {
-                if (closedList.has(neighbor) || !neighbor) {
+                if (closedList.has(neighbor) || !neighbor || neighbor.isTaken) {
                     return;
                 }
 
@@ -138,14 +158,14 @@ export class Field {
             });
         }
 
-        return null; // Путь не найден
+        return null; // path not found
     }
 
     private heuristic(start: { x: number, y: number }, end: { x: number, y: number }): number {
-        // Эвристика: расстояние между точками по прямой (эвклидово расстояние)
-        const dx = Math.abs(start.x - end.x);
-        const dy = Math.abs(start.y - end.y);
-        return Math.sqrt(dx * dx + dy * dy);
+        // Эвристика: расстояние между точками по прямой
+        const p1 = this.cellPosToGlobalVec3(start.x, start.y);
+        const p2 = this.cellPosToGlobalVec3(end.x, end.y);
+        return p1.distanceTo(p2);
     }
 
     getCreateData(): FieldParams {
@@ -154,7 +174,7 @@ export class Field {
         }
     }
 
-    cellPosToCoordinates(cx: number, cy: number): { x: number, y: number } {
+    cellPosToGlobal(cx: number, cy: number): { x: number, y: number } {
         const isEvenRow = cy % 2 === 0;
         let c = {
             x: cx * this._params.size.sectorWidth,
@@ -164,29 +184,67 @@ export class Field {
         return c;
     }
 
-    coordinatesToCellPos(x: number, y: number): { x: number, y: number } {
+    cellPosToGlobalVec3(cx: number, cy: number): THREE.Vector3 {
+        const isEvenRow = cy % 2 === 0;
+        let v3 = new THREE.Vector3(
+            cx * this._params.size.sectorWidth,
+            0,
+            cy * this._params.size.sectorHeight
+        );
+        if (!isEvenRow) v3.x += this._params.size.sectorWidth / 2;
+        return v3;
+    }
+
+    globalToCellPos(x: number, y: number): { x: number, y: number } {
+        const sw = this._params.size.sectorWidth;
+        const sh = this._params.size.sectorHeight;
         let c = {
-            x: Math.trunc(x / this._params.size.sectorWidth),
-            y: Math.trunc(y / this._params.size.sectorHeight)
+            x: Math.trunc(x / sw),
+            y: Math.trunc(y / sh)
         }
-        const isEvenRow = y % 2 === 0;
-        if (!isEvenRow) c.x = Math.trunc((x - this._params.size.sectorWidth / 2) / this._params.size.sectorWidth);
+        const isEvenRow = c.y % 2 === 0;
+        if (!isEvenRow) c.x = Math.trunc((x - sw / 2) / sw);
+        return c;
+    }
+
+    globalVec3ToCellPos(aVec3: THREE.Vector3): { x: number, y: number } {
+        const x = aVec3.x;
+        const y = aVec3.z;
+        const sw = this._params.size.sectorWidth;
+        const sh = this._params.size.sectorHeight;
+        let c = {
+            x: Math.trunc(x / sw),
+            y: Math.trunc(y / sh)
+        }
+        const isEvenRow = c.y % 2 === 0;
+        if (!isEvenRow) c.x = Math.trunc((x - sw / 2) / sw);
         return c;
     }
 
     isCellTaken(cx: number, cy: number): boolean {
         let cell = this.getCell(cx, cy);
+        if (!cell) return false;
         return !cell.isTaken;
     }
 
     takeCell(cx: number, cy: number) {
         let cell = this.getCell(cx, cy);
-        if (cell) cell.isTaken = true;
+        if (cell) {
+            cell.isTaken = true;
+        }
+        else {
+            this.logWarn(`takeCell !cell for (${cx}, ${cy})`);
+        }
     }
 
-    freeCell(cx: number, cy: number) {
+    takeOffCell(cx: number, cy: number) {
         let cell = this.getCell(cx, cy);
-        if (cell) cell.isTaken = false;
+        if (cell) {
+            cell.isTaken = false;
+        }
+        else {
+            this.logWarn(`takeOffCell !cell for (${cx}, ${cy})`);
+        }
     }
 
 

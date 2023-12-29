@@ -30,8 +30,8 @@ export class Star extends GameObject {
             owner: this.owner,
             hp: this.hp,
             id: this.id,
-            pos: this.position,
-            radius: this.radius
+            radius: this.radius,
+            pos: this._mesh.position,
         };
     }
 

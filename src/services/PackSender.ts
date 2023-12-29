@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
-import { ObjectType, PackTitle, StarCreateData } from "../data/Types.js";
-import { Client } from "src/models/Client.js";
+import { ObjectType, ObjectUpdateData, PackTitle, StarCreateData } from "../data/Types.js";
+import { Client } from "../models/Client.js";
 
 export type StartGameData = {
     cmd?: 'start',
@@ -45,7 +45,11 @@ export class PackSender {
         this.sendData(aClients, PackTitle.fieldInit, aData);
     }
 
-    objectCreate(aList: {
+    objectUpdate(aClients: Client[], aData: ObjectUpdateData[]) {
+        this.sendData(aClients, PackTitle.objectUpdate, aData);
+    }
+
+    objectCreate_OLD(aList: {
 
         // common params
         id: string,
@@ -80,7 +84,7 @@ export class PackSender {
      * @param aList List of objects id and data
      * @returns 
      */
-    objectUpdate(aList: {
+    objectUpdate_OLD(aList: {
         id: string,
         event?: string,
         position?: { x: number, y: number },
@@ -97,7 +101,7 @@ export class PackSender {
         });
     }
 
-    attackLaser(aData: {
+    attackLaser_OLD(aData: {
         idFrom: string,
         idTo: string,
         damage?: number,
@@ -110,7 +114,7 @@ export class PackSender {
         });
     }
 
-    attackRay(aData: {
+    attackRay_OLD(aData: {
         idFrom: string,
         idTo: string,
         state: 'start' | 'end'

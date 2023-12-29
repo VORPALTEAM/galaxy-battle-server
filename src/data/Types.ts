@@ -20,14 +20,15 @@ export type ObjectUpdateData = {
     id?: number,
     pos?: {
         x: number,
-        y: number
+        y: number,
+        z: number
     },
     q?: {
         x: number,
         y: number,
         z: number,
         w: number
-    }
+    },
 }
 
 export type ObjectCreateData = ObjectUpdateData & {
@@ -35,8 +36,6 @@ export type ObjectCreateData = ObjectUpdateData & {
     owner?: string, // owner id
     radius?: number,
     hp?: number,
-    lookAt?: { x: number, y: number }
-    
 }
 
 export type StarCreateData = ObjectCreateData & {
@@ -44,5 +43,5 @@ export type StarCreateData = ObjectCreateData & {
 }
 
 export type FighterCreateData = ObjectCreateData & {
-    
+
 }

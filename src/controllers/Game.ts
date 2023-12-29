@@ -1,17 +1,17 @@
+import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { Socket } from "socket.io";
-import { ObjectUpdateData, PackTitle, StarCreateData } from "../data/Types.js";
+import { ObjectUpdateData } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Star } from "../objects/Star.js";
-import { Vec2 } from "../utils/MyMath.js";
 import { Fighter } from "../objects/Fighter.js";
 import { GameObject } from "src/objects/GameObject.js";
+import { FighterManager } from "../systems/FighterManager.js";
 
 const SETTINGS = {
-    tickRate: 1000 / 30, // 1000 / t - t ticks per sec
+    tickRate: 1000 / 1, // 1000 / t - t ticks per sec
     beginTimer: 4, // in sec
 
     field: {
@@ -34,6 +34,7 @@ const SETTINGS = {
         }
     ],
 
+    // TODO: move this data to Star class
     spawn: {
         fightersTop: [
             { dx: -1, dy: 1 },
@@ -55,6 +56,7 @@ export class Game implements ILogger {
     private _objects: Map<number, GameObject>;
     private _clients: Client[];
     private _field: Field;
+    private _fighterMng: FighterManager;
 
     constructor(aClientA: Client, aClientB: Client) {
         this._objects = new Map();
@@ -91,8 +93,10 @@ export class Game implements ILogger {
     }
 
     private init() {
+
         // create field
         this._field = new Field(SETTINGS.field);
+        this._fighterMng = new FighterManager(this._field, this._objects);
 
         // create stars
         const stars = SETTINGS.stars;
@@ -101,7 +105,7 @@ export class Game implements ILogger {
             let star = new Star({
                 owner: this._clients[i].walletId,
                 id: this.generateObjId(),
-                position: this._field.cellPosToCoordinates(starData.pos.cx, starData.pos.cy),
+                position: this._field.cellPosToGlobal(starData.pos.cx, starData.pos.cy),
                 radius: starData.radius,
                 isTopStar: i == 0,
                 hp: 1000
@@ -117,28 +121,30 @@ export class Game implements ILogger {
     }
 
     private onStarFighterSpawn(aStar: Star) {
-        this.logDebug(`onStarFighterSpawn:`);
+        this.logDebug(`< onStarFighterSpawn >`);
 
         let spawnData = aStar.isTopStar ? SETTINGS.spawn.fightersTop : SETTINGS.spawn.fightersBot;
+        const yDir = aStar.isTopStar ? 1 : -1;
         for (let i = 0; i < spawnData.length; i++) {
             const data = spawnData[i];
-            this.logDebug(`data:`, data);
+            // this.logDebug(`data:`, data);
 
-            let cellPos = this._field.coordinatesToCellPos(aStar.position.x, aStar.position.y);
-            this.logDebug(`starCellPos:`, cellPos);
+            let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
+            // this.logDebug(`starCellPos:`, cellPos);
 
             cellPos.x += data.dx;
             cellPos.y += data.dy;
-            this.logDebug(`cellPos:`, cellPos);
+            // this.logDebug(`cellPos:`, cellPos);
 
             let fighter = new Fighter({
                 owner: aStar.owner,
                 id: this.generateObjId(),
-                position: this._field.cellPosToCoordinates(cellPos.x, cellPos.y),
                 radius: 3,
-                hp: 100
+                hp: 100,
+                position: this._field.cellPosToGlobal(cellPos.x, cellPos.y),
             });
-            
+            fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
+
             this._field.takeCell(cellPos.x, cellPos.y);
             PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
 
@@ -186,7 +192,7 @@ export class Game implements ILogger {
 
         for (let i = 0; i < cellPoses.length; i++) {
             const item = cellPoses[i];
-            let c = this._field.cellPosToCoordinates(item.x, item.y);
+            let c = this._field.cellPosToGlobal(item.x, item.y);
             cellPosesRes.push(c);
         }
         this.logDebug(`TEST cx to coords`, {
@@ -205,7 +211,7 @@ export class Game implements ILogger {
 
         for (let i = 0; i < globalPoses.length; i++) {
             const item = globalPoses[i];
-            let c = this._field.coordinatesToCellPos(item.x, item.y);
+            let c = this._field.globalToCellPos(item.x, item.y);
             globalPosesRes.push(c);
         }
         this.logDebug(`TEST coords to cx`, {
@@ -221,16 +227,23 @@ export class Game implements ILogger {
      * @param dt delta time in sec
      */
     update(dt: number) {
-
-        let updateList: ObjectUpdateData[] = [];
+        
+        let updateData: ObjectUpdateData[] = [];
         let destroyList: number[] = [];
 
-        this._objects?.forEach((obj) => {
+        this._objects.forEach((obj) => {
+            if (obj instanceof Fighter) {
+                this._fighterMng.updateShip(obj, dt);
+            }
             obj.update(dt);
-            // updateList.push(this.getUpdateData(obj));
+            updateData.push(obj.getUpdateData());
         });
 
         // this.sendUpdateObjects(updateList);
+        updateData = updateData.filter((item) => {
+            return item !== null && item !== undefined;
+        });
+        PackSender.getInstance().objectUpdate(this._clients, updateData);
         // this.sendDestroyObjects(destroyList);
 
     }
