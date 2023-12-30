@@ -28,12 +28,21 @@ export class FighterManager implements ILogger {
         LogMng.error(`FighterManager: ${aMsg}`, aData);
     }
 
-    private getEnemyShipsInRadius(aFighter: Fighter): GameObject[] {
-        let pos = aFighter.position;
+    private getNearestEnemyInAtkRadius(aFighter: Fighter): GameObject {
+        let minDist = Number.MAX_SAFE_INTEGER;
+        let enenmy: GameObject = null;
         this._objects.forEach(obj => {
-            
+            const dist = aFighter.position.distanceTo(obj.position);
+            const isEnemy = obj.owner != aFighter.owner;
+            if (isEnemy) {
+                this.logDebug(`getNearestEnemyInAtkRadius: atkRadius: ${aFighter.attackRadius} dist: ${dist}`);
+                if (dist <= aFighter.attackRadius && dist < minDist) {
+                    minDist = dist;
+                    enenmy = obj;
+                }
+            }
         });
-        return [];
+        return enenmy;
     }
 
     private getEnemyStar(aFighter: Fighter): Star {
@@ -60,10 +69,11 @@ export class FighterManager implements ILogger {
 
             case 'idle':
                 // check for enemy
-                let enemies = this.getEnemyShipsInRadius(aFighter);
-                if (enemies.length > 0) {
+                let enemy = this.getNearestEnemyInAtkRadius(aFighter);
+                if (enemy) {
                     // attack enemy
-                    // this.logDebug(`enemy attack!`);
+                    this.logDebug(`fighter attack!`);
+                    aFighter.attackTarget(enemy);
                     return;
                 }
                 

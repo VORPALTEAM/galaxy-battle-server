@@ -49,6 +49,25 @@ export class PackSender {
         this.sendData(aClients, PackTitle.objectUpdate, aData);
     }
 
+    objectDestroy(aClients: Client[], aData: number[]) {
+        this.sendData(aClients, PackTitle.objectDestroy, aData);
+    }
+
+    attack(aClients: Client[], aData: {
+        attackType: 'laser' | 'ray',
+        idFrom: number,
+        idTo: number,
+        damage?: number,
+        isMiss?: boolean
+    }) {
+        this.sendData(aClients, PackTitle.attack, aData);
+    }
+
+
+
+
+    
+
     objectCreate_OLD(aList: {
 
         // common params

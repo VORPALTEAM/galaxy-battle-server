@@ -6,7 +6,7 @@ export type StarParams = GameObjectParams & {
     isTopStar: boolean
 }
 
-const FIGHTER_SPAWN_PERIOD = 20;
+const FIGHTER_SPAWN_PERIOD = 60;
 
 export class Star extends GameObject {
     protected _timerFighterSpawn: number;

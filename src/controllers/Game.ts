@@ -9,6 +9,7 @@ import { Star } from "../objects/Star.js";
 import { Fighter } from "../objects/Fighter.js";
 import { GameObject } from "src/objects/GameObject.js";
 import { FighterManager } from "../systems/FighterManager.js";
+import { MyMath } from '../utils/MyMath.js';
 
 const SETTINGS = {
     tickRate: 1000 / 1, // 1000 / t - t ticks per sec
@@ -19,8 +20,15 @@ const SETTINGS = {
             cols: 8,
             rows: 11,
             sectorWidth: 10,
-            sectorHeight: 3 / 4 * 10
+            sectorHeight: 9
         },
+    },
+
+    fighters: {
+        hp: 100,
+        attackRadius: 12,
+        minDmg: 10,
+        maxDmg: 20
     },
 
     stars: [
@@ -37,13 +45,13 @@ const SETTINGS = {
     // TODO: move this data to Star class
     spawn: {
         fightersTop: [
-            { dx: -1, dy: 1 },
-            { dx: 2, dy: 1 },
+            // { dx: -1, dy: 1 },
+            // { dx: 2, dy: 1 },
             { dx: 0, dy: 2 },
         ],
         fightersBot: [
-            { dx: -1, dy: -1 },
-            { dx: 2, dy: -1 },
+            // { dx: -1, dy: -1 },
+            // { dx: 2, dy: -1 },
             { dx: 0, dy: -2 },
         ]
     }
@@ -139,11 +147,17 @@ export class Game implements ILogger {
             let fighter = new Fighter({
                 owner: aStar.owner,
                 id: this.generateObjId(),
-                radius: 3,
-                hp: 100,
                 position: this._field.cellPosToGlobal(cellPos.x, cellPos.y),
+                radius: 3,
+                hp: SETTINGS.fighters.hp,
+                attackParams: {
+                    radius: SETTINGS.fighters.attackRadius,
+                    minDamage: SETTINGS.fighters.minDmg,
+                    maxDamage: SETTINGS.fighters.maxDmg
+                },
             });
             fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
+            fighter.onAttack.add(this.onFighterAttack, this);
 
             this._field.takeCell(cellPos.x, cellPos.y);
             PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
@@ -174,6 +188,23 @@ export class Game implements ILogger {
         setTimeout(() => {
 
         }, SETTINGS.beginTimer * 1000);
+
+    }
+
+    private onFighterAttack(aFighter: Fighter, aEnemy: GameObject) {
+        const dmg = aFighter.getAttackDamage();
+        const isMiss = MyMath.randomIntInRange(0, 10) > 9;
+        PackSender.getInstance().attack(this._clients, {
+            attackType: 'laser',
+            idFrom: aFighter.id,
+            idTo: aEnemy.id,
+            damage: dmg,
+            isMiss: isMiss
+        });
+
+        if (!isMiss) {
+            aEnemy.hp -= dmg;
+        }
 
     }
 
@@ -232,11 +263,20 @@ export class Game implements ILogger {
         let destroyList: number[] = [];
 
         this._objects.forEach((obj) => {
+
+            if (obj.hp <= 0) {
+                destroyList.push(obj.id);
+                this._objects.delete(obj.id);
+                return;
+            }
+
             if (obj instanceof Fighter) {
                 this._fighterMng.updateShip(obj, dt);
             }
+
             obj.update(dt);
             updateData.push(obj.getUpdateData());
+
         });
 
         // this.sendUpdateObjects(updateList);
@@ -244,7 +284,10 @@ export class Game implements ILogger {
             return item !== null && item !== undefined;
         });
         PackSender.getInstance().objectUpdate(this._clients, updateData);
-        // this.sendDestroyObjects(destroyList);
+
+        if (destroyList.length > 0) {
+            PackSender.getInstance().objectDestroy(this._clients, destroyList);
+        }
 
     }
 }

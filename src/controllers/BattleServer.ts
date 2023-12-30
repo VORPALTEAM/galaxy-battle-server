@@ -65,7 +65,7 @@ export class BattleServer implements ILogger {
     }
 
     private onDisconnect(aClientId: string) {
-        this._matchmaker.removeClient(aClientId);
+        this._matchmaker.onClientDisconnected(aClientId);
         SignService.getInstance().removeClient(aClientId);
         this._clients.delete(aClientId);
         this.logDebug(`Client disconnected: ${aClientId}`);

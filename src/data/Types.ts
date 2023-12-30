@@ -36,6 +36,7 @@ export type ObjectCreateData = ObjectUpdateData & {
     owner?: string, // owner id
     radius?: number,
     hp?: number,
+    attackRadius?: number
 }
 
 export type StarCreateData = ObjectCreateData & {

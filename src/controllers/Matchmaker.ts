@@ -80,6 +80,12 @@ export class Matchmaker implements ILogger {
         this._clients.delete(aClientId);
     }
 
+    onClientDisconnected(aClientId: string) {
+        this.removeClient(aClientId);
+        // check the games
+        
+    }
+
     /**
      * 
      * @param dt delta time in sec
