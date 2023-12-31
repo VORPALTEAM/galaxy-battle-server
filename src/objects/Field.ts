@@ -247,5 +247,10 @@ export class Field implements ILogger {
         }
     }
 
-
+    free() {
+        this._params = null;
+        this._field.clear();
+        this._field = null;
+    }
+    
 }

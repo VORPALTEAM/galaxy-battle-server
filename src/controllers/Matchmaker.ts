@@ -12,11 +12,12 @@ const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 export class Matchmaker implements ILogger {
     private _clients: Map<string, Client>;
     private _loopInterval: NodeJS.Timeout;
-    private _games: Game[] = [];
+    private _games: Map<number, Game>;
+    private _gameIdCounter = 0;
 
     constructor() {
         this._clients = new Map();
-        this._games = [];
+        this._games = new Map();
         this.startLoop();
 
         // tests
@@ -36,11 +37,15 @@ export class Matchmaker implements ILogger {
         LogMng.error(`Matchmaker: ${aMsg}`, aData);
     }
 
+    private generateNewGameId(): number {
+        return this._gameIdCounter++;
+    }
+
     private tests() {
         this.logDebug('game test...');
-        let game = new Game(null, null);
+        let game = new Game(this.generateNewGameId(), null, null);
         game.tests();
-        this._games.push(game);
+        this._games.set(game.id, game);
     }
 
     private startLoop() {
@@ -58,9 +63,16 @@ export class Matchmaker implements ILogger {
 
     private createGame(aClientA: Client, aClientB: Client) {
         this.logDebug('game creation...');
-        let game = new Game(aClientA, aClientB);
+        let game = new Game(this.generateNewGameId(), aClientA, aClientB);
+        game.onGameComplete.addOnce(this.onGameComplete, this);
         game.start();
-        this._games.push(game);
+        this._games.set(game.id, game);
+    }
+
+    private onGameComplete(aGame: Game) {
+        this.logDebug(`onGameComplete -> delete the game id = (${aGame.id})`);
+        this._games.delete(aGame.id);
+        aGame.free();
     }
 
     addClient(aClient: Client) {
@@ -82,8 +94,6 @@ export class Matchmaker implements ILogger {
 
     onClientDisconnected(aClientId: string) {
         this.removeClient(aClientId);
-        // check the games
-        
     }
 
     /**
@@ -100,7 +110,7 @@ export class Matchmaker implements ILogger {
         // find ready clients
         this._clients.forEach(client => {
             if (client.isSigned) {
-                if (client.withBot) {
+                if (client.isWithBot) {
                     readyBotClientIds.push(client.id);
                 }
                 else {

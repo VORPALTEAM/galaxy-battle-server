@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { ObjectUpdateData } from "../data/Types.js";
+import { GameCompleteData, ObjectUpdateData } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -10,6 +10,7 @@ import { Fighter } from "../objects/Fighter.js";
 import { GameObject } from "src/objects/GameObject.js";
 import { FighterManager } from "../systems/FighterManager.js";
 import { MyMath } from '../utils/MyMath.js';
+import { Signal } from '../utils/events/Signal.js';
 
 const SETTINGS = {
     tickRate: 1000 / 1, // 1000 / t - t ticks per sec
@@ -31,16 +32,18 @@ const SETTINGS = {
         maxDmg: 20
     },
 
-    stars: [
-        {
-            pos: { cx: 3, cy: 1 },
-            radius: 5,
-        },
-        {
-            pos: { cx: 3, cy: 9 },
-            radius: 5,
-        }
-    ],
+    stars: {
+        hp: 50,
+        radius: 5,
+        positions: [
+            {
+                pos: { cx: 3, cy: 1 },
+            },
+            {
+                pos: { cx: 3, cy: 9 },
+            }
+        ],
+    },
 
     // TODO: move this data to Star class
     spawn: {
@@ -59,16 +62,20 @@ const SETTINGS = {
 }
 
 export class Game implements ILogger {
+    private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
     private _objIdCounter = 0;
     private _objects: Map<number, GameObject>;
     private _clients: Client[];
     private _field: Field;
     private _fighterMng: FighterManager;
+    onGameComplete = new Signal();
 
-    constructor(aClientA: Client, aClientB: Client) {
+    constructor(aGameId: number, aClientA: Client, aClientB: Client) {
+        this._id = aGameId;
         this._objects = new Map();
         this._clients = [aClientA, aClientB];
+        this.initClientListeners();
         this.startLoop();
     }
 
@@ -82,9 +89,43 @@ export class Game implements ILogger {
         LogMng.error(`Game: ${aMsg}`, aData);
     }
 
-    private generateObjId(): number {
-        this._objIdCounter++;
-        return this._objIdCounter;
+    private initClientListeners() {
+        for (let i = 0; i < this._clients.length; i++) {
+            const client = this._clients[i];
+            client.onDisconnect.add(this.onDisconnect, this);
+        }
+    }
+
+    private onDisconnect(aClient: Client) {
+        this.logDebug(`client (${aClient.walletId}) disconnect`);
+
+        let winner: Client;
+        for (let i = 0; i < this._clients.length; i++) {
+            const client = this._clients[i];
+            if (client.id != aClient.id) {
+                winner = client;
+                break;
+            }
+        }
+        this.completeGame(winner);
+    }
+
+    private completeGame(aWinner: Client) {
+        this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
+
+        for (let i = 0; i < this._clients.length; i++) {
+            const client = this._clients[i];
+            let data: GameCompleteData = {
+                status: 'draw'
+            };
+            if (aWinner) data.status = client.id == aWinner.id ? 'win' : 'lose';
+            PackSender.getInstance().gameComplete(client, data);
+        }
+        this.onGameComplete.dispatch(this);
+    }
+
+    private generateObjectId(): number {
+        return this._objIdCounter++;
     }
 
     private startLoop() {
@@ -107,19 +148,19 @@ export class Game implements ILogger {
         this._fighterMng = new FighterManager(this._field, this._objects);
 
         // create stars
-        const stars = SETTINGS.stars;
-        for (let i = 0; i < stars.length; i++) {
-            const starData = stars[i];
+        const starsData = SETTINGS.stars;
+        for (let i = 0; i < starsData.positions.length; i++) {
+            const posData = starsData.positions[i];
             let star = new Star({
                 owner: this._clients[i].walletId,
-                id: this.generateObjId(),
-                position: this._field.cellPosToGlobal(starData.pos.cx, starData.pos.cy),
-                radius: starData.radius,
-                isTopStar: i == 0,
-                hp: 1000
+                id: this.generateObjectId(),
+                position: this._field.cellPosToGlobal(posData.pos.cx, posData.pos.cy),
+                radius: starsData.radius,
+                isTopStar: posData.pos.cy < SETTINGS.field.size.rows / 2,
+                hp: starsData.hp
             });
             star.onFighterSpawn.add(this.onStarFighterSpawn, this);
-            this._field.takeCell(starData.pos.cx, starData.pos.cy);
+            this._field.takeCell(posData.pos.cx, posData.pos.cy);
             PackSender.getInstance().starCreate(this._clients, star.getCreateData());
             this._objects.set(star.id, star);
         }
@@ -128,8 +169,16 @@ export class Game implements ILogger {
 
     }
 
+    private getClientByWallet(aWalletId: string): Client | null {
+        for (let i = 0; i < this._clients.length; i++) {
+            const client = this._clients[i];
+            if (client.walletId == aWalletId) return client;
+        }
+        return null;
+    }
+
     private onStarFighterSpawn(aStar: Star) {
-        this.logDebug(`< onStarFighterSpawn >`);
+        // this.logDebug(`< onStarFighterSpawn >`);
 
         let spawnData = aStar.isTopStar ? SETTINGS.spawn.fightersTop : SETTINGS.spawn.fightersBot;
         const yDir = aStar.isTopStar ? 1 : -1;
@@ -146,7 +195,7 @@ export class Game implements ILogger {
 
             let fighter = new Fighter({
                 owner: aStar.owner,
-                id: this.generateObjId(),
+                id: this.generateObjectId(),
                 position: this._field.cellPosToGlobal(cellPos.x, cellPos.y),
                 radius: 3,
                 hp: SETTINGS.fighters.hp,
@@ -164,6 +213,27 @@ export class Game implements ILogger {
 
             this._objects.set(fighter.id, fighter);
         }
+    }
+
+    private onFighterAttack(aFighter: Fighter, aEnemy: GameObject) {
+        const dmg = aFighter.getAttackDamage();
+        const isMiss = MyMath.randomIntInRange(0, 10) > 9;
+        PackSender.getInstance().attack(this._clients, {
+            attackType: 'laser',
+            idFrom: aFighter.id,
+            idTo: aEnemy.id,
+            damage: dmg,
+            isMiss: isMiss
+        });
+
+        if (!isMiss) {
+            aEnemy.hp -= dmg;
+        }
+
+    }
+
+    get id(): number {
+        return this._id;
     }
 
     start() {
@@ -188,23 +258,6 @@ export class Game implements ILogger {
         setTimeout(() => {
 
         }, SETTINGS.beginTimer * 1000);
-
-    }
-
-    private onFighterAttack(aFighter: Fighter, aEnemy: GameObject) {
-        const dmg = aFighter.getAttackDamage();
-        const isMiss = MyMath.randomIntInRange(0, 10) > 9;
-        PackSender.getInstance().attack(this._clients, {
-            attackType: 'laser',
-            idFrom: aFighter.id,
-            idTo: aEnemy.id,
-            damage: dmg,
-            isMiss: isMiss
-        });
-
-        if (!isMiss) {
-            aEnemy.hp -= dmg;
-        }
 
     }
 
@@ -253,6 +306,17 @@ export class Game implements ILogger {
 
     }
 
+    free() {
+        this.stopLoop();
+        this._loopInterval = null;
+        this.onGameComplete.removeAll();
+        this._fighterMng.free();
+        this._field.free();
+        this._objects.clear();
+        this._objects = null;
+        this._clients = [];
+    }
+
     /**
      * 
      * @param dt delta time in sec
@@ -261,6 +325,7 @@ export class Game implements ILogger {
         
         let updateData: ObjectUpdateData[] = [];
         let destroyList: number[] = [];
+        let stars: Star[] = [];
 
         this._objects.forEach((obj) => {
 
@@ -272,6 +337,10 @@ export class Game implements ILogger {
 
             if (obj instanceof Fighter) {
                 this._fighterMng.updateShip(obj, dt);
+            }
+
+            if (obj instanceof Star) {
+                stars.push(obj);
             }
 
             obj.update(dt);
@@ -289,5 +358,21 @@ export class Game implements ILogger {
             PackSender.getInstance().objectDestroy(this._clients, destroyList);
         }
 
+        // check Stars count and winner
+        if (stars.length < 2) {
+            if (stars.length == 1) {
+                // we have a winner
+                let winnerStar = stars[0];
+                let client = this.getClientByWallet(winnerStar.owner);
+                this.completeGame(client);
+            }
+            else {
+                // draw
+                this.completeGame(null);
+            }
+        }
+
     }
+
+
 }

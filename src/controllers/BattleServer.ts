@@ -47,15 +47,8 @@ export class BattleServer implements ILogger {
         // add to SignService
         SignService.getInstance().addClient(client);
 
-        socket.on(PackTitle.startSearchGame, (aData?: { withBot: boolean }) => {
-            this.logDebug(`search game with bot request...`);
-            client.withBot = aData?.withBot;
-            this.onStartSearchGame(client);
-        });
-
-        socket.on('disconnect', () => {
-            this.onDisconnect(clientId);
-        });
+        client.onStartSearchGame.add(this.onStartSearchGame, this);
+        client.onDisconnect.add(this.onDisconnect, this);
 
         this.logDebug(`Client connected: ${clientId}`);
     }
@@ -64,11 +57,12 @@ export class BattleServer implements ILogger {
         this._matchmaker.addClient(aClient);
     }
 
-    private onDisconnect(aClientId: string) {
-        this._matchmaker.onClientDisconnected(aClientId);
-        SignService.getInstance().removeClient(aClientId);
-        this._clients.delete(aClientId);
-        this.logDebug(`Client disconnected: ${aClientId}`);
+    private onDisconnect(aClient: Client) {
+        const cid = aClient.id;
+        this._matchmaker.onClientDisconnected(cid);
+        SignService.getInstance().removeClient(cid);
+        this._clients.delete(cid);
+        this.logDebug(`Client disconnected: ${cid}`);
     }
 
 }

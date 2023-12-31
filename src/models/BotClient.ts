@@ -12,14 +12,13 @@ export class BotClient extends Client {
     constructor() {
         super(null);
         this._className = 'BotClient';
-        this.sign(this.generateWalletId(8));
+        this.sign(this.generateWalletId(10));
     }
 
-    private generateWalletId(length: number): string {
+    private generateId(aLength = 10): string {
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let randomString = '';
-
-        for (let i = 0; i < length; i++) {
+        for (let i = 0; i < aLength; i++) {
             let randomIndex: number;
             do {
                 randomIndex = Math.floor(Math.random() * chars.length);
@@ -27,10 +26,25 @@ export class BotClient extends Client {
 
             randomString += chars.charAt(randomIndex);
         }
-
-        randomString = `0x${randomString}bot`;
-
         return randomString;
+    }
+
+    private generateWalletId(aLength = 10): string {
+        let randomString = `0x${this.generateId(aLength)}-BOT`;
+        return randomString;
+    }
+
+    private generateSocketId(aLength = 10): string {
+        let randomString = `${this.generateId(aLength)}-BOT`;
+        return randomString;
+    }
+
+    protected setIdBySocket() {
+        this._id = this.generateSocketId();
+    }
+
+    protected initListeners() {
+        // clear
     }
 
     sendPack(aPackTitle: PackTitle, aData: any) {

@@ -1,17 +1,6 @@
 import { Socket } from "socket.io";
-import { ObjectType, ObjectUpdateData, PackTitle, StarCreateData } from "../data/Types.js";
+import { FieldInitData, GameCompleteData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData } from "../data/Types.js";
 import { Client } from "../models/Client.js";
-
-export type StartGameData = {
-    cmd?: 'start',
-    timer: number,
-}
-
-export type FieldInitData = {
-    fieldParams: any,
-    playerPosition: 'top' | 'bot'
-}
-
 
 export class PackSender {
     private static _instance: PackSender;
@@ -35,6 +24,10 @@ export class PackSender {
     gameStart(aClients: Client[], aData: StartGameData) {
         aData.cmd = 'start';
         this.sendData(aClients, PackTitle.gameStart, aData);
+    }
+
+    gameComplete(aClient: Client, aData: GameCompleteData) {
+        this.sendData([aClient], PackTitle.gameComplete, aData);
     }
 
     starCreate(aClients: Client[], aData: StarCreateData) {

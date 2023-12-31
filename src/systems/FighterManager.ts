@@ -35,7 +35,7 @@ export class FighterManager implements ILogger {
             const dist = aFighter.position.distanceTo(obj.position);
             const isEnemy = obj.owner != aFighter.owner;
             if (isEnemy) {
-                this.logDebug(`getNearestEnemyInAtkRadius: atkRadius: ${aFighter.attackRadius} dist: ${dist}`);
+                // this.logDebug(`getNearestEnemyInAtkRadius: atkRadius: ${aFighter.attackRadius} dist: ${dist}`);
                 if (dist <= aFighter.attackRadius && dist < minDist) {
                     minDist = dist;
                     enenmy = obj;
@@ -56,7 +56,7 @@ export class FighterManager implements ILogger {
         });
         return stars[0];
     }
-
+    
     updateShip(aFighter: Fighter, dt: number) {
 
         // this.logDebug(`updateShip id = ${aFighter.id}`);
@@ -72,7 +72,7 @@ export class FighterManager implements ILogger {
                 let enemy = this.getNearestEnemyInAtkRadius(aFighter);
                 if (enemy) {
                     // attack enemy
-                    this.logDebug(`fighter attack!`);
+                    // this.logDebug(`fighter attack!`);
                     aFighter.attackTarget(enemy);
                     return;
                 }
@@ -140,5 +140,10 @@ export class FighterManager implements ILogger {
         }
     }
 
+    free() {
+        this._field = null;
+        this._objects.clear();
+        this._objects = null;
+    }
 
 }

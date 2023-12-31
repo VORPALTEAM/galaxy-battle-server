@@ -2,27 +2,30 @@ import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { PackTitle } from "../data/Types.js";
-
-export enum ClientState {
-    idle = 'idle',
-    search = 'search',
-    game = 'game'
-}
+import { Signal } from "../utils/events/Signal.js";
 
 export class Client implements ILogger {
+
     protected _className: string;
-    private _socket: Socket;
-    private _walletId: string;
-    private _state: ClientState;
+    protected _socket: Socket;
+    protected _id: string;
+    protected _walletId: string;
+
     // flags
     protected _isSigned = false;
     protected _isSignPending = false;
-    withBot = false;
+    protected _isDisconnected = false;
+    private _isWithBot = false;
     
+    onStartSearchGame = new Signal();
+    onDisconnect = new Signal();
+
+
     constructor(aSocket: Socket) {
         this._className = 'Client';
         this._socket = aSocket;
-        this._state = ClientState.idle;
+        this.setIdBySocket();
+        this.initListeners();
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -35,28 +38,63 @@ export class Client implements ILogger {
         LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
-    public get socket(): Socket {
+    protected setIdBySocket() {
+        this._id = this._socket.id;
+    }
+
+    protected initListeners() {
+
+        this._socket.on(PackTitle.startSearchGame, (aData?: { withBot: boolean }) => {
+            // client.withBot = aData?.withBot;
+            this._isWithBot = aData?.withBot;
+            if (this._isWithBot) {
+                this.logDebug(`search game with bot request...`);
+            }
+            else {
+                this.logDebug(`search game request...`);
+            }
+            // this.onStartSearchGame(client);
+            this.onStartSearchGame.dispatch(this);
+        });
+
+        this._socket.on('disconnect', () => {
+            // this.onDisconnect(clientId);
+            this._isDisconnected = true;
+            this.onDisconnect.dispatch(this);
+        });
+
+    }
+
+    get socket(): Socket {
         return this._socket;
     }
 
-    public get id(): string {
-        return this.socket.id;
+    get id(): string {
+        return this._id;
     }
 
-    public get isSigned() {
+    get isSigned() {
         return this._isSigned;
     }
 
-    public get isSignPending() {
+    get isSignPending() {
         return this._isSignPending;
     }
-    
-    public set isSignPending(value) {
+
+    set isSignPending(value) {
         this._isSignPending = value;
     }
 
-    public get walletId(): string {
+    get walletId(): string {
         return this._walletId;
+    }
+
+    get isDisconnected() {
+        return this._isDisconnected;
+    }
+
+    get isWithBot() {
+        return this._isWithBot;
     }
 
     sign(aPublicKey: string) {
@@ -66,6 +104,7 @@ export class Client implements ILogger {
     }
 
     sendPack(aPackTitle: PackTitle, aData: any) {
+        if (this._isDisconnected) return;
         this._socket.emit(aPackTitle, aData);
     }
 
@@ -95,6 +134,6 @@ export class Client implements ILogger {
         });
     }
 
-    
-    
+
+
 }
