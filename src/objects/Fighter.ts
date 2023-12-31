@@ -54,7 +54,11 @@ export class Fighter extends GameObject {
             id: this.id,
             radius: this.radius,
             attackRadius: this._attackParams.radius,
-            pos: this._mesh.position,
+            pos: {
+                x: this._mesh.position.x,
+                y: this._mesh.position.y,
+                z: this._mesh.position.z,
+            },
             q: {
                 x: this._mesh.quaternion.x,
                 y: this._mesh.quaternion.y,
@@ -67,7 +71,11 @@ export class Fighter extends GameObject {
     getUpdateData(): ObjectUpdateData {
         return {
             id: this.id,
-            pos: this._mesh.position,
+            pos: {
+                x: this._mesh.position.x,
+                y: this._mesh.position.y,
+                z: this._mesh.position.z,
+            },
             q: {
                 x: this._mesh.quaternion.x,
                 y: this._mesh.quaternion.y,

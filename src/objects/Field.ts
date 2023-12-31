@@ -237,13 +237,13 @@ export class Field implements ILogger {
         }
     }
 
-    takeOffCell(cx: number, cy: number) {
-        let cell = this.getCell(cx, cy);
+    takeOffCell(aCellPos: { x: number, y: number }) {
+        let cell = this.getCell(aCellPos.x, aCellPos.y);
         if (cell) {
             cell.isTaken = false;
         }
         else {
-            this.logWarn(`takeOffCell !cell for (${cx}, ${cy})`);
+            this.logWarn(`takeOffCell !cell for (${aCellPos.x}, ${aCellPos.y})`);
         }
     }
 

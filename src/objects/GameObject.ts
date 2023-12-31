@@ -2,13 +2,16 @@ import * as THREE from 'three';
 import { IUpdatable } from "../interfaces/IUpdatable.js";
 import { ObjectCreateData, ObjectUpdateData } from "../data/Types.js";
 import { MyMath } from '../utils/MyMath.js';
+import { ILogger } from '../interfaces/ILogger.js';
+import { LogMng } from '../utils/LogMng.js';
 
 export type GameObjectParams = {
     owner: string,
     id: number,
-    position: THREE.Vector3 | { x: number, y: number },
     radius: number,
+    position?: THREE.Vector3 | { x: number, y: number },
     hp?: number,
+    isImmortal?: boolean,
     attackParams?: {
         radius: number,
         minDamage: number,
@@ -17,7 +20,8 @@ export type GameObjectParams = {
     
 }
 
-export class GameObject implements IUpdatable {
+export class GameObject implements IUpdatable, ILogger {
+    protected _className: string;
     protected _mesh: THREE.Mesh;
     // owner wallet id
     private _owner: string;
@@ -26,6 +30,7 @@ export class GameObject implements IUpdatable {
     // object radius
     private _radius: number;
     protected _hp: number;
+    private _isImmortal = false;
     protected _attackParams: {
         radius: number,
         minDamage: number,
@@ -38,18 +43,31 @@ export class GameObject implements IUpdatable {
         this._owner = aParams.owner;
         this._id = aParams.id;
 
-        if (aParams.position instanceof THREE.Vector3) {
-            this._mesh.position.copy(aParams.position);
-        }
-        else {
-            let pos = new THREE.Vector3(aParams.position.x, 0, aParams.position.y);
-            this._mesh.position.copy(pos);
+        if (aParams.position) {
+            if (aParams.position instanceof THREE.Vector3) {
+                this._mesh.position.copy(aParams.position);
+            }
+            else {
+                let pos = new THREE.Vector3(aParams.position.x, 0, aParams.position.y);
+                this._mesh.position.copy(pos);
+            }
         }
 
         this._radius = aParams.radius;
         this.hp = aParams.hp || 0;
+        this._isImmortal = aParams.isImmortal || false;
         this._attackParams = aParams.attackParams || null;
 
+    }
+
+    logDebug(aMsg: string, aData?: any): void {
+        LogMng.debug(`${this._className}: ${aMsg}`, aData);
+    }
+    logWarn(aMsg: string, aData?: any): void {
+        LogMng.warn(`${this._className}: ${aMsg}`, aData);
+    }
+    logError(aMsg: string, aData?: any): void {
+        LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
     protected initMesh() {
@@ -72,6 +90,9 @@ export class GameObject implements IUpdatable {
     set hp(value: number) {
         let newHp = Math.max(0, value);
         this._hp = newHp;
+    }
+    get isImmortal() {
+        return this._isImmortal;
     }
     get attackRadius() {
         return this._attackParams.radius;

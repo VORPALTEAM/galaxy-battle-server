@@ -34,7 +34,7 @@ export class FighterManager implements ILogger {
         this._objects.forEach(obj => {
             const dist = aFighter.position.distanceTo(obj.position);
             const isEnemy = obj.owner != aFighter.owner;
-            if (isEnemy) {
+            if (isEnemy && !obj.isImmortal) {
                 // this.logDebug(`getNearestEnemyInAtkRadius: atkRadius: ${aFighter.attackRadius} dist: ${dist}`);
                 if (dist <= aFighter.attackRadius && dist < minDist) {
                     minDist = dist;
@@ -129,7 +129,7 @@ export class FighterManager implements ILogger {
                 // this.logDebug(`move ship (${fighterCellPos.x}, ${fighterCellPos.y}) => (${nextCell.x}, ${nextCell.y})`);
                 aFighter.moveTo(nextPos);
 
-                this._field.takeOffCell(fighterCellPos.x, fighterCellPos.y);
+                this._field.takeOffCell(fighterCellPos);
                 this._field.takeCell(nextCell.x, nextCell.y);
 
                 break;

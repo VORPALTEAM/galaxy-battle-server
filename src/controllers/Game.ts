@@ -11,9 +11,10 @@ import { GameObject } from "src/objects/GameObject.js";
 import { FighterManager } from "../systems/FighterManager.js";
 import { MyMath } from '../utils/MyMath.js';
 import { Signal } from '../utils/events/Signal.js';
+import { Planet } from '../objects/Planet.js';
 
 const SETTINGS = {
-    tickRate: 1000 / 1, // 1000 / t - t ticks per sec
+    tickRate: 1000 / 10, // 1000 / t - t ticks per sec
     beginTimer: 4, // in sec
 
     field: {
@@ -25,15 +26,8 @@ const SETTINGS = {
         },
     },
 
-    fighters: {
-        hp: 100,
-        attackRadius: 12,
-        minDmg: 10,
-        maxDmg: 20
-    },
-
     stars: {
-        hp: 50,
+        hp: 1000,
         radius: 5,
         positions: [
             {
@@ -48,16 +42,30 @@ const SETTINGS = {
     // TODO: move this data to Star class
     spawn: {
         fightersTop: [
-            // { dx: -1, dy: 1 },
-            // { dx: 2, dy: 1 },
+            { dx: -1, dy: 1 },
+            { dx: 2, dy: 1 },
             { dx: 0, dy: 2 },
         ],
         fightersBot: [
-            // { dx: -1, dy: -1 },
-            // { dx: 2, dy: -1 },
+            { dx: -1, dy: -1 },
+            { dx: 2, dy: -1 },
             { dx: 0, dy: -2 },
         ]
-    }
+    },
+
+    planet: {
+        radius: 1,
+        orbitRadius: 15, // planet orbit radius
+        orbitRotationPeriod: 60, // planet orbit rotation period in sec
+        rotationPeriod: 8, // planet rotation period in sec
+    },
+
+    fighters: {
+        hp: 100,
+        attackRadius: 12,
+        minDmg: 10,
+        maxDmg: 20
+    },
 
 }
 
@@ -149,11 +157,12 @@ export class Game implements ILogger {
 
         // create stars
         const starsData = SETTINGS.stars;
+        let stars: Star[] = [];
         for (let i = 0; i < starsData.positions.length; i++) {
             const posData = starsData.positions[i];
             let star = new Star({
-                owner: this._clients[i].walletId,
                 id: this.generateObjectId(),
+                owner: this._clients[i].walletId,
                 position: this._field.cellPosToGlobal(posData.pos.cx, posData.pos.cy),
                 radius: starsData.radius,
                 isTopStar: posData.pos.cy < SETTINGS.field.size.rows / 2,
@@ -163,9 +172,30 @@ export class Game implements ILogger {
             this._field.takeCell(posData.pos.cx, posData.pos.cy);
             PackSender.getInstance().starCreate(this._clients, star.getCreateData());
             this._objects.set(star.id, star);
+            stars.push(star);
         }
 
         // create planets
+        for (let i = 0; i < stars.length; i++) {
+            const star = stars[i];
+            const isTopStar = star.position.z < (SETTINGS.field.size.rows * SETTINGS.field.size.sectorHeight) / 2;
+
+            let planet = new Planet({
+                id: this.generateObjectId(),
+                owner: star.owner,
+                isImmortal: true,
+                radius: SETTINGS.planet.radius,
+                orbitCenter: star.position.clone(),
+                orbitRadius: SETTINGS.planet.orbitRadius,
+                orbitRotationPeriod: SETTINGS.planet.orbitRotationPeriod,
+                rotationPeriod: SETTINGS.planet.rotationPeriod,
+                startAngle: MyMath.randomInRange(0, Math.PI * 2),
+                startOrbitAngle: isTopStar ? Math.PI / 2 : -Math.PI / 2,
+            });
+
+            PackSender.getInstance().starCreate(this._clients, planet.getCreateData());
+            this._objects.set(planet.id, planet);
+        }
 
     }
 
@@ -329,9 +359,11 @@ export class Game implements ILogger {
 
         this._objects.forEach((obj) => {
 
-            if (obj.hp <= 0) {
+            if (!obj.isImmortal && obj.hp <= 0) {
                 destroyList.push(obj.id);
                 this._objects.delete(obj.id);
+                // free the field cell
+                this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
                 return;
             }
 
@@ -348,7 +380,6 @@ export class Game implements ILogger {
 
         });
 
-        // this.sendUpdateObjects(updateList);
         updateData = updateData.filter((item) => {
             return item !== null && item !== undefined;
         });
