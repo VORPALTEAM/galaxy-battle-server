@@ -26,32 +26,28 @@ const SETTINGS = {
         },
     },
 
-    stars: {
+    starParams: {
         hp: 1000,
         radius: 5,
-        positions: [
-            {
-                pos: { cx: 3, cy: 1 },
-            },
-            {
-                pos: { cx: 3, cy: 9 },
-            }
-        ],
     },
-
-    // TODO: move this data to Star class
-    spawn: {
-        fightersTop: [
-            { dx: -1, dy: 1 },
-            { dx: 2, dy: 1 },
-            { dx: 0, dy: 2 },
-        ],
-        fightersBot: [
-            { dx: -1, dy: -1 },
-            { dx: 2, dy: -1 },
-            { dx: 0, dy: -2 },
-        ]
-    },
+    stars: [
+        {
+            cellPos: { x: 3, y: 1 },
+            fightersSpawnDeltaPos: [
+                { x: -1, y: 1 },
+                { x: 2, y: 1 },
+                { x: 0, y: 2 },
+            ],
+        },
+        {
+            cellPos: { x: 3, y: 9 },
+            fightersSpawnDeltaPos: [
+                { x: -1, y: -1 },
+                { x: 2, y: -1 },
+                { x: 0, y: -2 }
+            ]
+        }
+    ],
 
     planet: {
         radius: 1,
@@ -156,20 +152,22 @@ export class Game implements ILogger {
         this._fighterMng = new FighterManager(this._field, this._objects);
 
         // create stars
+        const starParams = SETTINGS.starParams;
         const starsData = SETTINGS.stars;
         let stars: Star[] = [];
-        for (let i = 0; i < starsData.positions.length; i++) {
-            const posData = starsData.positions[i];
+        for (let i = 0; i < starsData.length; i++) {
+            const starData = starsData[i];
             let star = new Star({
                 id: this.generateObjectId(),
                 owner: this._clients[i].walletId,
-                position: this._field.cellPosToGlobal(posData.pos.cx, posData.pos.cy),
-                radius: starsData.radius,
-                isTopStar: posData.pos.cy < SETTINGS.field.size.rows / 2,
-                hp: starsData.hp
+                position: this._field.cellPosToGlobal(starData.cellPos.x, starData.cellPos.y),
+                radius: starParams.radius,
+                hp: starParams.hp,
+                isTopStar: starData.cellPos.y < SETTINGS.field.size.rows / 2,
+                fightersSpawnDeltaPos: starData.fightersSpawnDeltaPos
             });
             star.onFighterSpawn.add(this.onStarFighterSpawn, this);
-            this._field.takeCell(posData.pos.cx, posData.pos.cy);
+            this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
             PackSender.getInstance().starCreate(this._clients, star.getCreateData());
             this._objects.set(star.id, star);
             stars.push(star);
@@ -207,42 +205,32 @@ export class Game implements ILogger {
         return null;
     }
 
-    private onStarFighterSpawn(aStar: Star) {
-        // this.logDebug(`< onStarFighterSpawn >`);
-
-        let spawnData = aStar.isTopStar ? SETTINGS.spawn.fightersTop : SETTINGS.spawn.fightersBot;
+    private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const yDir = aStar.isTopStar ? 1 : -1;
-        for (let i = 0; i < spawnData.length; i++) {
-            const data = spawnData[i];
-            // this.logDebug(`data:`, data);
+        let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
+        cellPos.x += aCellDeltaPos.x;
+        cellPos.y += aCellDeltaPos.y;
 
-            let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
-            // this.logDebug(`starCellPos:`, cellPos);
+        let fighter = new Fighter({
+            owner: aStar.owner,
+            id: this.generateObjectId(),
+            position: this._field.cellPosToGlobal(cellPos.x, cellPos.y),
+            radius: 3,
+            hp: SETTINGS.fighters.hp,
+            attackParams: {
+                radius: SETTINGS.fighters.attackRadius,
+                minDamage: SETTINGS.fighters.minDmg,
+                maxDamage: SETTINGS.fighters.maxDmg
+            },
+        });
+        
+        fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
+        fighter.onAttack.add(this.onFighterAttack, this);
 
-            cellPos.x += data.dx;
-            cellPos.y += data.dy;
-            // this.logDebug(`cellPos:`, cellPos);
+        this._field.takeCell(cellPos.x, cellPos.y);
+        PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
 
-            let fighter = new Fighter({
-                owner: aStar.owner,
-                id: this.generateObjectId(),
-                position: this._field.cellPosToGlobal(cellPos.x, cellPos.y),
-                radius: 3,
-                hp: SETTINGS.fighters.hp,
-                attackParams: {
-                    radius: SETTINGS.fighters.attackRadius,
-                    minDamage: SETTINGS.fighters.minDmg,
-                    maxDamage: SETTINGS.fighters.maxDmg
-                },
-            });
-            fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
-            fighter.onAttack.add(this.onFighterAttack, this);
-
-            this._field.takeCell(cellPos.x, cellPos.y);
-            PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
-
-            this._objects.set(fighter.id, fighter);
-        }
+        this._objects.set(fighter.id, fighter);
     }
 
     private onFighterAttack(aFighter: Fighter, aEnemy: GameObject) {
