@@ -7,12 +7,10 @@ import { Signal } from "../utils/events/Signal.js";
 
 export class StarManager implements ILogger {
     protected _objects: Map<number, GameObject>;
-    protected _stars: Star[];
     protected _thinkTimer = 0;
 
     constructor(aObjects: Map<number, GameObject>) {
         this._objects = aObjects;
-        this._stars = [];
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -56,7 +54,6 @@ export class StarManager implements ILogger {
 
     addStar(aStar: Star) {
         aStar.onAttack.add(this.onStarAttack, this);
-        this._stars.push(aStar);
     }
 
     free() {

@@ -83,4 +83,10 @@ export class Star extends GameObject {
         this.updateFighterSpawn(dt);
     }
 
+    free(): void {
+        this.onFighterSpawn.removeAll();
+        this.onAttack.removeAll();
+        super.free();
+    }
+
 }

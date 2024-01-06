@@ -4,25 +4,25 @@ import { FighterCreateData, ObjectUpdateData } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
 import { MyMath } from 'src/utils/MyMath.js';
 
-export type FighterParams = GameObjectParams & {
+export type BattleShipParams = GameObjectParams & {
 }
 
-export type FighterState = 'idle' | 'move' | 'fight' | 'starAttack' | 'dead';
+export type BattleShipState = 'idle' | 'move' | 'fight' | 'starAttack' | 'dead';
 
-export class Fighter extends GameObject {
+export class BattleShip extends GameObject {
     protected _attackTimer: number;
-    protected _state: FighterState;
+    protected _state: BattleShipState;
     protected _attackObject: GameObject;
     // events
     onAttack = new Signal();
 
-    constructor(aParams: FighterParams) {
+    constructor(aParams: BattleShipParams) {
         super(aParams);
         this._attackTimer = 3;
         this._state = 'idle';
     }
 
-    get state(): FighterState {
+    get state(): BattleShipState {
         return this._state;
     }
 
@@ -96,5 +96,5 @@ export class Fighter extends GameObject {
         this.onAttack.removeAll();
         super.free();
     }
-
+    
 }

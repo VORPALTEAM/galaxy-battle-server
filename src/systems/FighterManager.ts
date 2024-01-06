@@ -59,12 +59,6 @@ export class FighterManager implements ILogger {
     
     updateShip(aFighter: Fighter) {
 
-        // this.logDebug(`updateShip id = ${aFighter.id}`);
-
-        // this._thinkTimer -= dt;
-        // if (this._thinkTimer > 0) return;
-        // this._thinkTimer = THINK_PERIOD;
-
         switch (aFighter.state) {
 
             case 'idle':

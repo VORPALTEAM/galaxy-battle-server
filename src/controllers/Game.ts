@@ -372,6 +372,7 @@ export class Game implements ILogger {
                 this._objects.delete(obj.id);
                 // free the field cell
                 this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
+                obj.free();
                 return;
             }
 

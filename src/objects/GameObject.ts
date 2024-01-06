@@ -132,4 +132,9 @@ export class GameObject implements IUpdatable, ILogger {
         
     }
 
+    free() {
+        this._mesh = null;
+        this._attackParams = null;
+    }
+
 }
