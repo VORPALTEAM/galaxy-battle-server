@@ -8,22 +8,52 @@ export type StarParams = GameObjectParams & {
 }
 
 const FIGHTER_SPAWN_PERIOD = 40;
+const ATTACK_PERIOD = 1;
 
 export class Star extends GameObject {
     protected _timerFighterSpawn: number;
     protected _isTopStar: boolean;
     protected _fightersSpawnDeltaPos: { x: number, y: number }[];
-
+    protected _attackTimer = 0;
+    // events
     /**
      * f( Star, spawnDeltaPos: {x, y} )
      */
     onFighterSpawn = new Signal();
+    onAttack = new Signal();
     
     constructor(aParams: StarParams) {
         super(aParams);
         this._isTopStar = aParams.isTopStar;
         this._fightersSpawnDeltaPos = aParams.fightersSpawnDeltaPos;
         this._timerFighterSpawn = 3;
+    }
+
+    private spawnFighters() {
+        for (let i = 0; i < this._fightersSpawnDeltaPos.length; i++) {
+            const dPos = this._fightersSpawnDeltaPos[i];
+            this.onFighterSpawn.dispatch(this, dPos);
+        }
+    }
+
+    private attack() {
+        this.onAttack.dispatch(this);
+    }
+
+    private updateFighterSpawn(dt: number) {
+        this._timerFighterSpawn -= dt;
+        if (this._timerFighterSpawn <= 0) {
+            this._timerFighterSpawn = FIGHTER_SPAWN_PERIOD;
+            this.spawnFighters();
+        }
+    }
+
+    private updateAttack(dt: number) {
+        this._attackTimer -= dt;
+        if (this._attackTimer <= 0) {
+            this._attackTimer = ATTACK_PERIOD;
+            this.attack();
+        }
     }
 
     get isTopStar(): boolean {
@@ -42,25 +72,14 @@ export class Star extends GameObject {
     }
 
     getUpdateData(): ObjectUpdateData {
-        return null;
-    }
-
-    private spawnFighters() {
-        for (let i = 0; i < this._fightersSpawnDeltaPos.length; i++) {
-            const dPos = this._fightersSpawnDeltaPos[i];
-            this.onFighterSpawn.dispatch(this, dPos);
-        }
-    }
-
-    private updateFighterSpawn(dt: number) {
-        this._timerFighterSpawn -= dt;
-        if (this._timerFighterSpawn <= 0) {
-            this._timerFighterSpawn = FIGHTER_SPAWN_PERIOD;
-            this.spawnFighters();
-        }
+        return {
+            id: this.id,
+            hp: this.hp
+        };
     }
 
     update(dt: number) {
+        this.updateAttack(dt);
         this.updateFighterSpawn(dt);
     }
 

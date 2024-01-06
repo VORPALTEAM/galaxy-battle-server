@@ -33,7 +33,8 @@ export type GameCompleteData = {
 }
 
 export type ObjectUpdateData = {
-    id?: number,
+    id: number,
+    hp?: number,
     pos?: {
         x: number,
         y: number,

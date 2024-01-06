@@ -13,6 +13,7 @@ export class Fighter extends GameObject {
     protected _attackTimer: number;
     protected _state: FighterState;
     protected _attackObject: GameObject;
+    // events
     onAttack = new Signal();
 
     constructor(aParams: FighterParams) {
@@ -71,6 +72,7 @@ export class Fighter extends GameObject {
     getUpdateData(): ObjectUpdateData {
         return {
             id: this.id,
+            hp: this._hp,
             pos: {
                 x: this._mesh.position.x,
                 y: this._mesh.position.y,

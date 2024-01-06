@@ -12,6 +12,7 @@ import { FighterManager } from "../systems/FighterManager.js";
 import { MyMath } from '../utils/MyMath.js';
 import { Signal } from '../utils/events/Signal.js';
 import { Planet } from '../objects/Planet.js';
+import { StarManager } from '../systems/StarManager.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -29,6 +30,9 @@ const SETTINGS = {
     starParams: {
         hp: 1000,
         radius: 5,
+        attackRadius: 12,
+        minDmg: 10,
+        maxDmg: 20
     },
     stars: [
         {
@@ -73,6 +77,7 @@ export class Game implements ILogger {
     private _clients: Client[];
     private _field: Field;
     private _fighterMng: FighterManager;
+    private _starMng: StarManager;
     onGameComplete = new Signal();
 
     constructor(aGameId: number, aClientA: Client, aClientB: Client) {
@@ -149,7 +154,10 @@ export class Game implements ILogger {
 
         // create field
         this._field = new Field(SETTINGS.field);
+
         this._fighterMng = new FighterManager(this._field, this._objects);
+
+        this._starMng = new StarManager(this._objects);
 
         // create stars
         const starParams = SETTINGS.starParams;
@@ -163,6 +171,11 @@ export class Game implements ILogger {
                 position: this._field.cellPosToGlobal(starData.cellPos.x, starData.cellPos.y),
                 radius: starParams.radius,
                 hp: starParams.hp,
+                attackParams: {
+                    radius: starParams.attackRadius,
+                    minDamage: starParams.minDmg,
+                    maxDamage: starParams.maxDmg
+                },
                 isTopStar: starData.cellPos.y < SETTINGS.field.size.rows / 2,
                 fightersSpawnDeltaPos: starData.fightersSpawnDeltaPos
             });
@@ -171,6 +184,7 @@ export class Game implements ILogger {
             PackSender.getInstance().starCreate(this._clients, star.getCreateData());
             this._objects.set(star.id, star);
             stars.push(star);
+            this._starMng.addStar(star);
         }
 
         // create planets
@@ -203,6 +217,11 @@ export class Game implements ILogger {
             if (client.walletId == aWalletId) return client;
         }
         return null;
+    }
+
+    private onStarAttack(aStar: Star, aTarget: GameObject) {
+        const dmg = aStar.getAttackDamage();
+        aTarget.hp -= dmg;
     }
 
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
@@ -328,6 +347,7 @@ export class Game implements ILogger {
         this.stopLoop();
         this._loopInterval = null;
         this.onGameComplete.removeAll();
+        this._starMng.free();
         this._fighterMng.free();
         this._field.free();
         this._objects.clear();
@@ -356,7 +376,7 @@ export class Game implements ILogger {
             }
 
             if (obj instanceof Fighter) {
-                this._fighterMng.updateShip(obj, dt);
+                this._fighterMng.updateShip(obj);
             }
 
             if (obj instanceof Star) {

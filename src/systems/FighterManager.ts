@@ -57,7 +57,7 @@ export class FighterManager implements ILogger {
         return stars[0];
     }
     
-    updateShip(aFighter: Fighter, dt: number) {
+    updateShip(aFighter: Fighter) {
 
         // this.logDebug(`updateShip id = ${aFighter.id}`);
 
