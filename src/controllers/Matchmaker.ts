@@ -79,7 +79,7 @@ export class Matchmaker implements ILogger {
         this._clients.set(aClient.id, aClient);
 
         // send game searching started
-        aClient.startGameSearch();
+        aClient.sendStartGameSearch();
         
         // check sign of this client
         if (!aClient.isSigned && !aClient.isSignPending) {
@@ -88,12 +88,13 @@ export class Matchmaker implements ILogger {
 
     }
 
-    removeClient(aClientId: string) {
-        this._clients.delete(aClientId);
+    removeClient(aClient: Client) {
+        aClient.sendStopGameSearch();
+        this._clients.delete(aClient.id);
     }
 
-    onClientDisconnected(aClientId: string) {
-        this.removeClient(aClientId);
+    onClientDisconnected(aClient: Client) {
+        this.removeClient(aClient);
     }
 
     /**
@@ -123,7 +124,7 @@ export class Matchmaker implements ILogger {
             const id = readyBotClientIds[i];
             let client = this._clients.get(id);
             let bot = new BotClient();
-            this.removeClient(id);
+            this.removeClient(client);
             this.createGame(bot, client);
         }
 
@@ -133,8 +134,8 @@ export class Matchmaker implements ILogger {
             const id2 = readyClientIds[1];
             let client1 = this._clients.get(id1);
             let client2 = this._clients.get(id2);
-            this.removeClient(id1);
-            this.removeClient(id2);
+            this.removeClient(client1);
+            this.removeClient(client2);
             this.createGame(client1, client2);
         }
 

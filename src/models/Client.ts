@@ -18,6 +18,7 @@ export class Client implements ILogger {
     private _isWithBot = false;
     
     onStartSearchGame = new Signal();
+    onStopSearchGame = new Signal();
     onDisconnect = new Signal();
 
 
@@ -55,6 +56,11 @@ export class Client implements ILogger {
             }
             // this.onStartSearchGame(client);
             this.onStartSearchGame.dispatch(this);
+        });
+
+        this._socket.on(PackTitle.stopSearchGame, () => {
+            this.logDebug(`stop game searching request...`);
+            this.onStopSearchGame.dispatch(this);
         });
 
         this._socket.on('disconnect', () => {
@@ -128,9 +134,15 @@ export class Client implements ILogger {
         });
     }
 
-    startGameSearch() {
+    sendStartGameSearch() {
         this.sendPack(PackTitle.gameSearching, {
             cmd: 'start'
+        });
+    }
+
+    sendStopGameSearch() {
+        this.sendPack(PackTitle.gameSearching, {
+            cmd: 'stop'
         });
     }
 
