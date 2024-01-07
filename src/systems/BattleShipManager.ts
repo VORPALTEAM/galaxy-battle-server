@@ -2,14 +2,11 @@ import { ILogger } from "../interfaces/ILogger.js";
 import { Star } from "../objects/Star.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Field } from "../objects/Field.js";
-import { Fighter } from "../objects/Fighter.js";
-import { IUpdatable } from "../interfaces/IUpdatable.js";
 import { GameObject } from "../objects/GameObject.js";
+import { BattleShip } from "../objects/BattleShip.js";
 
-const THINK_PERIOD = 10;
-
-export class FighterManager implements ILogger {
-    protected _className = 'FighterManager';
+export class BattleShipManager implements ILogger {
+    protected _className = 'BattleShipManager';
     protected _field: Field;
     protected _objects: Map<number, GameObject>;
     protected _thinkTimer = 0;
@@ -29,7 +26,7 @@ export class FighterManager implements ILogger {
         LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
-    private getNearestEnemyInAtkRadius(aFighter: Fighter): GameObject {
+    private getNearestEnemyInAtkRadius(aFighter: BattleShip): GameObject {
         let minDist = Number.MAX_SAFE_INTEGER;
         let enenmy: GameObject = null;
         this._objects.forEach(obj => {
@@ -46,7 +43,7 @@ export class FighterManager implements ILogger {
         return enenmy;
     }
 
-    private getEnemyStar(aFighter: Fighter): Star {
+    private getEnemyStar(aFighter: BattleShip): Star {
         let stars: Star[] = [];
         this._objects.forEach(obj => {
             if (obj instanceof Star) {
@@ -58,7 +55,7 @@ export class FighterManager implements ILogger {
         return stars[0];
     }
     
-    updateShip(aFighter: Fighter) {
+    updateShip(aFighter: BattleShip) {
 
         switch (aFighter.state) {
 

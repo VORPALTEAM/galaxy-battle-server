@@ -78,6 +78,7 @@ export class Game implements ILogger {
     private _field: Field;
     private _fighterMng: FighterManager;
     private _starMng: StarManager;
+    // events
     onGameComplete = new Signal();
 
     constructor(aGameId: number, aClientA: Client, aClientB: Client) {
@@ -269,6 +270,33 @@ export class Game implements ILogger {
 
     }
 
+    protected getAllStars(): Star[] {
+        let stars: Star[] = [];
+        this._objects.forEach((obj) => {
+            if (obj instanceof Star) stars.push(obj);
+        });
+        return stars;
+    }
+
+    protected checkWinner(dt: number) {
+
+        let stars: Star[] = this.getAllStars();
+        // check Stars count and winner
+        if (stars.length < 2) {
+            if (stars.length == 1) {
+                // we have a winner
+                let winnerStar = stars[0];
+                let client = this.getClientByWallet(winnerStar.owner);
+                this.completeGame(client);
+            }
+            else {
+                // draw
+                this.completeGame(null);
+            }
+        }
+
+    }
+
     get id(): number {
         return this._id;
     }
@@ -343,18 +371,6 @@ export class Game implements ILogger {
 
     }
 
-    free() {
-        this.stopLoop();
-        this._loopInterval = null;
-        this.onGameComplete.removeAll();
-        this._starMng.free();
-        this._fighterMng.free();
-        this._field.free();
-        this._objects.clear();
-        this._objects = null;
-        this._clients = [];
-    }
-
     /**
      * 
      * @param dt delta time in sec
@@ -363,7 +379,6 @@ export class Game implements ILogger {
         
         let updateData: ObjectUpdateData[] = [];
         let destroyList: number[] = [];
-        let stars: Star[] = [];
 
         this._objects.forEach((obj) => {
 
@@ -380,10 +395,6 @@ export class Game implements ILogger {
                 this._fighterMng.updateShip(obj);
             }
 
-            if (obj instanceof Star) {
-                stars.push(obj);
-            }
-
             obj.update(dt);
             updateData.push(obj.getUpdateData());
 
@@ -398,20 +409,20 @@ export class Game implements ILogger {
             PackSender.getInstance().objectDestroy(this._clients, destroyList);
         }
 
-        // check Stars count and winner
-        if (stars.length < 2) {
-            if (stars.length == 1) {
-                // we have a winner
-                let winnerStar = stars[0];
-                let client = this.getClientByWallet(winnerStar.owner);
-                this.completeGame(client);
-            }
-            else {
-                // draw
-                this.completeGame(null);
-            }
-        }
+        this.checkWinner(dt);
 
+    }
+
+    free() {
+        this.stopLoop();
+        this._loopInterval = null;
+        this.onGameComplete.removeAll();
+        this._starMng.free();
+        this._fighterMng.free();
+        this._field.free();
+        this._objects.clear();
+        this._objects = null;
+        this._clients = [];
     }
 
 
