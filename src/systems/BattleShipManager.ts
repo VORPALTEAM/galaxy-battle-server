@@ -28,19 +28,26 @@ export class BattleShipManager implements ILogger {
 
     private getNearestEnemyInAtkRadius(aFighter: BattleShip): GameObject {
         let minDist = Number.MAX_SAFE_INTEGER;
-        let enenmy: GameObject = null;
+        let enemy: GameObject = null;
+        let starFound = false;
         this._objects.forEach(obj => {
+
+            if (starFound) return;
+
             const dist = aFighter.position.distanceTo(obj.position);
             const isEnemy = obj.owner != aFighter.owner;
             if (isEnemy && !obj.isImmortal) {
+                const isEnemyStar = obj instanceof Star;
                 // this.logDebug(`getNearestEnemyInAtkRadius: atkRadius: ${aFighter.attackRadius} dist: ${dist}`);
-                if (dist <= aFighter.attackRadius && dist < minDist) {
+                if (dist <= aFighter.attackRadius && (dist < minDist || isEnemyStar)) {
                     minDist = dist;
-                    enenmy = obj;
+                    enemy = obj;
+                    if (isEnemyStar) starFound = true;
                 }
             }
+
         });
-        return enenmy;
+        return enemy;
     }
 
     private getEnemyStar(aFighter: BattleShip): Star {

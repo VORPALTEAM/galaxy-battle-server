@@ -13,6 +13,8 @@ import { MyMath } from '../utils/MyMath.js';
 import { Signal } from '../utils/events/Signal.js';
 import { Planet } from '../objects/Planet.js';
 import { StarManager } from '../systems/StarManager.js';
+import { BattleShip } from '../objects/BattleShip.js';
+import { BattleShipManager } from '../systems/BattleShipManager.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -42,6 +44,9 @@ const SETTINGS = {
                 { x: 2, y: 1 },
                 { x: 0, y: 2 },
             ],
+            battleShipSpawnDeltaPos: [
+                { x: -2, y: 1 }
+            ]
         },
         {
             cellPos: { x: 3, y: 9 },
@@ -49,6 +54,9 @@ const SETTINGS = {
                 { x: -1, y: -1 },
                 { x: 2, y: -1 },
                 { x: 0, y: -2 }
+            ],
+            battleShipSpawnDeltaPos: [
+                { x: 3, y: -1 }
             ]
         }
     ],
@@ -61,10 +69,19 @@ const SETTINGS = {
     },
 
     fighters: {
+        radius: 3,
         hp: 100,
         attackRadius: 12,
         minDmg: 10,
         maxDmg: 20
+    },
+
+    battleShips: {
+        radius: 5,
+        hp: 200,
+        attackRadius: 36,
+        minDmg: 20,
+        maxDmg: 30
     },
 
 }
@@ -77,6 +94,7 @@ export class Game implements ILogger {
     private _clients: Client[];
     private _field: Field;
     private _fighterMng: FighterManager;
+    private _battleShipMng: BattleShipManager;
     private _starMng: StarManager;
     // events
     onGameComplete = new Signal();
@@ -157,6 +175,7 @@ export class Game implements ILogger {
         this._field = new Field(SETTINGS.field);
 
         this._fighterMng = new FighterManager(this._field, this._objects);
+        this._battleShipMng = new BattleShipManager(this._field, this._objects);
 
         this._starMng = new StarManager(this._objects);
 
@@ -178,9 +197,13 @@ export class Game implements ILogger {
                     maxDamage: starParams.maxDmg
                 },
                 isTopStar: starData.cellPos.y < SETTINGS.field.size.rows / 2,
-                fightersSpawnDeltaPos: starData.fightersSpawnDeltaPos
+                fightersSpawnDeltaPos: starData.fightersSpawnDeltaPos,
+                battleShipSpawnDeltaPos: starData.battleShipSpawnDeltaPos
             });
+
             star.onFighterSpawn.add(this.onStarFighterSpawn, this);
+            star.onBattleShipSpawn.add(this.onStarBattleShipSpawn, this);
+
             this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
             PackSender.getInstance().starCreate(this._clients, star.getCreateData());
             this._objects.set(star.id, star);
@@ -226,6 +249,7 @@ export class Game implements ILogger {
     }
 
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+        const shipParams = SETTINGS.fighters;
         const yDir = aStar.isTopStar ? 1 : -1;
         let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
         cellPos.x += aCellDeltaPos.x;
@@ -235,15 +259,44 @@ export class Game implements ILogger {
             owner: aStar.owner,
             id: this.generateObjectId(),
             position: this._field.cellPosToGlobal(cellPos.x, cellPos.y),
-            radius: 3,
-            hp: SETTINGS.fighters.hp,
+            radius: shipParams.radius,
+            hp: shipParams.hp,
             attackParams: {
-                radius: SETTINGS.fighters.attackRadius,
-                minDamage: SETTINGS.fighters.minDmg,
-                maxDamage: SETTINGS.fighters.maxDmg
+                radius: shipParams.attackRadius,
+                minDamage: shipParams.minDmg,
+                maxDamage: shipParams.maxDmg
             },
         });
         
+        fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
+        fighter.onAttack.add(this.onFighterAttack, this);
+
+        this._field.takeCell(cellPos.x, cellPos.y);
+        PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
+
+        this._objects.set(fighter.id, fighter);
+    }
+
+    private onStarBattleShipSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+        const shipParams = SETTINGS.battleShips;
+        const yDir = aStar.isTopStar ? 1 : -1;
+        let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
+        cellPos.x += aCellDeltaPos.x;
+        cellPos.y += aCellDeltaPos.y;
+
+        let fighter = new BattleShip({
+            owner: aStar.owner,
+            id: this.generateObjectId(),
+            position: this._field.cellPosToGlobalVec3(cellPos.x, cellPos.y),
+            radius: shipParams.radius,
+            hp: shipParams.hp,
+            attackParams: {
+                radius: shipParams.attackRadius,
+                minDamage: shipParams.minDmg,
+                maxDamage: shipParams.maxDmg
+            },
+        });
+
         fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
         fighter.onAttack.add(this.onFighterAttack, this);
 
@@ -395,6 +448,10 @@ export class Game implements ILogger {
                 this._fighterMng.updateShip(obj);
             }
 
+            if (obj instanceof BattleShip) {
+                this._battleShipMng.updateShip(obj);
+            }
+
             obj.update(dt);
             updateData.push(obj.getUpdateData());
 
@@ -419,6 +476,7 @@ export class Game implements ILogger {
         this.onGameComplete.removeAll();
         this._starMng.free();
         this._fighterMng.free();
+        this._battleShipMng.free();
         this._field.free();
         this._objects.clear();
         this._objects = null;

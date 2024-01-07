@@ -49,7 +49,7 @@ export class BattleShip extends GameObject {
 
     getCreateData(): FighterCreateData {
         return {
-            type: 'FighterShip',
+            type: 'BattleShip',
             owner: this.owner,
             hp: this.hp,
             id: this.id,
@@ -96,5 +96,5 @@ export class BattleShip extends GameObject {
         this.onAttack.removeAll();
         super.free();
     }
-    
+
 }
