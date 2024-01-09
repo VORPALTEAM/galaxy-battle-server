@@ -45,18 +45,18 @@ export class Planet extends GameObject {
     }
 
     protected updatePosition() {
-        this._mesh.position.x = this._orbitCenter.x + Math.cos(this._orbitAngle) * this._orbitRadius;
-        this._mesh.position.y = this._orbitCenter.y;
-        this._mesh.position.z = this._orbitCenter.z + Math.sin(this._orbitAngle) * this._orbitRadius;
+        this.mesh.position.x = this._orbitCenter.x + Math.cos(this._orbitAngle) * this._orbitRadius;
+        this.mesh.position.y = this._orbitCenter.y;
+        this.mesh.position.z = this._orbitCenter.z + Math.sin(this._orbitAngle) * this._orbitRadius;
     }
 
     protected updateRotation() {
-        this._mesh.rotation.y = this._angle;
+        this.mesh.rotation.y = this._angle;
     }
 
     getDirrection(): THREE.Vector3 {
         let dir = new THREE.Vector3(0, 0, 1);
-        dir.applyQuaternion(this._mesh.quaternion);
+        dir.applyQuaternion(this.mesh.quaternion);
         return dir;
     }
 
@@ -67,15 +67,15 @@ export class Planet extends GameObject {
             owner: this.owner,
             radius: this.radius,
             pos: {
-                x: this._mesh.position.x,
-                y: this._mesh.position.y,
-                z: this._mesh.position.z,
+                x: this.mesh.position.x,
+                y: this.mesh.position.y,
+                z: this.mesh.position.z,
             },
             q: {
-                x: this._mesh.quaternion.x,
-                y: this._mesh.quaternion.y,
-                z: this._mesh.quaternion.z,
-                w: this._mesh.quaternion.w
+                x: this.mesh.quaternion.x,
+                y: this.mesh.quaternion.y,
+                z: this.mesh.quaternion.z,
+                w: this.mesh.quaternion.w
             }
         };
     }
@@ -84,15 +84,15 @@ export class Planet extends GameObject {
         return {
             id: this.id,
             pos: {
-                x: this._mesh.position.x,
-                y: this._mesh.position.y,
-                z: this._mesh.position.z,
+                x: this.mesh.position.x,
+                y: this.mesh.position.y,
+                z: this.mesh.position.z,
             },
             q: {
-                x: this._mesh.quaternion.x,
-                y: this._mesh.quaternion.y,
-                z: this._mesh.quaternion.z,
-                w: this._mesh.quaternion.w
+                x: this.mesh.quaternion.x,
+                y: this.mesh.quaternion.y,
+                z: this.mesh.quaternion.z,
+                w: this.mesh.quaternion.w
             }
         };
     }

@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { ILogger } from "../interfaces/ILogger.js";
 import { Star } from "../objects/Star.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -28,33 +29,25 @@ export class AbilsManager implements ILogger {
         LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
-    private getEnemiesInAtkRadius(aStar: Star): GameObject[] {
-        let minDist = Number.MAX_SAFE_INTEGER;
-        let enenmies: GameObject[] = [];
+    private getEnemiesFor(aPlayerWalletId: string): {
+        objects: GameObject[],
+        meshes: THREE.Mesh[]
+    } {
+        let res: {
+            objects: GameObject[],
+            meshes: THREE.Mesh[]
+        } = {
+            objects: [],
+            meshes: []
+        }
         this._objects.forEach(obj => {
-            const dist = aStar.position.distanceTo(obj.position);
-            const isEnemy = obj.owner != aStar.owner;
-            if (isEnemy && !obj.isImmortal) {
-                // this.logDebug(`getNearestEnemyInAtkRadius: atkRadius: ${aFighter.attackRadius} dist: ${dist}`);
-                if (dist <= aStar.attackRadius && dist < minDist) {
-                    minDist = dist;
-                    enenmies.push(obj);
-                }
+            const isEnemy = obj.owner != aPlayerWalletId;
+            if (isEnemy && !obj.isImmortal && !(obj instanceof Star)) {
+                res.objects.push(obj);
+                res.meshes.push(obj.mesh);
             }
         });
-        return enenmies;
-    }
-
-
-    private onStarAttack(aStar: Star) {
-        // check for enemy around
-        let enemies = this.getEnemiesInAtkRadius(aStar);
-        for (let i = 0; i < enemies.length; i++) {
-            const enemy = enemies[i];
-            // attack enemy
-            const dmg = aStar.getAttackDamage();
-            enemy.hp -= dmg;
-        }
+        return res;
     }
 
     private getPlanetByPlayer(aOwner: string): Planet {
@@ -72,11 +65,25 @@ export class AbilsManager implements ILogger {
         let planet = this.getPlanetByPlayer(aClient.walletId);
         if (!planet) return;
         let dir = planet.getDirrection();
+
+        const damage = 200;
+
+        let raycaster = new THREE.Raycaster(planet.position, dir, 0, 500);
+        let objects = this.getEnemiesFor(planet.owner);
+        const intersects = raycaster.intersectObjects(objects.meshes);
+        for (let i = 0; i < intersects.length; i++) {
+            let mesh = intersects[i].object;
+            const id = objects.meshes.indexOf(mesh as any);
+            let obj = objects.objects[id];
+            obj.hp -= damage;
+        }
+
         let data: PlanetLaserData = {
             planetId: planet.id,
             dir: dir
         }
         this.onLaserAttack.dispatch(this, data);
+
     }
 
     free() {

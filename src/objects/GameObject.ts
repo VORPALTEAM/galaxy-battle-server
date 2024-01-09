@@ -17,7 +17,6 @@ export type GameObjectParams = {
         minDamage: number,
         maxDamage: number,
     }
-    
 }
 
 export class GameObject implements IUpdatable, ILogger {
@@ -38,10 +37,16 @@ export class GameObject implements IUpdatable, ILogger {
     };
 
     constructor(aParams: GameObjectParams) {
-        this.initMesh();
 
+        this._radius = aParams.radius;
         this._owner = aParams.owner;
         this._id = aParams.id;
+
+        this.hp = aParams.hp || 0;
+        this._isImmortal = aParams.isImmortal || false;
+        this._attackParams = aParams.attackParams || null;
+        
+        this.initMesh();
 
         if (aParams.position) {
             if (aParams.position instanceof THREE.Vector3) {
@@ -52,11 +57,6 @@ export class GameObject implements IUpdatable, ILogger {
                 this._mesh.position.copy(pos);
             }
         }
-
-        this._radius = aParams.radius;
-        this.hp = aParams.hp || 0;
-        this._isImmortal = aParams.isImmortal || false;
-        this._attackParams = aParams.attackParams || null;
 
     }
 
@@ -71,34 +71,45 @@ export class GameObject implements IUpdatable, ILogger {
     }
 
     protected initMesh() {
-        let g = new THREE.BoxGeometry(1, 1, 1);
+        let g = new THREE.SphereGeometry(this._radius || 1);
         this._mesh = new THREE.Mesh(g);
     }
 
     get owner(): string {
         return this._owner;
     }
+    
     get id(): number {
         return this._id;
     }
+
     get radius(): number {
         return this._radius;
     }
+
     get hp(): number {
         return this._hp;
     }
+
     set hp(value: number) {
         let newHp = Math.max(0, value);
         this._hp = newHp;
     }
+
     get isImmortal() {
         return this._isImmortal;
     }
+
     get attackRadius() {
         return this._attackParams.radius;
     }
+
     get position(): THREE.Vector3 {
         return this._mesh.position.clone();
+    }
+
+    get mesh(): THREE.Mesh {
+        return this._mesh;
     }
 
     getAttackDamage(): number {
