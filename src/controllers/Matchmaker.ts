@@ -7,7 +7,7 @@ import { PackSender } from "../services/PackSender.js";
 import { Config } from "../data/Config.js";
 import { BotClient } from "../models/BotClient.js";
 
-const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
+const TICK_RATE = 1000 / .5; // 1000 / t - it's t ticks per sec
 
 export class Matchmaker implements ILogger {
     private _clients: Map<string, Client>;

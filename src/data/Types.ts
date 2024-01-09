@@ -21,6 +21,8 @@ export type ObjectType = 'Star' | 'Planet' | 'FighterShip' | 'BattleShip' | 'Hom
 export type StartGameData = {
     cmd?: 'start',
     timer: number,
+    playerWallet: string,
+    enemyWallet: string
 }
 
 export type FieldInitData = {

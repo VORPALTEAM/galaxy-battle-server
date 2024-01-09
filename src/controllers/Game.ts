@@ -357,9 +357,13 @@ export class Game implements ILogger {
     start() {
         PackSender.getInstance().gameStart([this._clients[0]], {
             timer: SETTINGS.beginTimer,
+            playerWallet: this._clients[0].walletId,
+            enemyWallet: this._clients[1].walletId
         });
         PackSender.getInstance().gameStart([this._clients[1]], {
             timer: SETTINGS.beginTimer,
+            playerWallet: this._clients[1].walletId,
+            enemyWallet: this._clients[0].walletId
         });
 
         PackSender.getInstance().fieldInit([this._clients[0]], {
