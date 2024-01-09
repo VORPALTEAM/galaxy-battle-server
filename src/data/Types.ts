@@ -1,3 +1,4 @@
+import { Planet } from "src/objects/Planet";
 
 export enum PackTitle {
     // for lobby
@@ -13,7 +14,8 @@ export enum PackTitle {
     objectCreate = 'objectCreate',
     objectUpdate = 'objectUpdate',
     objectDestroy = 'objectDestroy',
-    attack = 'attack'
+    attack = 'attack',
+    planetLaser = 'planetLaser'
 }
 
 export type ObjectType = 'Star' | 'Planet' | 'FighterShip' | 'BattleShip' | 'Homing';
@@ -64,4 +66,9 @@ export type StarCreateData = ObjectCreateData & {
 
 export type FighterCreateData = ObjectCreateData & {
 
+}
+
+export type PlanetLaserData = {
+    planetId: number,
+    dir: { x, y, z }
 }

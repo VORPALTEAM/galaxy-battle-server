@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, ObjectUpdateData } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -15,6 +15,7 @@ import { Planet } from '../objects/Planet.js';
 import { StarManager } from '../systems/StarManager.js';
 import { BattleShip } from '../objects/BattleShip.js';
 import { BattleShipManager } from '../systems/BattleShipManager.js';
+import { AbilsManager } from '../systems/AbilsManager.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -93,9 +94,10 @@ export class Game implements ILogger {
     private _objects: Map<number, GameObject>;
     private _clients: Client[];
     private _field: Field;
+    private _starMng: StarManager;
     private _fighterMng: FighterManager;
     private _battleShipMng: BattleShipManager;
-    private _starMng: StarManager;
+    private _abilsMng: AbilsManager;
     // events
     onGameComplete = new Signal();
 
@@ -121,6 +123,7 @@ export class Game implements ILogger {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
             client.onDisconnect.add(this.onDisconnect, this);
+            client.onLaser.add(this.onLaser, this);
         }
     }
 
@@ -136,6 +139,10 @@ export class Game implements ILogger {
             }
         }
         this.completeGame(winner);
+    }
+
+    private onLaser(aClient: Client) {
+        this._abilsMng?.laserAttack(aClient);
     }
 
     private completeGame(aWinner: Client) {
@@ -174,10 +181,12 @@ export class Game implements ILogger {
         // create field
         this._field = new Field(SETTINGS.field);
 
+        this._starMng = new StarManager(this._objects);
         this._fighterMng = new FighterManager(this._field, this._objects);
         this._battleShipMng = new BattleShipManager(this._field, this._objects);
 
-        this._starMng = new StarManager(this._objects);
+        this._abilsMng = new AbilsManager(this._objects);
+        this._abilsMng.onLaserAttack.add(this.onLaserAttack, this);
 
         // create stars
         const starParams = SETTINGS.starParams;
@@ -321,6 +330,10 @@ export class Game implements ILogger {
             aEnemy.hp -= dmg;
         }
 
+    }
+
+    private onLaserAttack(aMng: AbilsManager, aData: PlanetLaserData) {
+        PackSender.getInstance().planetLaserAttack(this._clients, aData);
     }
 
     protected getAllStars(): Star[] {

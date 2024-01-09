@@ -4,11 +4,15 @@ import { LogMng } from "../utils/LogMng.js";
 import { Field } from "../objects/Field.js";
 import { GameObject } from "../objects/GameObject.js";
 import { Signal } from "../utils/events/Signal.js";
+import { Client } from "../models/Client.js";
+import { Planet } from "../objects/Planet.js";
+import { PlanetLaserData } from "../data/Types.js";
 
-export class StarManager implements ILogger {
-    protected _className = 'StarManager';
+export class AbilsManager implements ILogger {
+    protected _className = 'AbilsManager';
     protected _objects: Map<number, GameObject>;
     protected _thinkTimer = 0;
+    onLaserAttack = new Signal();
 
     constructor(aObjects: Map<number, GameObject>) {
         this._objects = aObjects;
@@ -53,8 +57,26 @@ export class StarManager implements ILogger {
         }
     }
 
-    addStar(aStar: Star) {
-        aStar.onAttack.add(this.onStarAttack, this);
+    private getPlanetByPlayer(aOwner: string): Planet {
+        let res: Planet;
+        this._objects.forEach(obj => {
+            const isEnemy = obj.owner != aOwner;
+            if (!isEnemy && obj instanceof Planet) {
+                res = obj;
+            }
+        });
+        return res;
+    }
+
+    laserAttack(aClient: Client) {
+        let planet = this.getPlanetByPlayer(aClient.walletId);
+        if (!planet) return;
+        let dir = planet.getDirrection();
+        let data: PlanetLaserData = {
+            planetId: planet.id,
+            dir: dir
+        }
+        this.onLaserAttack.dispatch(this, data);
     }
 
     free() {

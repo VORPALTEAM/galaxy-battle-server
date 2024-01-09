@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { Signal } from "../utils/events/Signal.js";
 import { ObjectUpdateData, StarCreateData } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
@@ -39,7 +40,7 @@ export class Planet extends GameObject {
         this._angle = aParams.startAngle;
 
         this.updatePosition();
-        // this.updateRotation();
+        this.updateRotation();
 
     }
 
@@ -47,16 +48,16 @@ export class Planet extends GameObject {
         this._mesh.position.x = this._orbitCenter.x + Math.cos(this._orbitAngle) * this._orbitRadius;
         this._mesh.position.y = this._orbitCenter.y;
         this._mesh.position.z = this._orbitCenter.z + Math.sin(this._orbitAngle) * this._orbitRadius;
-        // this.logDebug(`updatePosition:`, {
-        //     orbitCenter: this._orbitCenter,
-        //     orbitAngle: this._orbitAngle,
-        //     orbitRadius: this._orbitRadius,
-        //     pos: this._mesh.position
-        // });
     }
 
     protected updateRotation() {
         this._mesh.rotation.y = this._angle;
+    }
+
+    getDirrection(): THREE.Vector3 {
+        let dir = new THREE.Vector3(0, 0, 1);
+        dir.applyQuaternion(this._mesh.quaternion);
+        return dir;
     }
 
     getCreateData(): StarCreateData {

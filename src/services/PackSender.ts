@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { FieldInitData, GameCompleteData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData } from "../data/Types.js";
+import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData } from "../data/Types.js";
 import { Client } from "../models/Client.js";
 
 export class PackSender {
@@ -56,75 +56,12 @@ export class PackSender {
         this.sendData(aClients, PackTitle.attack, aData);
     }
 
-
+    planetLaserAttack(aClients: Client[], aData: PlanetLaserData) {
+        this.sendData(aClients, PackTitle.planetLaser, aData);
+    }
 
 
     
-
-    objectCreate_OLD(aList: {
-
-        // common params
-        id: string,
-        owner: string,
-        // type: ObjectType,
-        radius?: number,
-        position?: { x: number, y: number },
-        rotation?: number,
-        hp?: number,
-
-        /**
-         * special data for planets
-         */
-        planetData?: {
-            orbitRadius?: number,
-            orbitCenter?: { x: number, y: number },
-            startOrbitAngle?: number,
-            year?: number,
-            rotationSpeed?: number,
-            orbitSpeed?: number,
-        }
-
-    }[]): string {
-        return JSON.stringify({
-            title: PackTitle.objectCreate,
-            list: aList
-        });
-    }
-
-    /**
-     * Universal packet for object parameters update
-     * @param aList List of objects id and data
-     * @returns 
-     */
-    objectUpdate_OLD(aList: {
-        id: string,
-        event?: string,
-        position?: { x: number, y: number },
-        rotation?: number,
-        hp?: number,
-        /**
-         * Any other data
-         */
-        data?: any
-    }[]): string {
-        return JSON.stringify({
-            title: PackTitle.objectUpdate,
-            list: aList
-        });
-    }
-
-    attackLaser_OLD(aData: {
-        idFrom: string,
-        idTo: string,
-        damage?: number,
-        isMiss?: boolean
-    }): string {
-        return JSON.stringify({
-            title: PackTitle.attack,
-            type: 'laser',
-            data: aData
-        });
-    }
 
     attackRay_OLD(aData: {
         idFrom: string,

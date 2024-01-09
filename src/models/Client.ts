@@ -19,6 +19,7 @@ export class Client implements ILogger {
     
     onStartSearchGame = new Signal();
     onStopSearchGame = new Signal();
+    onLaser = new Signal();
     onDisconnect = new Signal();
 
 
@@ -61,6 +62,11 @@ export class Client implements ILogger {
         this._socket.on(PackTitle.stopSearchGame, () => {
             this.logDebug(`stop game searching request...`);
             this.onStopSearchGame.dispatch(this);
+        });
+
+        this._socket.on(PackTitle.planetLaser, () => {
+            this.logDebug(`laser click event...`);
+            this.onLaser.dispatch(this);
         });
 
         this._socket.on('disconnect', () => {
