@@ -16,7 +16,7 @@ else {
 
 LogMng.system(`LogMng.mode = ${LogMng.mode}`);
 
-const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3078';
+const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3089';
 
 const app = express();
 const server = http.createServer(app);
@@ -26,9 +26,9 @@ const io = new Server(server, {
     }
 });
 
-app.get('/', (req, res) => {
-    res.send('Vorpal Galaxy Battle Server is running!');
-});
+// app.get('/', (req, res) => {
+//     res.send('Vorpal Galaxy Battle Server is running!');
+// });
 
 let battleServer = new BattleServer(io);
 
