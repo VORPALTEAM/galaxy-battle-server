@@ -9,13 +9,9 @@ if (process.env.NODE_ENV === 'development') {
     LogMng.setMode(LogMng.MODE_DEBUG);
     dotenv.config({ path: '.env.development' });
 }
-else if (process.env.NODE_ENV === 'production') {
-    LogMng.setMode(LogMng.MODE_RELEASE);
-    dotenv.config({ path: '.env.production' });
-}
 else {
     LogMng.setMode(LogMng.MODE_RELEASE);
-    dotenv.config();
+    dotenv.config({ path: '.env.production' });
 }
 
 LogMng.system(`LogMng.mode = ${LogMng.mode}`);
