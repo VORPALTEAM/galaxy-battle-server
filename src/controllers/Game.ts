@@ -88,6 +88,7 @@ const SETTINGS = {
 }
 
 export class Game implements ILogger {
+    private _inited = false;
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
     private _objIdCounter = 0;
@@ -102,6 +103,7 @@ export class Game implements ILogger {
     onGameComplete = new Signal();
 
     constructor(aGameId: number, aClientA: Client, aClientB: Client) {
+        this._inited = false;
         this._id = aGameId;
         this._objects = new Map();
         this._clients = [aClientA, aClientB];
@@ -218,6 +220,7 @@ export class Game implements ILogger {
             this._objects.set(star.id, star);
             stars.push(star);
             this._starMng.addStar(star);
+
         }
 
         // create planets
@@ -241,6 +244,8 @@ export class Game implements ILogger {
             PackSender.getInstance().starCreate(this._clients, planet.getCreateData());
             this._objects.set(planet.id, planet);
         }
+
+        this._inited = true;
 
     }
 
@@ -388,10 +393,8 @@ export class Game implements ILogger {
             playerPosition: 'bot'
         });
 
-        this.init();
-
         setTimeout(() => {
-
+            this.init();
         }, SETTINGS.beginTimer * 1000);
 
     }
@@ -446,6 +449,8 @@ export class Game implements ILogger {
      * @param dt delta time in sec
      */
     update(dt: number) {
+
+        if (!this._inited) return;
         
         let updateData: ObjectUpdateData[] = [];
         let destroyList: number[] = [];

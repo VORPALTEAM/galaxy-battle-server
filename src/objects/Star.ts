@@ -9,10 +9,10 @@ export type StarParams = GameObjectParams & {
 }
 
 const FIGHTER_SPAWN_START_DELAY = 3;
-const FIGHTER_SPAWN_PERIOD = 40;
-// const BATTLESHIP_SPAWN_START_DELAY = 43;
-const BATTLESHIP_SPAWN_START_DELAY = 3;
-const BATTLESHIP_SPAWN_PERIOD = 80;
+const FIGHTER_SPAWN_PERIOD = 30;
+const BATTLESHIP_SPAWN_START_DELAY = 33;
+// const BATTLESHIP_SPAWN_START_DELAY = 3;
+const BATTLESHIP_SPAWN_PERIOD = 60;
 const ATTACK_PERIOD = 1;
 
 export class Star extends GameObject {
