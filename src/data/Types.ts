@@ -70,5 +70,8 @@ export type FighterCreateData = ObjectCreateData & {
 
 export type PlanetLaserData = {
     planetId: number,
-    dir: { x, y, z }
+    pos: { x, y, z },
+    dir: { x, y, z },
+    length: number
 }
+

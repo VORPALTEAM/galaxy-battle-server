@@ -44,7 +44,7 @@ export class BattleShip extends GameObject {
         this.onAttack.dispatch(this, this._attackObject);
         setTimeout(() => {
             this._state = 'idle';
-        }, 2000);
+        }, 1500);
     }
 
     getCreateData(): FighterCreateData {

@@ -65,7 +65,7 @@ export class Client implements ILogger {
         });
 
         this._socket.on(PackTitle.planetLaser, () => {
-            this.logDebug(`laser click event...`);
+            // this.logDebug(`laser click event...`);
             this.onLaser.dispatch(this);
         });
 

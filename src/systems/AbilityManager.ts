@@ -9,7 +9,7 @@ import { Client } from "../models/Client.js";
 import { Planet } from "../objects/Planet.js";
 import { PlanetLaserData } from "../data/Types.js";
 
-export class AbilsManager implements ILogger {
+export class AbilityManager implements ILogger {
     protected _className = 'AbilsManager';
     protected _objects: Map<number, GameObject>;
     protected _thinkTimer = 0;
@@ -29,22 +29,12 @@ export class AbilsManager implements ILogger {
         LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
-    private getEnemiesFor(aPlayerWalletId: string): {
-        objects: GameObject[],
-        meshes: THREE.Mesh[]
-    } {
-        let res: {
-            objects: GameObject[],
-            meshes: THREE.Mesh[]
-        } = {
-            objects: [],
-            meshes: []
-        }
+    private getLaserTargetsFor(aPlayerWalletId: string): GameObject[] {
+        let res: GameObject[] = [];
         this._objects.forEach(obj => {
             const isEnemy = obj.owner != aPlayerWalletId;
-            if (isEnemy && !obj.isImmortal && !(obj instanceof Star)) {
-                res.objects.push(obj);
-                res.meshes.push(obj.mesh);
+            if ((isEnemy && !obj.isImmortal) || obj instanceof Star) {
+                res.push(obj);
             }
         });
         return res;
@@ -64,23 +54,61 @@ export class AbilsManager implements ILogger {
     laserAttack(aClient: Client) {
         let planet = this.getPlanetByPlayer(aClient.walletId);
         if (!planet) return;
+        const origin = planet.position.clone();
         let dir = planet.getDirrection();
 
-        const damage = 200;
+        const damage = planet.laserDamage;
+        let rayLen = 500;
 
-        let raycaster = new THREE.Raycaster(planet.position, dir, 0, 500);
-        let objects = this.getEnemiesFor(planet.owner);
-        const intersects = raycaster.intersectObjects(objects.meshes);
-        for (let i = 0; i < intersects.length; i++) {
-            let mesh = intersects[i].object;
-            const id = objects.meshes.indexOf(mesh as any);
-            let obj = objects.objects[id];
-            obj.hp -= damage;
+        // let raycaster = new THREE.Raycaster(planet.position, dir, 0, rayLen);
+        let objects = this.getLaserTargetsFor(planet.owner);
+
+        objects.sort((a, b) => {
+            const dist1 = planet.position.distanceTo(a.position);
+            const dist2 = planet.position.distanceTo(b.position);
+            return dist1 - dist2;
+        });
+
+        // ray marching
+        let checked: number[] = [];
+
+        for (let i = 0; i < rayLen; i++) {
+            let m = dir.clone().multiplyScalar(i);
+            let p = origin.clone().add(m);
+            let isBreak = false;
+
+            // check objects
+            for (let j = 0; j < objects.length; j++) {
+                if (checked.indexOf(j) >= 0) continue;
+
+                const obj = objects[j];
+                const objDist = obj.mesh.position.distanceTo(p);
+
+                if (objDist <= obj.radius) {
+
+                    checked.push(j);
+
+                    if (obj instanceof Star) {
+                        rayLen = planet.position.distanceTo(p);
+                        // this.logDebug(`laser to Star, new len = ${rayLen}`);
+                        isBreak = true;
+                        break;
+                    }
+                    else {
+                        obj.hp -= damage;
+                    }
+
+                }
+            }
+
+            if (isBreak) break;
         }
 
         let data: PlanetLaserData = {
             planetId: planet.id,
-            dir: dir
+            pos: planet.position,
+            dir: dir,
+            length: rayLen
         }
         this.onLaserAttack.dispatch(this, data);
 

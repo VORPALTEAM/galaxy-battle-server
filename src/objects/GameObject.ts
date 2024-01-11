@@ -73,6 +73,7 @@ export class GameObject implements IUpdatable, ILogger {
     protected initMesh() {
         let g = new THREE.SphereGeometry(this._radius || 1);
         this._mesh = new THREE.Mesh(g);
+        this._mesh['ownerObject'] = this;
     }
 
     get owner(): string {

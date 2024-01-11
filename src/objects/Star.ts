@@ -5,14 +5,15 @@ import { GameObject, GameObjectParams } from "./GameObject.js";
 export type StarParams = GameObjectParams & {
     isTopStar: boolean,
     fightersSpawnDeltaPos: { x: number, y: number }[],
-    battleShipSpawnDeltaPos: { x: number, y: number }[]
+    battleShipSpawnDeltaPos: { x: number, y: number }[],
+    minusHpPerSec: number
 }
 
-const FIGHTER_SPAWN_START_DELAY = 3;
-const FIGHTER_SPAWN_PERIOD = 30;
-const BATTLESHIP_SPAWN_START_DELAY = 33;
+const FIGHTER_SPAWN_START_DELAY = 0;
+const FIGHTER_SPAWN_PERIOD = 60 / 2;
+const BATTLESHIP_SPAWN_START_DELAY = 120 / 2;
 // const BATTLESHIP_SPAWN_START_DELAY = 3;
-const BATTLESHIP_SPAWN_PERIOD = 60;
+const BATTLESHIP_SPAWN_PERIOD = 120 / 2;
 const ATTACK_PERIOD = 1;
 
 export class Star extends GameObject {
@@ -105,6 +106,7 @@ export class Star extends GameObject {
         this.updateAttack(dt);
         this.updateFighterSpawn(dt);
         this.updateBattleShipSpawn(dt);
+        this._hp -= this._params.minusHpPerSec * dt;
     }
 
     free(): void {

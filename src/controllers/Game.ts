@@ -15,7 +15,7 @@ import { Planet } from '../objects/Planet.js';
 import { StarManager } from '../systems/StarManager.js';
 import { BattleShip } from '../objects/BattleShip.js';
 import { BattleShipManager } from '../systems/BattleShipManager.js';
-import { AbilsManager } from '../systems/AbilsManager.js';
+import { AbilityManager } from '../systems/AbilityManager.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -35,7 +35,8 @@ const SETTINGS = {
         radius: 5,
         attackRadius: 12,
         minDmg: 10,
-        maxDmg: 20
+        maxDmg: 20,
+        minusHpPerSec: 1
     },
     stars: [
         {
@@ -66,7 +67,8 @@ const SETTINGS = {
         radius: 1,
         orbitRadius: 15, // planet orbit radius
         orbitRotationPeriod: 60, // planet orbit rotation period in sec
-        rotationPeriod: 8, // planet rotation period in sec
+        rotationPeriod: 5, // planet rotation period in sec
+        laserDamage: 120
     },
 
     fighters: {
@@ -74,12 +76,12 @@ const SETTINGS = {
         hp: 100,
         attackRadius: 12,
         minDmg: 10,
-        maxDmg: 20
+        maxDmg: 15
     },
 
     battleShips: {
         radius: 5,
-        hp: 200,
+        hp: 300,
         attackRadius: 36,
         minDmg: 20,
         maxDmg: 30
@@ -98,7 +100,7 @@ export class Game implements ILogger {
     private _starMng: StarManager;
     private _fighterMng: FighterManager;
     private _battleShipMng: BattleShipManager;
-    private _abilsMng: AbilsManager;
+    private _abilsMng: AbilityManager;
     // events
     onGameComplete = new Signal();
 
@@ -187,7 +189,7 @@ export class Game implements ILogger {
         this._fighterMng = new FighterManager(this._field, this._objects);
         this._battleShipMng = new BattleShipManager(this._field, this._objects);
 
-        this._abilsMng = new AbilsManager(this._objects);
+        this._abilsMng = new AbilityManager(this._objects);
         this._abilsMng.onLaserAttack.add(this.onLaserAttack, this);
 
         // create stars
@@ -199,7 +201,7 @@ export class Game implements ILogger {
             let star = new Star({
                 id: this.generateObjectId(),
                 owner: this._clients[i].walletId,
-                position: this._field.cellPosToGlobal(starData.cellPos.x, starData.cellPos.y),
+                position: this._field.cellPosToGlobalVec3(starData.cellPos.x, starData.cellPos.y),
                 radius: starParams.radius,
                 hp: starParams.hp,
                 attackParams: {
@@ -209,7 +211,8 @@ export class Game implements ILogger {
                 },
                 isTopStar: starData.cellPos.y < SETTINGS.field.size.rows / 2,
                 fightersSpawnDeltaPos: starData.fightersSpawnDeltaPos,
-                battleShipSpawnDeltaPos: starData.battleShipSpawnDeltaPos
+                battleShipSpawnDeltaPos: starData.battleShipSpawnDeltaPos,
+                minusHpPerSec: starParams.minusHpPerSec
             });
 
             star.onFighterSpawn.add(this.onStarFighterSpawn, this);
@@ -227,18 +230,20 @@ export class Game implements ILogger {
         for (let i = 0; i < stars.length; i++) {
             const star = stars[i];
             const isTopStar = star.position.z < (SETTINGS.field.size.rows * SETTINGS.field.size.sectorHeight) / 2;
+            const planetParams = SETTINGS.planet;
 
             let planet = new Planet({
                 id: this.generateObjectId(),
                 owner: star.owner,
                 isImmortal: true,
-                radius: SETTINGS.planet.radius,
+                radius: planetParams.radius,
                 orbitCenter: star.position.clone(),
-                orbitRadius: SETTINGS.planet.orbitRadius,
-                orbitRotationPeriod: SETTINGS.planet.orbitRotationPeriod,
-                rotationPeriod: SETTINGS.planet.rotationPeriod,
+                orbitRadius: planetParams.orbitRadius,
+                orbitRotationPeriod: planetParams.orbitRotationPeriod,
+                rotationPeriod: planetParams.rotationPeriod,
                 startAngle: MyMath.randomInRange(0, Math.PI * 2),
                 startOrbitAngle: isTopStar ? Math.PI / 2 : -Math.PI / 2,
+                laserDamage: planetParams.laserDamage
             });
 
             PackSender.getInstance().starCreate(this._clients, planet.getCreateData());
@@ -337,7 +342,7 @@ export class Game implements ILogger {
 
     }
 
-    private onLaserAttack(aMng: AbilsManager, aData: PlanetLaserData) {
+    private onLaserAttack(aMng: AbilityManager, aData: PlanetLaserData) {
         PackSender.getInstance().planetLaserAttack(this._clients, aData);
     }
 
