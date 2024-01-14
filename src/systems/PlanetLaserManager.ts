@@ -9,7 +9,7 @@ import { Client } from "../models/Client.js";
 import { Planet } from "../objects/Planet.js";
 import { PlanetLaserData } from "../data/Types.js";
 
-export class AbilityManager implements ILogger {
+export class PlanetLaserManager implements ILogger {
     protected _className = 'AbilsManager';
     protected _objects: Map<number, GameObject>;
     protected _thinkTimer = 0;

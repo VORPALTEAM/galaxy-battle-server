@@ -221,10 +221,10 @@ export class Field implements ILogger {
         return c;
     }
 
-    isCellTaken(cx: number, cy: number): boolean {
-        let cell = this.getCell(cx, cy);
+    isCellTaken(aCell: { x: number, y: number }): boolean {
+        let cell = this.getCell(aCell.x, aCell.y);
         if (!cell) return false;
-        return !cell.isTaken;
+        return cell.isTaken;
     }
 
     takeCell(cx: number, cy: number) {

@@ -46,6 +46,23 @@ export class PackSender {
         this.sendData(aClients, PackTitle.objectDestroy, aData);
     }
 
+    rotate(aClients: Client[], aData: {
+        id: number,
+        type: 'toPoint' | 'toDir',
+        target: {x, y, z},
+        duration: number
+    }) {
+        this.sendData(aClients, PackTitle.rotate, aData);
+    }
+
+    jump(aClients: Client[], aData: {
+        id: number,
+        pos: { x, y, z },
+        duration: number
+    }) {
+        this.sendData(aClients, PackTitle.jump, aData);
+    }
+
     attack(aClients: Client[], aData: {
         attackType: 'laser' | 'ray',
         idFrom: number,

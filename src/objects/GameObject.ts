@@ -36,6 +36,8 @@ export class GameObject implements IUpdatable, ILogger {
         maxDamage: number
     };
 
+    
+
     constructor(aParams: GameObjectParams) {
 
         this._radius = aParams.radius;
@@ -128,8 +130,13 @@ export class GameObject implements IUpdatable, ILogger {
         this._mesh.lookAt(p);
     }
 
-    moveTo(aPosition: { x: number, y: number }) {
-        
+    /**
+     * 
+     * @param aPosition target position
+     * @param aDuration duration in ms
+     */
+    moveTo(aPosition: THREE.Vector3, aDuration = 1000) {
+
     }
 
     getCreateData(): ObjectCreateData {

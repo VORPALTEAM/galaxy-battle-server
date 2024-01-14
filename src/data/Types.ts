@@ -14,6 +14,8 @@ export enum PackTitle {
     objectCreate = 'objectCreate',
     objectUpdate = 'objectUpdate',
     objectDestroy = 'objectDestroy',
+    rotate = 'rotate',
+    jump = 'jump',
     attack = 'attack',
     planetLaser = 'planetLaser'
 }
@@ -57,7 +59,8 @@ export type ObjectCreateData = ObjectUpdateData & {
     owner?: string, // owner id
     radius?: number,
     hp?: number,
-    attackRadius?: number
+    attackRadius?: number,
+    lookDir?: { x, y, z }
 }
 
 export type StarCreateData = ObjectCreateData & {
@@ -65,7 +68,7 @@ export type StarCreateData = ObjectCreateData & {
 }
 
 export type FighterCreateData = ObjectCreateData & {
-
+    
 }
 
 export type PlanetLaserData = {

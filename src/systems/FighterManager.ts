@@ -69,7 +69,8 @@ export class FighterManager implements ILogger {
 
         switch (aFighter.state) {
 
-            case 'idle':
+            case 'idle': {
+
                 // check for enemy
                 let enemy = this.getNearestEnemyInAtkRadius(aFighter);
                 if (enemy) {
@@ -85,6 +86,10 @@ export class FighterManager implements ILogger {
                     // this.logDebug(`!enemyStar -> return`);
                     return;
                 }
+
+                // return;
+
+                // move to enemy star
 
                 // get the star pos
                 let starCellPos = this._field.globalVec3ToCellPos(enemyStar.position);
@@ -127,14 +132,43 @@ export class FighterManager implements ILogger {
                     return;
                 }
 
-                let nextPos = this._field.cellPosToGlobalVec3(nextCell.x, nextCell.y);
-                // this.logDebug(`move ship (${fighterCellPos.x}, ${fighterCellPos.y}) => (${nextCell.x}, ${nextCell.y})`);
-                aFighter.moveTo(nextPos);
+                let nextCellPos = this._field.cellPosToGlobalVec3(nextCell.x, nextCell.y);
+                aFighter.jumpTargetCell = nextCell;
+                aFighter.rotateToCellForJump(nextCellPos);
 
+                // this.logDebug(`move ship (${fighterCellPos.x}, ${fighterCellPos.y}) => (${nextCell.x}, ${nextCell.y})`);
+                // aFighter.moveTo(nextPos);
+
+                // this._field.takeOffCell(fighterCellPos);
+                // this._field.takeCell(nextCell.x, nextCell.y);
+            } break;
+            
+            case 'prepareForJump': {
+                if (aFighter.isTurning) {
+                    // still turning
+                    return;
+                }
+
+                let fighterCellPos = this._field.globalVec3ToCellPos(aFighter.position);
+                let nextCell = aFighter.jumpTargetCell;
+                if (!nextCell) {
+                    // this.logWarn(`!nextCell`);
+                    aFighter.setState('idle');
+                    return;
+                }
+
+                if (this._field.isCellTaken(nextCell)) {
+                    // this.logWarn(`cell is taken!`);
+                    aFighter.setState('idle');
+                    return;
+                }
+
+                let nextPos = this._field.cellPosToGlobalVec3(nextCell.x, nextCell.y);
+                aFighter.moveTo(nextPos, 1000);
                 this._field.takeOffCell(fighterCellPos);
                 this._field.takeCell(nextCell.x, nextCell.y);
 
-                break;
+            } break;
         
             default:
                 // this.logWarn(`unknown Fighter state = ${aFighter.state}`);

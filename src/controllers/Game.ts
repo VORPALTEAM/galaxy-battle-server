@@ -15,7 +15,7 @@ import { Planet } from '../objects/Planet.js';
 import { StarManager } from '../systems/StarManager.js';
 import { BattleShip } from '../objects/BattleShip.js';
 import { BattleShipManager } from '../systems/BattleShipManager.js';
-import { AbilityManager } from '../systems/AbilityManager.js';
+import { PlanetLaserManager } from '../systems/PlanetLaserManager.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -100,7 +100,7 @@ export class Game implements ILogger {
     private _starMng: StarManager;
     private _fighterMng: FighterManager;
     private _battleShipMng: BattleShipManager;
-    private _abilsMng: AbilityManager;
+    private _abilsMng: PlanetLaserManager;
     // events
     onGameComplete = new Signal();
 
@@ -189,7 +189,7 @@ export class Game implements ILogger {
         this._fighterMng = new FighterManager(this._field, this._objects);
         this._battleShipMng = new BattleShipManager(this._field, this._objects);
 
-        this._abilsMng = new AbilityManager(this._objects);
+        this._abilsMng = new PlanetLaserManager(this._objects);
         this._abilsMng.onLaserAttack.add(this.onLaserAttack, this);
 
         // create stars
@@ -285,9 +285,12 @@ export class Game implements ILogger {
                 minDamage: shipParams.minDmg,
                 maxDamage: shipParams.maxDmg
             },
+            lookDir: new THREE.Vector3(0, 0, yDir)
         });
         
-        fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
+        // fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
+        fighter.onRotate.add(this.onFighterRotate, this);
+        fighter.onJump.add(this.onFighterJump, this);
         fighter.onAttack.add(this.onFighterAttack, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
@@ -303,7 +306,7 @@ export class Game implements ILogger {
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
 
-        let fighter = new BattleShip({
+        let battleShip = new BattleShip({
             owner: aStar.owner,
             id: this.generateObjectId(),
             position: this._field.cellPosToGlobalVec3(cellPos.x, cellPos.y),
@@ -316,13 +319,30 @@ export class Game implements ILogger {
             },
         });
 
-        fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
-        fighter.onAttack.add(this.onFighterAttack, this);
+        battleShip.lookByDir(new THREE.Vector3(0, 0, yDir));
+        battleShip.onAttack.add(this.onFighterAttack, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
-        PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
+        PackSender.getInstance().starCreate(this._clients, battleShip.getCreateData());
 
-        this._objects.set(fighter.id, fighter);
+        this._objects.set(battleShip.id, battleShip);
+    }
+
+    private onFighterRotate(aFighter: Fighter, aPoint: THREE.Vector3, aDur: number) {
+        PackSender.getInstance().rotate(this._clients, {
+            id: aFighter.id,
+            type: 'toPoint',
+            target: aPoint,
+            duration: aDur
+        });
+    }
+
+    private onFighterJump(aFighter: Fighter, aPosition: THREE.Vector3, aDur: number) {
+        PackSender.getInstance().jump(this._clients, {
+            id: aFighter.id,
+            pos: aPosition,
+            duration: aDur
+        });
     }
 
     private onFighterAttack(aFighter: Fighter, aEnemy: GameObject) {
@@ -342,7 +362,7 @@ export class Game implements ILogger {
 
     }
 
-    private onLaserAttack(aMng: AbilityManager, aData: PlanetLaserData) {
+    private onLaserAttack(aMng: PlanetLaserManager, aData: PlanetLaserData) {
         PackSender.getInstance().planetLaserAttack(this._clients, aData);
     }
 
