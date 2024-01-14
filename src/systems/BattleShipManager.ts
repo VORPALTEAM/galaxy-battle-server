@@ -126,7 +126,7 @@ export class BattleShipManager implements ILogger {
 
                 let nextPos = this._field.cellPosToGlobalVec3(nextCell.x, nextCell.y);
                 // this.logDebug(`move ship (${fighterCellPos.x}, ${fighterCellPos.y}) => (${nextCell.x}, ${nextCell.y})`);
-                aFighter.moveTo(nextPos);
+                aFighter.jumpTo(nextPos);
 
                 this._field.takeOffCell(fighterCellPos);
                 this._field.takeCell(nextCell.x, nextCell.y);

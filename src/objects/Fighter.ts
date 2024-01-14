@@ -5,11 +5,16 @@ import { GameObject, GameObjectParams } from "./GameObject.js";
 import { MyMath } from '../utils/MyMath.js';
 import { FieldCell } from './FieldCell.js';
 
+const ATTACK_PERIOD = 1;
+const ROTATION_TIME = 1;
+const PREPARE_JUMP_TIME = 0.5;
+const JUMP_TIME = 1;
+
 export type FighterParams = GameObjectParams & {
     lookDir: THREE.Vector3
 }
 
-export type FighterState = 'idle' | 'prepareForJump' | 'move' | 'fight' | 'starAttack' | 'dead';
+export type FighterState = 'idle' | 'rotateForJump' | 'jump' | 'fight' | 'starAttack' | 'dead';
 
 export class Fighter extends GameObject {
     protected _attackTimer: number;
@@ -38,29 +43,33 @@ export class Fighter extends GameObject {
         this._state = 'idle';
     }
 
-    private updateRotationToTarget(aTargetPos: THREE.Vector3, dt: number) {
-        let qStart = this.mesh.quaternion.clone();
-        this.lookAt(aTargetPos);
-        let qTarget = this.mesh.quaternion.clone();
-        this.mesh.quaternion.copy(qStart);
-        const t = 1 / 50;
-        let q = qStart.slerp(qTarget, t);
-        this.mesh.quaternion.copy(q);
+    private getAngleBetweenVectors(v: { x: number; y: number }, w: { x: number; y: number }): number {
+        const dotProduct = v.x * w.x + v.y * w.y;
+        const lengthV = Math.sqrt(v.x ** 2 + v.y ** 2);
+        const lengthW = Math.sqrt(w.x ** 2 + w.y ** 2);
+        const cosTheta = dotProduct / (lengthV * lengthW);
+        const thetaRad = Math.acos(cosTheta);
+        const thetaDeg = THREE.MathUtils.radToDeg(thetaRad);
+        return thetaDeg;
     }
+
 
     private getAngleToPointInDeg(aPoint: THREE.Vector3) {
         const objectPosition = this.mesh.position.clone();
-        // Вектор, указывающий от объекта к точке
         const direction = aPoint.clone().sub(objectPosition).normalize();
-        // Вектор, направленный вдоль оси z (направление взгляда объекта)
         const forward = new THREE.Vector3(0, 0, 1);
         forward.applyQuaternion(this.mesh.quaternion);
-        // let look = this.mesh.localToWorld(forward);
-        // Рассчитываем угол между векторами
-        return MyMath.toDeg( MyMath.angleBetweenATan(forward.x, forward.y, direction.x, direction.y) );
-        // return Math.atan2(direction.y, direction.x) - Math.atan2(look.y, look.x);
-    }
+        // this.logDebug(`forward:`, forward);
 
+        let res = this.getAngleBetweenVectors(
+            { x: forward.x, y: forward.z },
+            { x: direction.x, y: direction.z }
+        );
+
+        // return MyMath.toDeg(MyMath.angleBetweenATan(forward.x, forward.z, direction.x, direction.z));
+        return res;
+    }
+    
     get state(): FighterState {
         return this._state;
     }
@@ -77,63 +86,67 @@ export class Fighter extends GameObject {
         this._state = aState;
     }
 
-    rotateToPoint(aParams: {
-        point: THREE.Vector3,
-        duration?: number
-    }) {
+    rotateToPoint(aPoint: THREE.Vector3, aDuration: number) {
         this._isTurning = true;
-        this.lookAt(aParams.point);
-        const dur = aParams.duration > 0 ? aParams.duration : 0;
+        this.lookAt(aPoint);
+        const dur = aDuration;
         setTimeout(() => {
             this._isTurning = false;
         }, dur);
-        this.onRotate.dispatch(this, aParams.point, dur);
+        this.onRotate.dispatch(this, aPoint, dur);
     }
 
     rotateToCellForJump(aCellPos: THREE.Vector3) {
-        let an = this.getAngleToPointInDeg(aCellPos);
-        let rotateDur = an > 30 ? 1 : an / 30;
-        rotateDur *= 1000;
-        this.rotateToPoint({
-            point: aCellPos,
-            duration: rotateDur
-        });
-        this._state = `prepareForJump`;
+        let anDeg = Math.abs(this.getAngleToPointInDeg(aCellPos));
+        let t = ROTATION_TIME * 1000;
+        let rotateDur = anDeg >= 30 ? t : t * anDeg / 30;
+        this.rotateToPoint(aCellPos, rotateDur);
+        this._state = `rotateForJump`;
     }
 
     isReadyForAttack(): boolean {
         return this._atkTimer <= 0;
     }
 
-    moveTo(aPosition: THREE.Vector3, aDuration = 1000) {
-        this._state = 'move';
-        // this.lookAt(aParams.position);
-        this._mesh.position.x = aPosition.x;
-        this._mesh.position.y = aPosition.y;
-        this._mesh.position.z = aPosition.z;
+    jumpTo(aPosition: THREE.Vector3) {
+        this._state = 'jump';
+        const preTime = PREPARE_JUMP_TIME * 1000;
+        const jumpDur = JUMP_TIME * 1000;
         setTimeout(() => {
-            this._state = 'idle';
-        }, aDuration);
-        this.onJump.dispatch(this, aPosition, aDuration);
+            try {
+                this.onJump.dispatch(this, aPosition, jumpDur);
+            } catch (error) {
+            }
+        }, preTime);
+        setTimeout(() => {
+            try {
+                this._mesh.position.x = aPosition.x;
+                this._mesh.position.y = aPosition.y;
+                this._mesh.position.z = aPosition.z;
+            } catch (error) {
+            }
+        }, preTime + jumpDur / 2);
+        setTimeout(() => {
+            try {
+                this._state = 'idle';
+            } catch (error) {
+            }
+        }, preTime + jumpDur);
     }
 
     attackTarget(aAttackObject: GameObject) {
-        this._state = 'move';
+        this._state = 'fight';
         this._attackObject = aAttackObject;
+        // rotate to target
+        let anDeg = Math.abs(this.getAngleToPointInDeg(this._attackObject.position));
+        let t = ROTATION_TIME * 1000;
+        let rotateDur = anDeg >= 30 ? t : t * anDeg / 30;
+        this.rotateToPoint(this._attackObject.position, rotateDur);
+    }
 
-        let an = this.getAngleToPointInDeg(this._attackObject.position);
-
-        // this.rotateToPoint({
-        //     point: this._attackObject.position,
-        //     duration: an > 30 ? 1 : an / 30,
-        // }).then(() => {
-        //     this._state = 'fight';
-        //     this.onAttack.dispatch(this, this._attackObject);
-        //     setTimeout(() => {
-        //         this._state = 'idle';
-        //     }, 1500);
-        // });
-        
+    stopAttack() {
+        this._state = 'idle';
+        this._attackObject = null;
     }
 
     getCreateData(): FighterCreateData {
@@ -163,11 +176,11 @@ export class Fighter extends GameObject {
         return {
             id: this.id,
             hp: this._hp,
-            pos: {
-                x: this._mesh.position.x,
-                y: this._mesh.position.y,
-                z: this._mesh.position.z,
-            },
+            // pos: {
+            //     x: this._mesh.position.x,
+            //     y: this._mesh.position.y,
+            //     z: this._mesh.position.z,
+            // },
             // q: {
             //     x: this._mesh.quaternion.x,
             //     y: this._mesh.quaternion.y,
@@ -177,17 +190,34 @@ export class Fighter extends GameObject {
         };
     }
 
+    updateAttack(dt: number) {
+        if (!this._attackObject || this._attackObject.hp <= 0) {
+            this._attackObject = null;
+            this._state = 'idle';
+            return;
+        }
+        if (this._atkTimer <= 0) {
+            this._atkTimer = ATTACK_PERIOD;
+            this.onAttack.dispatch(this, this._attackObject);
+        }
+    }
+
     update(dt: number) {
+
+        if (this._atkTimer > 0) this._atkTimer -= dt;
+
         switch (this._state) {
 
             case 'fight':
+                if (this.isTurning) break;
                 // rotate to target
-                this.updateRotationToTarget(this._attackObject.position, dt);
+                this.updateAttack(dt);
                 break;
             
             default:
                 break;
         }
+
     }
 
     free(): void {

@@ -73,6 +73,9 @@ export class FighterManager implements ILogger {
 
                 // check for enemy
                 let enemy = this.getNearestEnemyInAtkRadius(aFighter);
+                if (enemy instanceof Fighter) {
+                    if (enemy.state == 'jump') enemy = null;
+                }
                 if (enemy) {
                     // attack enemy
                     // this.logDebug(`fighter attack!`);
@@ -86,8 +89,6 @@ export class FighterManager implements ILogger {
                     // this.logDebug(`!enemyStar -> return`);
                     return;
                 }
-
-                // return;
 
                 // move to enemy star
 
@@ -143,9 +144,16 @@ export class FighterManager implements ILogger {
                 // this._field.takeCell(nextCell.x, nextCell.y);
             } break;
             
-            case 'prepareForJump': {
+            case 'rotateForJump': {
                 if (aFighter.isTurning) {
                     // still turning
+                    return;
+                }
+
+                // check for enemy
+                let enemy = this.getNearestEnemyInAtkRadius(aFighter);
+                if (enemy) {
+                    aFighter.setState('idle');
                     return;
                 }
 
@@ -164,7 +172,7 @@ export class FighterManager implements ILogger {
                 }
 
                 let nextPos = this._field.cellPosToGlobalVec3(nextCell.x, nextCell.y);
-                aFighter.moveTo(nextPos, 1000);
+                aFighter.jumpTo(nextPos);
                 this._field.takeOffCell(fighterCellPos);
                 this._field.takeCell(nextCell.x, nextCell.y);
 

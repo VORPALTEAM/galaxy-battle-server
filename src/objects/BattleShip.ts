@@ -26,7 +26,7 @@ export class BattleShip extends GameObject {
         return this._state;
     }
 
-    moveTo(aPosition: THREE.Vector3, aDuration = 1000) {
+    jumpTo(aPosition: THREE.Vector3, aDuration = 1000) {
         this._state = 'move';
         this.lookAt(aPosition);
         this._mesh.position.x = aPosition.x;

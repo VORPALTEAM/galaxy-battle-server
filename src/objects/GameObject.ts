@@ -36,7 +36,7 @@ export class GameObject implements IUpdatable, ILogger {
         maxDamage: number
     };
 
-    
+
 
     constructor(aParams: GameObjectParams) {
 
@@ -135,7 +135,7 @@ export class GameObject implements IUpdatable, ILogger {
      * @param aPosition target position
      * @param aDuration duration in ms
      */
-    moveTo(aPosition: THREE.Vector3, aDuration = 1000) {
+    jumpTo(aPosition: THREE.Vector3, aDuration = 1000) {
 
     }
 
