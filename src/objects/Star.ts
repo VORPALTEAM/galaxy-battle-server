@@ -92,6 +92,7 @@ export class Star extends GameObject {
             id: this.id,
             radius: this.radius,
             pos: this._mesh.position,
+            attackRadius: this.attackRadius
         };
     }
 
