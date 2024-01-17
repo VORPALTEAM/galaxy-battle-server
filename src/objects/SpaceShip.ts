@@ -17,18 +17,14 @@ export type SpaceShipState = 'idle' | 'rotateForJump' | 'jump' | 'fight' | 'star
 
 export class SpaceShip extends GameObject {
     protected _shipParams: SpaceShipParams;
-    protected _attackTimer: number;
     protected _state: SpaceShipState;
-    protected _attackObject: GameObject;
-    protected _atkTimer: number;
     protected _lookDir: THREE.Vector3;
-
+    protected _attackTimer: number;
+    protected _attackObject: GameObject;
     // rotation
     private _isTurning = false;
-    
     // jump
     jumpTargetCell: FieldCell;
-
     // events
     onRotate = new Signal();
     onJump = new Signal();
@@ -39,12 +35,11 @@ export class SpaceShip extends GameObject {
         this._shipParams = aParams;
         this._lookDir = aParams.lookDir;
         this.lookByDir(this._lookDir);
-        this._attackTimer = 3;
-        this._atkTimer = 0;
+        this._attackTimer = 0;
         this._state = 'idle';
     }
 
-    private getAngleToPointInDeg(aPoint: THREE.Vector3) {
+    protected getAngleToPointInDeg(aPoint: THREE.Vector3) {
         const objectPosition = this.mesh.position.clone();
         const direction = aPoint.clone().sub(objectPosition).normalize();
         const forward = new THREE.Vector3(0, 0, 1);
@@ -91,7 +86,7 @@ export class SpaceShip extends GameObject {
     }
 
     isReadyForAttack(): boolean {
-        return this._atkTimer <= 0;
+        return this._attackTimer <= 0;
     }
 
     jumpTo(aPosition: THREE.Vector3) {
@@ -137,7 +132,7 @@ export class SpaceShip extends GameObject {
 
     getCreateData(): FighterCreateData {
         return {
-            type: 'FighterShip',
+            type: this._type,
             owner: this.owner,
             hp: this.hp,
             id: this.id,
@@ -165,15 +160,15 @@ export class SpaceShip extends GameObject {
             this._state = 'idle';
             return;
         }
-        if (this._atkTimer <= 0) {
-            this._atkTimer = this._shipParams.attackPeriod;
+        if (this._attackTimer <= 0) {
+            this._attackTimer = this._shipParams.attackPeriod;
             this.onAttack.dispatch(this, this._attackObject);
         }
     }
 
     update(dt: number) {
 
-        if (this._atkTimer > 0) this._atkTimer -= dt;
+        if (this._attackTimer > 0) this._attackTimer -= dt;
 
         switch (this._state) {
 

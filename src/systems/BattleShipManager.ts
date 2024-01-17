@@ -4,6 +4,7 @@ import { LogMng } from "../utils/LogMng.js";
 import { Field } from "../objects/Field.js";
 import { GameObject } from "../objects/GameObject.js";
 import { BattleShip } from "../objects/BattleShip.js";
+import { SpaceShip } from "../objects/SpaceShip.js";
 
 export class BattleShipManager implements ILogger {
     protected _className = 'BattleShipManager';
@@ -62,47 +63,52 @@ export class BattleShipManager implements ILogger {
         return stars[0];
     }
     
-    updateShip(aFighter: BattleShip) {
+    updateShip(aShip: BattleShip) {
 
-        switch (aFighter.state) {
+        switch (aShip.state) {
 
-            case 'idle':
+            case 'idle': {
+
                 // check for enemy
-                let enemy = this.getNearestEnemyInAtkRadius(aFighter);
+                let enemy = this.getNearestEnemyInAtkRadius(aShip);
+                if (enemy instanceof SpaceShip) {
+                    if (enemy.state == 'jump') enemy = null;
+                }
                 if (enemy) {
                     // attack enemy
-                    // this.logDebug(`fighter attack!`);
-                    aFighter.attackTarget(enemy);
+                    aShip.attackTarget(enemy);
                     return;
                 }
-                
+
                 // if no enemy, get the enemy star
-                let enemyStar = this.getEnemyStar(aFighter);
+                let enemyStar = this.getEnemyStar(aShip);
                 if (!enemyStar) {
-                    // this.logDebug(`!enemyStar -> return`);
                     return;
                 }
+
+                // move to enemy star
 
                 // get the star pos
                 let starCellPos = this._field.globalVec3ToCellPos(enemyStar.position);
                 let cells = this._field.getNeighbors(starCellPos, true);
                 if (cells.length <= 0) {
                     // no free places near from Enemy Star
-                    return;
+                    // we don't care
+                    // return;
                 }
                 // sort places
                 cells.sort((c1, c2) => {
-                    const c1Pos = this._field.cellPosToGlobalVec3(c1.x, c1.y);
-                    const c2Pos = this._field.cellPosToGlobalVec3(c2.x, c2.y);
-                    const dist1 = aFighter.position.distanceTo(c1Pos);
-                    const dist2 = aFighter.position.distanceTo(c2Pos);
+                    const c1Pos = this._field.cellPosToGlobalVec3(c1);
+                    const c2Pos = this._field.cellPosToGlobalVec3(c2);
+                    const dist1 = aShip.position.distanceTo(c1Pos);
+                    const dist2 = aShip.position.distanceTo(c2Pos);
                     return dist1 - dist2;
                 });
                 // get nearest place
                 let targetCell = cells[0];
 
                 // get the cell pos of the fighter
-                let fighterCellPos = this._field.globalVec3ToCellPos(aFighter.position);
+                let fighterCellPos = this._field.globalVec3ToCellPos(aShip.position);
 
                 // get the path
                 let path = this._field.findPath(
@@ -111,32 +117,86 @@ export class BattleShipManager implements ILogger {
                 );
 
                 // this.logDebug(`fighter path from (${fighterCellPos.x},${fighterCellPos.y}) to (${starCellPos.x},${starCellPos.y})`, path);
-                
+
                 if (!path) {
                     // path not found
                     return;
                 }
 
+                // remove last points
+                let isFinalPointFound = false;
+                let id = path.length - 1;
+                for (let i = 0; i < path.length; i++) {
+                    const cell = path[i];
+                    let cellPos = this._field.cellPosToGlobalVec3(cell);
+                    if (enemyStar.position.distanceTo(cellPos) <= aShip.attackRadius) {
+                        isFinalPointFound = true;
+                        id = i;
+                        break;
+                    }
+                }
+                if (isFinalPointFound) {
+                    const cnt = path.length - 1 - id;
+                    this.logDebug(`isFinalPointFound:`, {
+                        pathLen: path.length,
+                        id: id,
+                        cnt: cnt
+                    });
+                    path.splice(id + 1, cnt);
+                }
+
                 // get the next cell of path, goto this cell
-                let nextCell = path[0];
+                let nextCell = path[1] || path[0];
                 if (!nextCell) {
                     // path not found
                     return;
                 }
+                
+                let nextCellPos = this._field.cellPosToGlobalVec3(nextCell);
+                aShip.jumpTargetCell = nextCell;
+                aShip.rotateToCellForJump(nextCellPos);
 
-                let nextPos = this._field.cellPosToGlobalVec3(nextCell.x, nextCell.y);
-                // this.logDebug(`move ship (${fighterCellPos.x}, ${fighterCellPos.y}) => (${nextCell.x}, ${nextCell.y})`);
-                aFighter.jumpTo(nextPos);
+            } break;
 
+            case 'rotateForJump': {
+                if (aShip.isTurning) {
+                    // still turning
+                    return;
+                }
+
+                // check for enemy
+                let enemy = this.getNearestEnemyInAtkRadius(aShip);
+                if (enemy) {
+                    aShip.setState('idle');
+                    return;
+                }
+
+                let fighterCellPos = this._field.globalVec3ToCellPos(aShip.position);
+                let nextCell = aShip.jumpTargetCell;
+                if (!nextCell) {
+                    // this.logWarn(`!nextCell`);
+                    aShip.setState('idle');
+                    return;
+                }
+
+                if (this._field.isCellTaken(nextCell)) {
+                    // this.logWarn(`cell is taken!`);
+                    aShip.setState('idle');
+                    return;
+                }
+
+                let nextPos = this._field.cellPosToGlobalVec3(nextCell);
+                aShip.jumpTo(nextPos);
                 this._field.takeOffCell(fighterCellPos);
                 this._field.takeCell(nextCell.x, nextCell.y);
 
-                break;
-        
+            } break;
+
             default:
-                // this.logWarn(`unknown Fighter state = ${aFighter.state}`);
+                // this.logWarn(`unknown Fighter state = ${aShip.state}`);
                 break;
         }
+
     }
 
     free() {

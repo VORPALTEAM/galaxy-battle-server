@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { IUpdatable } from "../interfaces/IUpdatable.js";
-import { ObjectCreateData, ObjectUpdateData } from "../data/Types.js";
+import { ObjectCreateData, ObjectType, ObjectUpdateData } from "../data/Types.js";
 import { MyMath } from '../utils/MyMath.js';
 import { ILogger } from '../interfaces/ILogger.js';
 import { LogMng } from '../utils/LogMng.js';
@@ -26,6 +26,7 @@ export class GameObject implements IUpdatable, ILogger {
     private _owner: string;
     // game object id
     protected _id: number;
+    protected _type: ObjectType;
     // object radius
     private _radius: number;
     protected _hp: number;

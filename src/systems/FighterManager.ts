@@ -5,6 +5,7 @@ import { Field } from "../objects/Field.js";
 import { Fighter } from "../objects/Fighter.js";
 import { IUpdatable } from "../interfaces/IUpdatable.js";
 import { GameObject } from "../objects/GameObject.js";
+import { SpaceShip } from "../objects/SpaceShip.js";
 
 const THINK_PERIOD = 10;
 
@@ -73,7 +74,7 @@ export class FighterManager implements ILogger {
 
                 // check for enemy
                 let enemy = this.getNearestEnemyInAtkRadius(aFighter);
-                if (enemy instanceof Fighter) {
+                if (enemy instanceof SpaceShip) {
                     if (enemy.state == 'jump') enemy = null;
                 }
                 if (enemy) {
@@ -101,8 +102,8 @@ export class FighterManager implements ILogger {
                 }
                 // sort places
                 cells.sort((c1, c2) => {
-                    const c1Pos = this._field.cellPosToGlobalVec3(c1.x, c1.y);
-                    const c2Pos = this._field.cellPosToGlobalVec3(c2.x, c2.y);
+                    const c1Pos = this._field.cellPosToGlobalVec3(c1);
+                    const c2Pos = this._field.cellPosToGlobalVec3(c2);
                     const dist1 = aFighter.position.distanceTo(c1Pos);
                     const dist2 = aFighter.position.distanceTo(c2Pos);
                     return dist1 - dist2;
@@ -133,15 +134,10 @@ export class FighterManager implements ILogger {
                     return;
                 }
 
-                let nextCellPos = this._field.cellPosToGlobalVec3(nextCell.x, nextCell.y);
+                let nextCellPos = this._field.cellPosToGlobalVec3(nextCell);
                 aFighter.jumpTargetCell = nextCell;
                 aFighter.rotateToCellForJump(nextCellPos);
 
-                // this.logDebug(`move ship (${fighterCellPos.x}, ${fighterCellPos.y}) => (${nextCell.x}, ${nextCell.y})`);
-                // aFighter.moveTo(nextPos);
-
-                // this._field.takeOffCell(fighterCellPos);
-                // this._field.takeCell(nextCell.x, nextCell.y);
             } break;
             
             case 'rotateForJump': {
@@ -171,7 +167,7 @@ export class FighterManager implements ILogger {
                     return;
                 }
 
-                let nextPos = this._field.cellPosToGlobalVec3(nextCell.x, nextCell.y);
+                let nextPos = this._field.cellPosToGlobalVec3(nextCell);
                 aFighter.jumpTo(nextPos);
                 this._field.takeOffCell(fighterCellPos);
                 this._field.takeCell(nextCell.x, nextCell.y);
@@ -182,6 +178,7 @@ export class FighterManager implements ILogger {
                 // this.logWarn(`unknown Fighter state = ${aFighter.state}`);
                 break;
         }
+
     }
 
     free() {

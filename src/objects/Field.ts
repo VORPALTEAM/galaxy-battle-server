@@ -163,8 +163,8 @@ export class Field implements ILogger {
 
     private heuristic(start: { x: number, y: number }, end: { x: number, y: number }): number {
         // Эвристика: расстояние между точками по прямой
-        const p1 = this.cellPosToGlobalVec3(start.x, start.y);
-        const p2 = this.cellPosToGlobalVec3(end.x, end.y);
+        const p1 = this.cellPosToGlobalVec3(start);
+        const p2 = this.cellPosToGlobalVec3(end);
         return p1.distanceTo(p2);
     }
 
@@ -174,22 +174,22 @@ export class Field implements ILogger {
         }
     }
 
-    cellPosToGlobal(cx: number, cy: number): { x: number, y: number } {
-        const isEvenRow = cy % 2 === 0;
+    cellPosToGlobal(cell: { x: number, y: number }): { x: number, y: number } {
+        const isEvenRow = cell.y % 2 === 0;
         let c = {
-            x: cx * this._params.size.sectorWidth,
-            y: cy * this._params.size.sectorHeight
+            x: cell.x * this._params.size.sectorWidth,
+            y: cell.y * this._params.size.sectorHeight
         }
         if (!isEvenRow) c.x += this._params.size.sectorWidth / 2;
         return c;
     }
 
-    cellPosToGlobalVec3(cx: number, cy: number): THREE.Vector3 {
-        const isEvenRow = cy % 2 === 0;
+    cellPosToGlobalVec3(cell: { x: number, y: number }): THREE.Vector3 {
+        const isEvenRow = cell.y % 2 === 0;
         let v3 = new THREE.Vector3(
-            cx * this._params.size.sectorWidth,
+            cell.x * this._params.size.sectorWidth,
             0,
-            cy * this._params.size.sectorHeight
+            cell.y * this._params.size.sectorHeight
         );
         if (!isEvenRow) v3.x += this._params.size.sectorWidth / 2;
         return v3;
