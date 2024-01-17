@@ -173,44 +173,38 @@ export class MyMath {
 
     /**
      * Find the angle between 2 vectors (x1, y1) -> (x2, y2) via Math.atan2 function.
-     * @param x1 - The x coordinate of the first point.
-     * @param {number} y1 - The y coordinate of the first point.
-     * @param {number} x2 - The x coordinate of the second point.
-     * @param {number} y2 - The y coordinate of the second point.
+     * @param p1 - The first point.
+     * @param p2 - The second point.
      * @return The angle in radians.
      */
-    public static angleBetweenATan(x1: number, y1: number, x2: number, y2: number): number {
-        return Math.atan2(y2 - y1, x2 - x1);
+    public static angleBetweenATan(p1: { x: number, y: number }, p2: { x: number, y: number }): number {
+        return Math.atan2(p2.y - p1.y, p2.x - p1.x);
     };
 
     /**
      * Angle between 2 vectors (x1, y1) -> (x2, y2) via Math.acos function.
-     * @param x1 - The x coordinate of the first vector.
-     * @param y1 - The y coordinate of the first vector.
-     * @param x2 - The x coordinate of the second vector.
-     * @param y2 - The y coordinate of the second vector.
+     * @param p1 - The first point.
+     * @param p2 - The second point.
      * @return The angle in radians.
      */
-    public static angleBetweenACos(x1: number, y1: number, x2: number, y2: number) {
-        let scalar = x1 * x2 + y1 * y2;
-        let mod1 = Math.sqrt(x1 * x1 + y1 * y1);
-        let mod2 = Math.sqrt(x2 * x2 + y2 * y2);
-        return Math.acos(scalar / (mod1 * mod2));
+    public static angleBetweenACos(p1: { x: number, y: number }, p2: { x: number, y: number }) {
+        let scalar = p1.x * p2.x + p1.y * p2.y;
+        let len1 = Math.sqrt(p1.x ** 2 + p1.y ** 2);
+        let len2 = Math.sqrt(p2.x ** 2 + p2.y ** 2);
+        return Math.acos(scalar / (len1 * len2));
     };
 
     /**
      * Angle between 2 vectors (x1, y1) -> (x2, y2) via Math.asin function.
-     * @param x1 - The x coordinate of the first vector.
-     * @param y1 - The y coordinate of the first vector.
-     * @param x2 - The x coordinate of the second vector.
-     * @param y2 - The y coordinate of the second vector.
+     * @param p1 - The first point.
+     * @param p2 - The second point.
      * @return The angle in radians.
      */
-    public static angleBetweenASin(x1: number, y1: number, x2: number, y2: number) {
-        let scalar = x1 * x2 + y1 * y2;
-        let mod1 = Math.sqrt(x1 * x1 + y1 * y1);
-        let mod2 = Math.sqrt(x2 * x2 + y2 * y2);
-        return Math.asin(scalar / (mod1 * mod2));
+    public static angleBetweenASin(p1: { x: number, y: number }, p2: { x: number, y: number }) {
+        let scalar = p1.x * p2.x + p1.y * p2.y;
+        let len1 = Math.sqrt(p1.x ** 2 + p1.y ** 2);
+        let len2 = Math.sqrt(p2.x ** 2 + p2.y ** 2);
+        return Math.asin(scalar / (len1 * len2));
     };
 
     public static isPointInTriangle(ax, ay, bx, by, cx, cy, px, py: number): boolean {

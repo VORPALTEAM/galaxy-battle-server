@@ -76,7 +76,11 @@ const SETTINGS = {
         hp: 100,
         attackRadius: 12,
         minDmg: 10,
-        maxDmg: 15
+        maxDmg: 15,
+        attackPeriod: 1,
+        rotationTime: 1,
+        prepareJumpTime: 0.5,
+        jumpTime: 1
     },
 
     battleShips: {
@@ -84,7 +88,11 @@ const SETTINGS = {
         hp: 300,
         attackRadius: 36,
         minDmg: 20,
-        maxDmg: 30
+        maxDmg: 30,
+        attackPeriod: 1,
+        rotationTime: 1,
+        prepareJumpTime: 0.5,
+        jumpTime: 1
     },
 
 }
@@ -285,7 +293,11 @@ export class Game implements ILogger {
                 minDamage: shipParams.minDmg,
                 maxDamage: shipParams.maxDmg
             },
-            lookDir: new THREE.Vector3(0, 0, yDir)
+            lookDir: new THREE.Vector3(0, 0, yDir),
+            attackPeriod: shipParams.attackPeriod,
+            rotationTime: shipParams.rotationTime,
+            prepareJumpTime: shipParams.prepareJumpTime,
+            jumpTime: shipParams.jumpTime
         });
         
         // fighter.lookByDir(new THREE.Vector3(0, 0, yDir));
