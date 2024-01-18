@@ -137,11 +137,11 @@ export class BattleShipManager implements ILogger {
                 }
                 if (isFinalPointFound) {
                     const cnt = path.length - 1 - id;
-                    this.logDebug(`isFinalPointFound:`, {
-                        pathLen: path.length,
-                        id: id,
-                        cnt: cnt
-                    });
+                    // this.logDebug(`isFinalPointFound:`, {
+                    //     pathLen: path.length,
+                    //     id: id,
+                    //     cnt: cnt
+                    // });
                     path.splice(id + 1, cnt);
                 }
 
