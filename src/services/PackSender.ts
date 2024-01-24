@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData } from "../data/Types.js";
+import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData, AttackType } from "../data/Types.js";
 import { Client } from "../models/Client.js";
 
 export class PackSender {
@@ -64,13 +64,20 @@ export class PackSender {
     }
 
     attack(aClients: Client[], aData: {
-        attackType: 'laser' | 'ray',
+        attackType: AttackType,
         idFrom: number,
         idTo: number,
         damage?: number,
         isMiss?: boolean
     }) {
         this.sendData(aClients, PackTitle.attack, aData);
+    }
+
+    rayStart(aClients: Client[], aData: {
+        idFrom: number,
+        idTo: number
+    }) {
+        this.sendData(aClients, PackTitle.rayStart, aData);
     }
 
     planetLaserAttack(aClients: Client[], aData: PlanetLaserData) {

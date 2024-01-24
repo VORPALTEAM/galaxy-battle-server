@@ -16,6 +16,7 @@ export class BattleShip extends SpaceShip {
     attackTarget(aAttackObject: GameObject) {
         this._state = 'fight';
         this._attackObject = aAttackObject;
+        this._attackType = 'laser';
     }
 
 }

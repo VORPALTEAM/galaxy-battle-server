@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Signal } from "../utils/events/Signal.js";
-import { FighterCreateData, ObjectUpdateData } from "../data/Types.js";
+import { AttackType, FighterCreateData, ObjectUpdateData } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
 import { MyMath } from '../utils/MyMath.js';
 import { FieldCell } from './FieldCell.js';
@@ -21,14 +21,30 @@ export class SpaceShip extends GameObject {
     protected _lookDir: THREE.Vector3;
     protected _attackTimer: number;
     protected _attackObject: GameObject;
+    protected _attackType: AttackType;
+    protected _isRayCreated = false;
     // rotation
     private _isTurning = false;
     // jump
     jumpTargetCell: FieldCell;
     // events
     onRotate = new Signal();
+    /**
+     * (sender, aPosition, jumpDur)
+     */
     onJump = new Signal();
+    /**
+     * sender: SpaceShip, enemy: GameObject, type: AttackType
+     */
     onAttack = new Signal();
+    /**
+     * (sender, attackObject)
+     */
+    onRayStart = new Signal();
+    /**
+     * (sender)
+     */
+    onRayStop = new Signal();
 
     constructor(aParams: SpaceShipParams) {
         super(aParams);
@@ -49,6 +65,10 @@ export class SpaceShip extends GameObject {
             { x: direction.x, y: direction.z }
         );
         return MyMath.toDeg(res);
+    }
+
+    protected refreshAttackTimer() {
+        this._attackTimer = this._shipParams.attackPeriod;
     }
     
     get state(): SpaceShipState {
@@ -115,9 +135,14 @@ export class SpaceShip extends GameObject {
         }, preTime + jumpDur);
     }
 
-    attackTarget(aAttackObject: GameObject) {
+    attackTarget(aAttackObject: GameObject, aAttackType: AttackType) {
         this._state = 'fight';
         this._attackObject = aAttackObject;
+        this._attackType = aAttackType;
+        if (this._attackType == 'ray') {
+            this.refreshAttackTimer();
+            this._isRayCreated = false;
+        }
         // rotate to target
         let anDeg = Math.abs(this.getAngleToPointInDeg(this._attackObject.position));
         let t = this._shipParams.rotationTime * 1000;
@@ -155,31 +180,50 @@ export class SpaceShip extends GameObject {
     }
 
     updateAttack(dt: number) {
+
         if (!this._attackObject || this._attackObject.hp <= 0) {
-            this._attackObject = null;
-            this._state = 'idle';
+            this.stopAttack();
             return;
         }
+
         if (this._attackTimer <= 0) {
-            this._attackTimer = this._shipParams.attackPeriod;
-            this.onAttack.dispatch(this, this._attackObject);
+            this.refreshAttackTimer();
+            this.onAttack.dispatch(this, this._attackObject, this._attackType);
         }
+
+    }
+
+    private createRay() {
+        this._isRayCreated = true;
+        this.onRayStart.dispatch(this, this._attackObject);
+    }
+
+    private stopRay() {
+        this._isRayCreated = false;
+        this.onRayStop.dispatch(this);
     }
 
     update(dt: number) {
-
-        if (this._attackTimer > 0) this._attackTimer -= dt;
-
+        
         switch (this._state) {
-
+            
             case 'fight':
+
                 if (this.isTurning) break;
+                if (this._attackTimer > 0) this._attackTimer -= dt;
+                switch (this._attackType) {
+                    case 'ray':
+                        if (!this._isRayCreated) {
+                            this.createRay();
+                        }
+                        break;
+                }
+
                 // rotate to target
                 this.updateAttack(dt);
+
                 break;
             
-            default:
-                break;
         }
 
     }

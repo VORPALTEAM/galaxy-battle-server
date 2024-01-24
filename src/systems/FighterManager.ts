@@ -6,6 +6,7 @@ import { Fighter } from "../objects/Fighter.js";
 import { IUpdatable } from "../interfaces/IUpdatable.js";
 import { GameObject } from "../objects/GameObject.js";
 import { SpaceShip } from "../objects/SpaceShip.js";
+import { AttackType } from "src/data/Types.js";
 
 const THINK_PERIOD = 10;
 
@@ -79,15 +80,14 @@ export class FighterManager implements ILogger {
                 }
                 if (enemy) {
                     // attack enemy
-                    // this.logDebug(`fighter attack!`);
-                    aFighter.attackTarget(enemy);
+                    const atkType: AttackType = enemy instanceof Star ? 'ray' : 'laser';
+                    aFighter.attackTarget(enemy, atkType);
                     return;
                 }
                 
                 // if no enemy, get the enemy star
                 let enemyStar = this.getEnemyStar(aFighter);
                 if (!enemyStar) {
-                    // this.logDebug(`!enemyStar -> return`);
                     return;
                 }
 

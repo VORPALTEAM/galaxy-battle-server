@@ -17,10 +17,13 @@ export enum PackTitle {
     rotate = 'rotate',
     jump = 'jump',
     attack = 'attack',
+    rayStart = 'rayStart',
+    rayStop = 'rayStop',
     planetLaser = 'planetLaser'
 }
 
 export type ObjectType = 'Star' | 'Planet' | 'FighterShip' | 'BattleShip' | 'Homing';
+export type AttackType = 'laser' | 'ray';
 export type RaceType = 'Aqua' | 'Insects';
 
 export type StartGameData = {

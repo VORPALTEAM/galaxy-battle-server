@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -304,6 +304,7 @@ export class Game implements ILogger {
         fighter.onRotate.add(this.onShipRotate, this);
         fighter.onJump.add(this.onShipJump, this);
         fighter.onAttack.add(this.onShipAttack, this);
+        fighter.onRayStart.add(this.onShipRayStart, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
         PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
@@ -363,11 +364,11 @@ export class Game implements ILogger {
         });
     }
 
-    private onShipAttack(aShip: SpaceShip, aEnemy: GameObject) {
+    private onShipAttack(aShip: SpaceShip, aEnemy: GameObject, aType: AttackType) {
         const dmg = aShip.getAttackDamage();
         const isMiss = MyMath.randomIntInRange(0, 10) > 9;
         PackSender.getInstance().attack(this._clients, {
-            attackType: 'laser',
+            attackType: aType,
             idFrom: aShip.id,
             idTo: aEnemy.id,
             damage: dmg,
@@ -377,7 +378,13 @@ export class Game implements ILogger {
         if (!isMiss) {
             aEnemy.hp -= dmg;
         }
+    }
 
+    onShipRayStart(aShip: SpaceShip, aEnemy: GameObject) {
+        PackSender.getInstance().rayStart(this._clients, {
+            idFrom: aShip.id,
+            idTo: aEnemy.id
+        });
     }
 
     private onPlanetLaserAttack(aMng: PlanetLaserManager, aData: PlanetLaserData) {
