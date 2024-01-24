@@ -135,12 +135,13 @@ export class Game implements ILogger {
     private initClientListeners() {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
-            client.onDisconnect.add(this.onDisconnect, this);
-            client.onLaser.add(this.onLaser, this);
+            client.onDisconnect.add(this.onClientDisconnect, this);
+            client.onLaser.add(this.onClientLaser, this);
+            client.onExitGame.add(this.onClientExitGame, this);
         }
     }
 
-    private onDisconnect(aClient: Client) {
+    private onClientDisconnect(aClient: Client) {
         this.logDebug(`client (${aClient.walletId}) disconnect`);
 
         let winner: Client;
@@ -154,8 +155,13 @@ export class Game implements ILogger {
         this.completeGame(winner);
     }
 
-    private onLaser(aClient: Client) {
+    private onClientLaser(aClient: Client) {
         this._abilsMng?.laserAttack(aClient);
+    }
+
+    private onClientExitGame(aClient: Client) {
+        let aWinner = this._clients[0] == aClient ? this._clients[1] : this._clients[0];
+        this.completeGame(aWinner);
     }
 
     private completeGame(aWinner: Client) {
@@ -340,6 +346,7 @@ export class Game implements ILogger {
         battleShip.onRotate.add(this.onShipRotate, this);
         battleShip.onJump.add(this.onShipJump, this);
         battleShip.onAttack.add(this.onShipAttack, this);
+        battleShip.onRayStart.add(this.onShipRayStart, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
         PackSender.getInstance().starCreate(this._clients, battleShip.getCreateData());

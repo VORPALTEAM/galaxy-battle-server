@@ -5,6 +5,7 @@ import { Field } from "../objects/Field.js";
 import { GameObject } from "../objects/GameObject.js";
 import { BattleShip } from "../objects/BattleShip.js";
 import { SpaceShip } from "../objects/SpaceShip.js";
+import { AttackType } from "src/data/Types.js";
 
 export class BattleShipManager implements ILogger {
     protected _className = 'BattleShipManager';
@@ -76,7 +77,8 @@ export class BattleShipManager implements ILogger {
                 }
                 if (enemy) {
                     // attack enemy
-                    aShip.attackTarget(enemy);
+                    const atkType: AttackType = enemy instanceof Star ? 'ray' : 'laser';
+                    aShip.attackTarget(enemy, atkType);
                     return;
                 }
 

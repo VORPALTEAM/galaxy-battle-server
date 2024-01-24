@@ -218,8 +218,7 @@ export class SpaceShip extends GameObject {
                         }
                         break;
                 }
-
-                // rotate to target
+                
                 this.updateAttack(dt);
 
                 break;

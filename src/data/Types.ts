@@ -6,6 +6,7 @@ export enum PackTitle {
     startSearchGame = 'startSearchGame', // request
     stopSearchGame = 'stopSearchGame', // request
     gameSearching = 'gameSearching', // status, update, info
+    exitGame = 'exitGame',
     gameStart = 'gameStart',
     // exitGame = 'exitGame',
     gameComplete = 'gameComplete',

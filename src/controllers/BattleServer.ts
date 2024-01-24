@@ -60,7 +60,6 @@ export class BattleServer implements ILogger {
 
     private onStopSearchGame(aClient: Client) {
         this._matchmaker.removeClient(aClient);
-
     }
 
     private onDisconnect(aClient: Client) {
