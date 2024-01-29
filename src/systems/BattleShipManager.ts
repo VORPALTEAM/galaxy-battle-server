@@ -3,7 +3,7 @@ import { Star } from "../objects/Star.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Field } from "../objects/Field.js";
 import { GameObject } from "../objects/GameObject.js";
-import { BattleShip } from "../objects/BattleShip.js";
+import { Linkor } from "../objects/Linkor.js";
 import { SpaceShip } from "../objects/SpaceShip.js";
 import { AttackType } from "src/data/Types.js";
 
@@ -28,7 +28,7 @@ export class BattleShipManager implements ILogger {
         LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
-    private getNearestEnemyInAtkRadius(aFighter: BattleShip): GameObject {
+    private getNearestEnemyInAtkRadius(aFighter: Linkor): GameObject {
         let minDist = Number.MAX_SAFE_INTEGER;
         let enemy: GameObject = null;
         let starFound = false;
@@ -52,7 +52,7 @@ export class BattleShipManager implements ILogger {
         return enemy;
     }
 
-    private getEnemyStar(aFighter: BattleShip): Star {
+    private getEnemyStar(aFighter: Linkor): Star {
         let stars: Star[] = [];
         this._objects.forEach(obj => {
             if (obj instanceof Star) {
@@ -64,7 +64,7 @@ export class BattleShipManager implements ILogger {
         return stars[0];
     }
     
-    updateShip(aShip: BattleShip) {
+    updateShip(aShip: Linkor) {
 
         switch (aShip.state) {
 

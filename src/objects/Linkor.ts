@@ -1,26 +1,27 @@
 import * as THREE from 'three';
 import { SpaceShip, SpaceShipParams } from './SpaceShip.js';
+import { GameObject } from './GameObject.js';
+import { AttackType } from '../data/Types.js';
 import { Config, ShipParams } from '../data/Config.js';
 import { MyMath } from '../utils/MyMath.js';
-import { LogMng } from '../utils/LogMng.js';
 
-export type FighterParams = SpaceShipParams & {
+export type LinkorParams = SpaceShipParams & {
 
 }
 
-export class Fighter extends SpaceShip {
+export class Linkor extends SpaceShip {
 
-    constructor(aParams: FighterParams) {
+    constructor(aParams: LinkorParams) {
         super(aParams);
-        this._type = 'FighterShip';
+        this._type = 'BattleShip';
     }
 
     protected initParams() {
-        let params = Config.fighterParams;
+        let params = Config.linkorParams;
         this.initHp(params);
         this.initAttackPower(params);
     }
-    
+
     private initHp(aParams: ShipParams) {
         const val = aParams.hp.value;
         const incByLvl = aParams.hp.incPercentByLevel;
@@ -30,31 +31,17 @@ export class Fighter extends SpaceShip {
             const min = val[0];
             const max = val[1];
             p = MyMath.randomIntInRange(min, max);
-            LogMng.debug(`Fighter.initHp:`, {
-                isArray: true,
-                min: min,
-                max: max,
-                p: p
-            });
         }
         else {
             p = val;
-            LogMng.debug(`Fighter.initHp:`, {
-                isArray: false,
-                p: p
-            });
         }
         if (incByLvl > 0) {
             p += p * incByLvl * (level - 1);
-            LogMng.debug(`Fighter.initHp:`, {
-                incByLevel: true,
-                p: p
-            });
         }
         this._hp = p;
     }
 
-    initAttackPower(aParams: ShipParams) {
+    private initAttackPower(aParams: ShipParams) {
         const val = aParams.attackPower.value;
         const incByLvl = aParams.attackPower.incPercentByLevel;
         const level = this._shipParams.level;
@@ -63,30 +50,33 @@ export class Fighter extends SpaceShip {
             const max = val[1];
             this._attackParams.minDamage = min;
             this._attackParams.maxDamage = max;
-            LogMng.debug(`Fighter.initHp:`, {
-                isArray: true,
-                min: min,
-                max: max
-            });
         }
         else {
             this._attackParams.minDamage = val;
             this._attackParams.maxDamage = val;
-            LogMng.debug(`Fighter.initHp:`, {
-                isArray: false,
-                val: val
-            });
         }
         if (incByLvl > 0) {
             this._attackParams.minDamage += this._attackParams.minDamage * incByLvl * (level - 1);
             this._attackParams.maxDamage += this._attackParams.maxDamage * incByLvl * (level - 1);
-            LogMng.debug(`Fighter.initHp:`, {
-                incByLevel: true,
-                attackParams: this._attackParams
-            });
         }
     }
 
-    
+    attackTarget(aAttackObject: GameObject, aAttackType: AttackType) {
+        this._state = 'fight';
+        this._attackObject = aAttackObject;
+        this._attackType = aAttackType;
+        
+        if (this._attackType == 'ray') {
+            this.refreshAttackTimer();
+            this._isRayCreated = false;
+
+            // rotate to target
+            let anDeg = Math.abs(this.getAngleToPointInDeg(this._attackObject.position));
+            let t = this._shipParams.rotationTime * 1000;
+            let rotateDur = anDeg >= 30 ? t : t * anDeg / 30;
+            this.rotateToPoint(this._attackObject.position, rotateDur);
+        }
+
+    }
 
 }

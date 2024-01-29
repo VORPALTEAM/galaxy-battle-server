@@ -21,7 +21,7 @@ export class Matchmaker implements ILogger {
         this.startLoop();
 
         // tests
-        if (Config.TESTS) this.tests();
+        if (Config.tests) this.tests();
 
     }
 

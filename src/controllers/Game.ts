@@ -13,7 +13,7 @@ import { MyMath } from '../utils/MyMath.js';
 import { Signal } from '../utils/events/Signal.js';
 import { Planet } from '../objects/Planet.js';
 import { StarManager } from '../systems/StarManager.js';
-import { BattleShip } from '../objects/BattleShip.js';
+import { Linkor } from '../objects/Linkor.js';
 import { BattleShipManager } from '../systems/BattleShipManager.js';
 import { PlanetLaserManager } from '../systems/PlanetLaserManager.js';
 import { SpaceShip } from 'src/objects/SpaceShip.js';
@@ -294,6 +294,7 @@ export class Game implements ILogger {
             id: this.generateObjectId(),
             position: this._field.cellPosToGlobal(cellPos),
             radius: shipParams.radius,
+            level: 1,
             hp: shipParams.hp,
             attackParams: {
                 radius: shipParams.attackRadius,
@@ -325,11 +326,12 @@ export class Game implements ILogger {
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
 
-        let battleShip = new BattleShip({
+        let battleShip = new Linkor({
             owner: aStar.owner,
             id: this.generateObjectId(),
             position: this._field.cellPosToGlobalVec3(cellPos),
             radius: shipParams.radius,
+            level: 1,
             hp: shipParams.hp,
             attackParams: {
                 radius: shipParams.attackRadius,
@@ -527,7 +529,7 @@ export class Game implements ILogger {
                 this._fighterMng.updateShip(obj);
             }
 
-            if (obj instanceof BattleShip) {
+            if (obj instanceof Linkor) {
                 this._battleShipMng.updateShip(obj);
             }
 
