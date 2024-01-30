@@ -47,7 +47,7 @@ export class GameObject implements IUpdatable, ILogger {
         this._owner = aParams.owner;
         this._id = aParams.id;
 
-        this.hp = aParams.hp || 0;
+        this._hp = aParams.hp || 0;
         this._shield = aParams.shield || 0;
         this._isImmortal = aParams.isImmortal || false;
         this._attackParams = aParams.attackParams || null;
@@ -98,10 +98,14 @@ export class GameObject implements IUpdatable, ILogger {
         return this._hp;
     }
 
-    set hp(value: number) {
-        let newHp = Math.max(0, value);
-        this._hp = newHp;
+    get shield(): number {
+        return this._shield;
     }
+
+    // set hp(value: number) {
+    //     let newHp = Math.max(0, value);
+    //     this._hp = newHp;
+    // }
 
     get isImmortal() {
         return this._isImmortal;
@@ -121,6 +125,13 @@ export class GameObject implements IUpdatable, ILogger {
 
     getAttackDamage(): number {
         return MyMath.randomInRange(this._attackParams.minDamage, this._attackParams.maxDamage);
+    }
+
+    damage(aDamage: number) {
+        let shieldDmg = Math.min(this._shield, aDamage);
+        let hpDmg = Math.min(this._hp, aDamage - shieldDmg);
+        this._shield -= shieldDmg;
+        this._hp -= hpDmg;
     }
 
     lookAt(aTarget: THREE.Vector3) {

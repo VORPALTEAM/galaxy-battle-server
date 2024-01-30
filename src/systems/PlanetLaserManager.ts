@@ -95,7 +95,7 @@ export class PlanetLaserManager implements ILogger {
                         break;
                     }
                     else {
-                        obj.hp -= damage;
+                        obj.damage(damage);
                     }
 
                 }

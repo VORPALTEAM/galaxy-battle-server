@@ -49,7 +49,7 @@ export class StarManager implements ILogger {
             const enemy = enemies[i];
             // attack enemy
             const dmg = aStar.getAttackDamage();
-            enemy.hp -= dmg;
+            enemy.damage(dmg);
         }
     }
 

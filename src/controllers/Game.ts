@@ -281,7 +281,7 @@ export class Game implements ILogger {
 
     private onStarAttack(aStar: Star, aTarget: GameObject) {
         const dmg = aStar.getAttackDamage();
-        aTarget.hp -= dmg;
+        aTarget.damage(dmg);
     }
 
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
@@ -391,7 +391,7 @@ export class Game implements ILogger {
         });
 
         if (!isMiss) {
-            aEnemy.hp -= dmg;
+            aEnemy.damage(dmg);
         }
     }
 
