@@ -286,12 +286,12 @@ export class Game implements ILogger {
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.fighters;
+        const shipFactoryParams = new FighterFactory().getShipParams(level);
         const yDir = aStar.isTopStar ? 1 : -1;
         let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
 
-        let factory = new FighterFactory();
 
         let fighter = new Fighter({
             owner: aStar.owner,
@@ -299,18 +299,25 @@ export class Game implements ILogger {
             position: this._field.cellPosToGlobal(cellPos),
             radius: shipParams.radius,
             level: level,
+            hp: shipFactoryParams.hp,
+            shield: shipFactoryParams.shield,
             attackParams: {
                 radius: shipParams.attackRadius,
-                // damage: factory. [shipParams.minDmg, shipParams.maxDmg]
+                damage: shipFactoryParams.damage,
+                hitPenetration: shipFactoryParams.hitPenetration,
+                crit: {
+                    critChance: shipFactoryParams.critChance,
+                    critFactor: shipFactoryParams.critFactor
+                }
             },
+            evasion: shipFactoryParams.evasion,
             lookDir: new THREE.Vector3(0, 0, yDir),
             attackPeriod: shipParams.attackPeriod,
             rotationTime: shipParams.rotationTime,
             prepareJumpTime: shipParams.prepareJumpTime,
-            jumpTime: shipParams.jumpTime,
-            shipParams: factory.getFighterParams(level)
+            jumpTime: shipParams.jumpTime
         });
-        
+
         fighter.onRotate.add(this.onShipRotate, this);
         fighter.onJump.add(this.onShipJump, this);
         fighter.onAttack.add(this.onShipAttack, this);
@@ -325,6 +332,7 @@ export class Game implements ILogger {
     private onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.battleShips;
+        const shipFactoryParams = new LinkorFactory().getShipParams(level);
         const yDir = aStar.isTopStar ? 1 : -1;
         let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
         cellPos.x += aCellDeltaPos.x;
@@ -336,16 +344,23 @@ export class Game implements ILogger {
             position: this._field.cellPosToGlobalVec3(cellPos),
             radius: shipParams.radius,
             level: level,
+            hp: shipFactoryParams.hp,
+            shield: shipFactoryParams.shield,
             attackParams: {
                 radius: shipParams.attackRadius,
-                // damage: [shipParams.minDmg, shipParams.maxDmg]
+                damage: shipFactoryParams.damage,
+                hitPenetration: shipFactoryParams.hitPenetration,
+                crit: {
+                    critChance: shipFactoryParams.critChance,
+                    critFactor: shipFactoryParams.critFactor
+                }
             },
+            evasion: shipFactoryParams.evasion,
             lookDir: new THREE.Vector3(0, 0, yDir),
             attackPeriod: shipParams.attackPeriod,
             rotationTime: shipParams.rotationTime,
             prepareJumpTime: shipParams.prepareJumpTime,
-            jumpTime: shipParams.jumpTime,
-            shipParams: new LinkorFactory().getFighterParams(level)
+            jumpTime: shipParams.jumpTime
         });
 
         linkor.onRotate.add(this.onShipRotate, this);
@@ -378,16 +393,16 @@ export class Game implements ILogger {
 
     private onShipAttack(aShip: SpaceShip, aEnemy: GameObject, aType: AttackType) {
         const dmg = aShip.getAttackDamage();
-        const isMiss = MyMath.randomIntInRange(0, 10) > 9;
         PackSender.getInstance().attack(this._clients, {
             attackType: aType,
             idFrom: aShip.id,
             idTo: aEnemy.id,
             damage: dmg.damage,
-            isMiss: isMiss
+            isMiss: dmg.isMiss,
+            isCrit: dmg.isCrit
         });
 
-        if (!isMiss) {
+        if (!dmg.isMiss) {
             aEnemy.damage(dmg.damage);
         }
     }
@@ -513,7 +528,7 @@ export class Game implements ILogger {
     update(dt: number) {
 
         if (!this._inited) return;
-        
+
         let updateData: ObjectUpdateData[] = [];
         let destroyList: number[] = [];
 

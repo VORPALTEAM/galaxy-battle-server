@@ -12,7 +12,6 @@ export type SpaceShipParams = GameObjectParams & {
     prepareJumpTime: number,
     jumpTime: number,
     level: number,
-    shipParams: ShipParams
 }
 
 export type SpaceShipState = 'idle' | 'rotateForJump' | 'jump' | 'fight' | 'starAttack' | 'dead';
@@ -22,7 +21,6 @@ export class SpaceShip extends GameObject {
     protected _state: SpaceShipState;
     protected _lookDir: THREE.Vector3;
     protected _attackTimer: number;
-    protected _attackObject: GameObject;
     protected _attackType: AttackType;
     protected _isRayCreated = false;
     // rotation
@@ -55,13 +53,6 @@ export class SpaceShip extends GameObject {
         this.lookByDir(this._lookDir);
         this._attackTimer = 0;
         this._state = 'idle';
-        this.initParams();
-    }
-
-    protected initParams() {
-        this._hp = this._shipParams.shipParams.hp;
-        this._shield = this._shipParams.shipParams.shield;
-        this._attackParams.damage = this._shipParams.shipParams.damage;
     }
 
     protected getAngleToPointInDeg(aPoint: THREE.Vector3) {

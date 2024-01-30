@@ -42,8 +42,11 @@ export class GameObject implements IUpdatable, ILogger {
     private _radius: number;
     protected _hp: number;
     protected _shield: number;
+    protected _evasion: number[];
     private _isImmortal = false;
     protected _attackParams: AttackParams;
+    //
+    protected _attackObject: GameObject;
 
 
     constructor(aParams: GameObjectParams) {
@@ -56,7 +59,8 @@ export class GameObject implements IUpdatable, ILogger {
         this._shield = aParams.shield || 0;
         this._isImmortal = aParams.isImmortal || false;
         this._attackParams = aParams.attackParams || null;
-        
+        this._evasion = aParams.evasion || [0, 0];
+            
         this.initMesh();
 
         if (aParams.position) {
@@ -128,10 +132,54 @@ export class GameObject implements IUpdatable, ILogger {
         return this._mesh;
     }
 
+    getEvasion(): number {
+        let res = 0;
+        try {
+            res = MyMath.randomInRange(this._evasion[0], this._evasion[1]);
+        } catch (error) {
+        }
+        return res;
+    }
+
+    getHitPenetration(): number {
+        let res = 0;
+        try {
+            res = MyMath.randomInRange(this._attackParams.hitPenetration[0], this._attackParams.hitPenetration[1]);
+        } catch (error) {
+        }
+        return res;
+    }
+
+    getCritChance(): number {
+        let res = 0;
+        try {
+            res = MyMath.randomInRange(this._attackParams.crit.critChance[0], this._attackParams.crit.critChance[1]);
+        } catch (error) {
+        }
+        return res;
+    }
+
+    getCritFactor(): number {
+        let res = 1;
+        try {
+            res = MyMath.randomInRange(this._attackParams.crit.critFactor[0], this._attackParams.crit.critFactor[1]);
+        } catch (error) {
+        }
+        return res;
+    }
+
     getAttackDamage(): AttackInfo {
-        let isCrit = false;
-        let damage = MyMath.randomInRange(this._attackParams.damage[0], this._attackParams.damage[1]);
+        let hit = this.getHitPenetration();
+        let enemyEvasion = this._attackObject?.getEvasion() || 0;
+        enemyEvasion = Math.max(0, enemyEvasion - hit);
+        let isMiss = MyMath.randomInRange(0, 100) <= enemyEvasion;
+
+        let critChance = this.getCritChance();
+        let isCrit = MyMath.randomInRange(0, 100) <= critChance;
+        let critFactor = isCrit ? this.getCritFactor() : 1;
+        let damage = MyMath.randomInRange(this._attackParams.damage[0], this._attackParams.damage[1]) * critFactor;
         return {
+            isMiss: isMiss,
             isCrit: isCrit,
             damage: damage
         };

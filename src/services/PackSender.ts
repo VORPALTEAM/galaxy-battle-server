@@ -68,7 +68,8 @@ export class PackSender {
         idFrom: number,
         idTo: number,
         damage?: number,
-        isMiss?: boolean
+        isMiss?: boolean,
+        isCrit?: boolean
     }) {
         this.sendData(aClients, PackTitle.attack, aData);
     }

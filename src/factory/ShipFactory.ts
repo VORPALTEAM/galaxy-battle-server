@@ -36,11 +36,59 @@ export abstract class ShipFactory {
         return [min, max];
     }
 
-    getFighterParams(aLevel: number): ShipParams {
+    private getHitPenetration(aLevel: number): number[] {
+        let params = DBShipParams.getHitPenetration(this._shipType);
+        let min = params.min;
+        let max = params.max;
+        if (params.incPercentByLevel > 0) {
+            min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
+            max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
+        }
+        return [min, max];
+    }
+
+    private getCritChance(aLevel: number): number[] {
+        let params = DBShipParams.getCritChance(this._shipType);
+        let min = params.min;
+        let max = params.max;
+        if (params.incPercentByLevel > 0) {
+            min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
+            max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
+        }
+        return [min, max];
+    }
+
+    private getCritFactor(aLevel: number): number[] {
+        let params = DBShipParams.getCritFactor(this._shipType);
+        let min = params.min;
+        let max = params.max;
+        if (params.incPercentByLevel > 0) {
+            min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
+            max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
+        }
+        return [min, max];
+    }
+
+    private getEvasion(aLevel: number): number[] {
+        let params = DBShipParams.getEvasion(this._shipType);
+        let min = params.min;
+        let max = params.max;
+        if (params.incPercentByLevel > 0) {
+            min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
+            max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
+        }
+        return [min, max];
+    }
+
+    getShipParams(aLevel: number): ShipParams {
         let res: ShipParams = {
             hp: this.getHp(aLevel),
             shield: this.getShield(aLevel),
-            damage: this.getDamage(aLevel)
+            damage: this.getDamage(aLevel),
+            hitPenetration: this.getHitPenetration(aLevel),
+            critChance: this.getCritChance(aLevel),
+            critFactor: this.getCritFactor(aLevel),
+            evasion: this.getEvasion(aLevel),
         };
         return res;
     }

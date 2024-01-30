@@ -44,4 +44,40 @@ export class DBShipParams {
         return res;
     }
 
+    static getHitPenetration(aShipType: ShipType): RangeValue {
+        let res: RangeValue = {
+            min: Number(DB.repo.readRecord(`${aShipType}_hitPenetrationPercent_min`) || '10'),
+            max: Number(DB.repo.readRecord(`${aShipType}_hitPenetrationPercent_max`) || '15'),
+            incPercentByLevel: Number(DB.repo.readRecord(`${aShipType}_hitPenetrationPercent_incPercentByLevel`) || '0')
+        };
+        return res;
+    }
+
+    static getCritChance(aShipType: ShipType): RangeValue {
+        let res: RangeValue = {
+            min: Number(DB.repo.readRecord(`${aShipType}_critChancePercent_min`) || '1'),
+            max: Number(DB.repo.readRecord(`${aShipType}_critChancePercent_max`) || '3'),
+            incPercentByLevel: Number(DB.repo.readRecord(`${aShipType}_critChancePercent_incPercentByLevel`) || '0')
+        };
+        return res;
+    }
+
+    static getCritFactor(aShipType: ShipType): RangeValue {
+        let res: RangeValue = {
+            min: Number(DB.repo.readRecord(`${aShipType}_critPowerPercent_min`) || '150'),
+            max: Number(DB.repo.readRecord(`${aShipType}_critPowerPercent_max`) || '175'),
+            incPercentByLevel: 0
+        };
+        return res;
+    }
+
+    static getEvasion(aShipType: ShipType): RangeValue {
+        let res: RangeValue = {
+            min: Number(DB.repo.readRecord(`${aShipType}_evasionPercent_min`) || '15'),
+            max: Number(DB.repo.readRecord(`${aShipType}_evasionPercent_max`) || '20'),
+            incPercentByLevel: 0
+        };
+        return res;
+    }
+
 }

@@ -3,6 +3,10 @@ export type ShipParams = {
     hp: number,
     shield: number,
     damage: number[], // [min, max]
+    hitPenetration: number[], // [min, max]
+    evasion: number[], // [min, max]
+    critChance: number[], // [min, max]
+    critFactor: number[], // [min, max]
 }
 
 // net
@@ -51,6 +55,7 @@ export type GameCompleteData = {
 }
 
 export type AttackInfo = {
+    isMiss: boolean,
     isCrit: boolean,
     damage: number
 }
