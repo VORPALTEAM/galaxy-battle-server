@@ -1,7 +1,8 @@
 
 export type ShipParams = {
     hp: number,
-    shield: number
+    shield: number,
+    damage: number[], // [min, max]
 }
 
 // net
@@ -47,6 +48,11 @@ export type FieldInitData = {
 
 export type GameCompleteData = {
     status: 'win' | 'lose' | 'draw'
+}
+
+export type AttackInfo = {
+    isCrit: boolean,
+    damage: number
 }
 
 export type ObjectUpdateData = {

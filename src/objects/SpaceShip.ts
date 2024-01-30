@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Signal } from "../utils/events/Signal.js";
-import { AttackType, FighterCreateData, ObjectUpdateData, ShipParams } from "../data/Types.js";
+import { AttackInfo, AttackType, FighterCreateData, ObjectUpdateData, ShipParams } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
 import { MyMath } from '../utils/MyMath.js';
 import { FieldCell } from './FieldCell.js';
@@ -61,47 +61,8 @@ export class SpaceShip extends GameObject {
     protected initParams() {
         this._hp = this._shipParams.shipParams.hp;
         this._shield = this._shipParams.shipParams.shield;
+        this._attackParams.damage = this._shipParams.shipParams.damage;
     }
-
-    // protected initHp(aConfig: ShipConfig) {
-    //     const val = aConfig.hp;
-    //     const incByLvl = aConfig.hp.incPercentByLevel;
-    //     const level = this._shipParams.level;
-    //     let p = 10;
-    //     if (Array.isArray(val)) {
-    //         const min = val[0];
-    //         const max = val[1];
-    //         p = MyMath.randomIntInRange(min, max);
-    //     }
-    //     else {
-    //         p = val;
-    //     }
-    //     if (incByLvl > 0) {
-    //         p += p * incByLvl * (level - 1);
-    //     }
-    //     this._hp = p;
-    // }
-
-    // protected initAttackPower(aConfig: ShipConfig) {
-    //     const val = aConfig.attackPower.value;
-    //     const incByLvl = aConfig.attackPower.incPercentByLevel;
-    //     const level = this._shipParams.level;
-    //     if (Array.isArray(val)) {
-    //         const min = val[0];
-    //         const max = val[1];
-    //         this._attackParams.minDamage = min;
-    //         this._attackParams.maxDamage = max;
-    //     }
-    //     else {
-    //         this._attackParams.minDamage = val;
-    //         this._attackParams.maxDamage = val;
-    //     }
-    //     if (incByLvl > 0) {
-    //         this._attackParams.minDamage += this._attackParams.minDamage * incByLvl * (level - 1);
-    //         this._attackParams.maxDamage += this._attackParams.maxDamage * incByLvl * (level - 1);
-    //     }
-    // }
-
 
     protected getAngleToPointInDeg(aPoint: THREE.Vector3) {
         const objectPosition = this.mesh.position.clone();

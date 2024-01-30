@@ -1,9 +1,21 @@
 import * as THREE from 'three';
 import { IUpdatable } from "../interfaces/IUpdatable.js";
-import { ObjectCreateData, ObjectType, ObjectUpdateData } from "../data/Types.js";
+import { AttackInfo, ObjectCreateData, ObjectType, ObjectUpdateData } from "../data/Types.js";
 import { MyMath } from '../utils/MyMath.js';
 import { ILogger } from '../interfaces/ILogger.js';
 import { LogMng } from '../utils/LogMng.js';
+
+type CritParams = {
+    critChance: number[], // [min, max]
+    critFactor: number[] // [min, max]
+}
+
+type AttackParams = {
+    radius: number,
+    damage?: number[], // [min, max]
+    hitPenetration?: number[], // [min, max]
+    crit?: CritParams
+}
 
 export type GameObjectParams = {
     owner: string,
@@ -13,11 +25,8 @@ export type GameObjectParams = {
     isImmortal?: boolean,
     hp?: number,
     shield?: number,
-    attackParams?: {
-        radius: number,
-        minDamage: number,
-        maxDamage: number,
-    }
+    attackParams?: AttackParams,
+    evasion?: number[],
 }
 
 export class GameObject implements IUpdatable, ILogger {
@@ -34,11 +43,7 @@ export class GameObject implements IUpdatable, ILogger {
     protected _hp: number;
     protected _shield: number;
     private _isImmortal = false;
-    protected _attackParams: {
-        radius: number,
-        minDamage: number,
-        maxDamage: number
-    };
+    protected _attackParams: AttackParams;
 
 
     constructor(aParams: GameObjectParams) {
@@ -123,8 +128,13 @@ export class GameObject implements IUpdatable, ILogger {
         return this._mesh;
     }
 
-    getAttackDamage(): number {
-        return MyMath.randomInRange(this._attackParams.minDamage, this._attackParams.maxDamage);
+    getAttackDamage(): AttackInfo {
+        let isCrit = false;
+        let damage = MyMath.randomInRange(this._attackParams.damage[0], this._attackParams.damage[1]);
+        return {
+            isCrit: isCrit,
+            damage: damage
+        };
     }
 
     damage(aDamage: number) {

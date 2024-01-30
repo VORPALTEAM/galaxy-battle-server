@@ -25,10 +25,22 @@ export abstract class ShipFactory {
         return Math.trunc(MyMath.randomInRange(min, max));
     }
 
+    private getDamage(aLevel: number): number[] {
+        let params = DBShipParams.getDamageParams(this._shipType);
+        let min = params.min;
+        let max = params.max;
+        if (params.incPercentByLevel > 0) {
+            min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
+            max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
+        }
+        return [min, max];
+    }
+
     getFighterParams(aLevel: number): ShipParams {
         let res: ShipParams = {
             hp: this.getHp(aLevel),
-            shield: this.getShield(aLevel)
+            shield: this.getShield(aLevel),
+            damage: this.getDamage(aLevel)
         };
         return res;
     }

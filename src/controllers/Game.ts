@@ -76,10 +76,10 @@ const SETTINGS = {
 
     fighters: {
         radius: 3,
-        hp: 100,
+        // hp: 100,
         attackRadius: 12,
-        minDmg: 10,
-        maxDmg: 15,
+        // minDmg: 10,
+        // maxDmg: 15,
         attackPeriod: 1,
         rotationTime: 1,
         prepareJumpTime: 0.5,
@@ -88,10 +88,10 @@ const SETTINGS = {
 
     battleShips: {
         radius: 5,
-        hp: 300,
+        // hp: 300,
         attackRadius: 36,
-        minDmg: 20,
-        maxDmg: 30,
+        // minDmg: 20,
+        // maxDmg: 30,
         attackPeriod: 1,
         rotationTime: 1,
         prepareJumpTime: 0.5,
@@ -223,8 +223,7 @@ export class Game implements ILogger {
                 hp: starParams.hp,
                 attackParams: {
                     radius: starParams.attackRadius,
-                    minDamage: starParams.minDmg,
-                    maxDamage: starParams.maxDmg
+                    damage: [starParams.minDmg, starParams.maxDmg],
                 },
                 isTopStar: starData.cellPos.y < SETTINGS.field.size.rows / 2,
                 fightersSpawnDeltaPos: starData.fightersSpawnDeltaPos,
@@ -281,7 +280,7 @@ export class Game implements ILogger {
 
     private onStarAttack(aStar: Star, aTarget: GameObject) {
         const dmg = aStar.getAttackDamage();
-        aTarget.damage(dmg);
+        aTarget.damage(dmg.damage);
     }
 
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
@@ -292,24 +291,24 @@ export class Game implements ILogger {
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
 
+        let factory = new FighterFactory();
+
         let fighter = new Fighter({
             owner: aStar.owner,
             id: this.generateObjectId(),
             position: this._field.cellPosToGlobal(cellPos),
             radius: shipParams.radius,
             level: level,
-            hp: shipParams.hp,
             attackParams: {
                 radius: shipParams.attackRadius,
-                minDamage: shipParams.minDmg,
-                maxDamage: shipParams.maxDmg
+                // damage: factory. [shipParams.minDmg, shipParams.maxDmg]
             },
             lookDir: new THREE.Vector3(0, 0, yDir),
             attackPeriod: shipParams.attackPeriod,
             rotationTime: shipParams.rotationTime,
             prepareJumpTime: shipParams.prepareJumpTime,
             jumpTime: shipParams.jumpTime,
-            shipParams: new FighterFactory().getFighterParams(level)
+            shipParams: factory.getFighterParams(level)
         });
         
         fighter.onRotate.add(this.onShipRotate, this);
@@ -337,11 +336,9 @@ export class Game implements ILogger {
             position: this._field.cellPosToGlobalVec3(cellPos),
             radius: shipParams.radius,
             level: level,
-            hp: shipParams.hp,
             attackParams: {
                 radius: shipParams.attackRadius,
-                minDamage: shipParams.minDmg,
-                maxDamage: shipParams.maxDmg
+                // damage: [shipParams.minDmg, shipParams.maxDmg]
             },
             lookDir: new THREE.Vector3(0, 0, yDir),
             attackPeriod: shipParams.attackPeriod,
@@ -386,12 +383,12 @@ export class Game implements ILogger {
             attackType: aType,
             idFrom: aShip.id,
             idTo: aEnemy.id,
-            damage: dmg,
+            damage: dmg.damage,
             isMiss: isMiss
         });
 
         if (!isMiss) {
-            aEnemy.damage(dmg);
+            aEnemy.damage(dmg.damage);
         }
     }
 

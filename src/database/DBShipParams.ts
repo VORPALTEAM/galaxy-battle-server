@@ -35,4 +35,13 @@ export class DBShipParams {
         return res;
     }
 
+    static getDamageParams(aShipType: ShipType): RangeValue {
+        let res: RangeValue = {
+            min: Number(DB.repo.readRecord(`${aShipType}_attackPower_min`) || '10'),
+            max: Number(DB.repo.readRecord(`${aShipType}_attackPower_max`) || '15'),
+            incPercentByLevel: Number(DB.repo.readRecord(`${aShipType}_attackPower_incPercentByLevel`) || '0')
+        };
+        return res;
+    }
+
 }
