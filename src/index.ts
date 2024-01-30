@@ -6,6 +6,7 @@ import { LogMng } from './utils/LogMng.js';
 import dotenv from 'dotenv';
 import * as fs from 'fs/promises';
 import { Config } from './data/Config.js';
+import { DB } from './database/DB.js';
 
 const configPath = './src/config.json';
 
@@ -20,6 +21,18 @@ else {
 
 LogMng.setMode(LogMng.MODE_DEBUG);
 LogMng.system(`LogMng.mode = ${LogMng.mode}`);
+
+// init DB
+
+DB.init({
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: Number(process.env.DB_PORT)
+});
+
+// init connection
 
 const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3089';
 
@@ -36,13 +49,12 @@ const io = new Server(server, {
 // });
 
 try {
-    const rawData = await fs.readFile(configPath);
-    const config = JSON.parse(rawData.toString());
-    Config.fighterParams = config.fighter;
-    Config.linkorParams = config.linkor;
-    console.log(`fighter params:`, Config.fighterParams);
-    console.log(`linkor params:`, Config.linkorParams);
-
+    // const rawData = await fs.readFile(configPath);
+    // const config = JSON.parse(rawData.toString());
+    // Config.fighterConfig = config.fighter;
+    // Config.linkorConfig = config.linkor;
+    // console.log(`Fighter config:`, Config.fighterConfig);
+    // console.log(`Linkor config:`, Config.linkorConfig);
 }
 catch (error) {
     console.error('Error reading or parsing config file:', error.message);

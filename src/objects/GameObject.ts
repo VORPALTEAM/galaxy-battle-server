@@ -10,8 +10,9 @@ export type GameObjectParams = {
     id: number,
     radius: number,
     position?: THREE.Vector3 | { x: number, y: number },
-    hp?: number,
     isImmortal?: boolean,
+    hp?: number,
+    shield?: number,
     attackParams?: {
         radius: number,
         minDamage: number,
@@ -20,6 +21,7 @@ export type GameObjectParams = {
 }
 
 export class GameObject implements IUpdatable, ILogger {
+
     protected _className: string;
     protected _mesh: THREE.Mesh;
     // owner wallet id
@@ -30,13 +32,13 @@ export class GameObject implements IUpdatable, ILogger {
     // object radius
     private _radius: number;
     protected _hp: number;
+    protected _shield: number;
     private _isImmortal = false;
     protected _attackParams: {
         radius: number,
         minDamage: number,
         maxDamage: number
     };
-
 
 
     constructor(aParams: GameObjectParams) {
@@ -46,6 +48,7 @@ export class GameObject implements IUpdatable, ILogger {
         this._id = aParams.id;
 
         this.hp = aParams.hp || 0;
+        this._shield = aParams.shield || 0;
         this._isImmortal = aParams.isImmortal || false;
         this._attackParams = aParams.attackParams || null;
         

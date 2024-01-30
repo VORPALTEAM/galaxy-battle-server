@@ -1,4 +1,10 @@
-import { Planet } from "src/objects/Planet";
+
+export type ShipParams = {
+    hp: number,
+    shield: number
+}
+
+// net
 
 export enum PackTitle {
     // for lobby

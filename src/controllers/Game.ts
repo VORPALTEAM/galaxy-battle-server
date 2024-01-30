@@ -16,7 +16,9 @@ import { StarManager } from '../systems/StarManager.js';
 import { Linkor } from '../objects/Linkor.js';
 import { BattleShipManager } from '../systems/BattleShipManager.js';
 import { PlanetLaserManager } from '../systems/PlanetLaserManager.js';
-import { SpaceShip } from 'src/objects/SpaceShip.js';
+import { SpaceShip } from '../objects/SpaceShip.js';
+import { FighterFactory } from '../factory/FighterFactory.js';
+import { LinkorFactory } from '../factory/LinkorFactory.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -231,7 +233,7 @@ export class Game implements ILogger {
             });
 
             star.onFighterSpawn.add(this.onStarFighterSpawn, this);
-            star.onBattleShipSpawn.add(this.onStarBattleShipSpawn, this);
+            star.onLinkorSpawn.add(this.onStarLinkorSpawn, this);
 
             this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
             PackSender.getInstance().starCreate(this._clients, star.getCreateData());
@@ -283,6 +285,7 @@ export class Game implements ILogger {
     }
 
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+        const level = 1;
         const shipParams = SETTINGS.fighters;
         const yDir = aStar.isTopStar ? 1 : -1;
         let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
@@ -294,7 +297,7 @@ export class Game implements ILogger {
             id: this.generateObjectId(),
             position: this._field.cellPosToGlobal(cellPos),
             radius: shipParams.radius,
-            level: 1,
+            level: level,
             hp: shipParams.hp,
             attackParams: {
                 radius: shipParams.attackRadius,
@@ -305,7 +308,8 @@ export class Game implements ILogger {
             attackPeriod: shipParams.attackPeriod,
             rotationTime: shipParams.rotationTime,
             prepareJumpTime: shipParams.prepareJumpTime,
-            jumpTime: shipParams.jumpTime
+            jumpTime: shipParams.jumpTime,
+            shipParams: new FighterFactory().getFighterParams(level)
         });
         
         fighter.onRotate.add(this.onShipRotate, this);
@@ -319,19 +323,20 @@ export class Game implements ILogger {
         this._objects.set(fighter.id, fighter);
     }
 
-    private onStarBattleShipSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+    private onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+        const level = 1;
         const shipParams = SETTINGS.battleShips;
         const yDir = aStar.isTopStar ? 1 : -1;
         let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
 
-        let battleShip = new Linkor({
+        let linkor = new Linkor({
             owner: aStar.owner,
             id: this.generateObjectId(),
             position: this._field.cellPosToGlobalVec3(cellPos),
             radius: shipParams.radius,
-            level: 1,
+            level: level,
             hp: shipParams.hp,
             attackParams: {
                 radius: shipParams.attackRadius,
@@ -342,18 +347,19 @@ export class Game implements ILogger {
             attackPeriod: shipParams.attackPeriod,
             rotationTime: shipParams.rotationTime,
             prepareJumpTime: shipParams.prepareJumpTime,
-            jumpTime: shipParams.jumpTime
+            jumpTime: shipParams.jumpTime,
+            shipParams: new LinkorFactory().getFighterParams(level)
         });
 
-        battleShip.onRotate.add(this.onShipRotate, this);
-        battleShip.onJump.add(this.onShipJump, this);
-        battleShip.onAttack.add(this.onShipAttack, this);
-        battleShip.onRayStart.add(this.onShipRayStart, this);
+        linkor.onRotate.add(this.onShipRotate, this);
+        linkor.onJump.add(this.onShipJump, this);
+        linkor.onAttack.add(this.onShipAttack, this);
+        linkor.onRayStart.add(this.onShipRayStart, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
-        PackSender.getInstance().starCreate(this._clients, battleShip.getCreateData());
+        PackSender.getInstance().starCreate(this._clients, linkor.getCreateData());
 
-        this._objects.set(battleShip.id, battleShip);
+        this._objects.set(linkor.id, linkor);
     }
 
     private onShipRotate(aShip: SpaceShip, aPoint: THREE.Vector3, aDur: number) {

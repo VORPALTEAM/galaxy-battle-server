@@ -27,7 +27,7 @@ export class Star extends GameObject {
      * f( Star, spawnDeltaPos: {x, y} )
      */
     onFighterSpawn = new Signal();
-    onBattleShipSpawn = new Signal();
+    onLinkorSpawn = new Signal();
     onAttack = new Signal();
     
     constructor(aParams: StarParams) {
@@ -49,7 +49,7 @@ export class Star extends GameObject {
         const deltaPos = this._params.battleShipSpawnDeltaPos;
         for (let i = 0; i < deltaPos.length; i++) {
             const dPos = deltaPos[i];
-            this.onBattleShipSpawn.dispatch(this, dPos);
+            this.onLinkorSpawn.dispatch(this, dPos);
         }
     }
 
@@ -113,7 +113,7 @@ export class Star extends GameObject {
 
     free(): void {
         this.onFighterSpawn.removeAll();
-        this.onBattleShipSpawn.removeAll();
+        this.onLinkorSpawn.removeAll();
         this.onAttack.removeAll();
         super.free();
     }
