@@ -160,6 +160,7 @@ export class SpaceShip extends GameObject {
             type: this._type,
             owner: this.owner,
             hp: this.hp,
+            shield: this.shield,
             id: this.id,
             radius: this.radius,
             attackRadius: this._attackParams.radius,
@@ -175,7 +176,8 @@ export class SpaceShip extends GameObject {
     getUpdateData(): ObjectUpdateData {
         return {
             id: this.id,
-            hp: this._hp
+            hp: this._hp,
+            shield: this.shield
         };
     }
 

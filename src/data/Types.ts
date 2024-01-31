@@ -63,6 +63,7 @@ export type AttackInfo = {
 export type ObjectUpdateData = {
     id: number,
     hp?: number,
+    shield?: number,
     pos?: {
         x: number,
         y: number,
@@ -90,7 +91,7 @@ export type StarCreateData = ObjectCreateData & {
 }
 
 export type FighterCreateData = ObjectCreateData & {
-    
+    shield: number
 }
 
 export type PlanetLaserData = {
