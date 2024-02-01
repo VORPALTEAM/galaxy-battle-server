@@ -95,7 +95,11 @@ export class PlanetLaserManager implements ILogger {
                         break;
                     }
                     else {
-                        obj.damage(damage);
+                        obj.damage({
+                            damage: damage,
+                            isCrit: false,
+                            isMiss: false
+                        });
                     }
 
                 }

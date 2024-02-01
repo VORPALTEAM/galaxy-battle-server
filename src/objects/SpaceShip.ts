@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Signal } from "../utils/events/Signal.js";
-import { AttackInfo, AttackType, FighterCreateData, ObjectUpdateData, ShipParams } from "../data/Types.js";
+import { DamageInfo, AttackType, FighterCreateData, ObjectUpdateData, ShipParams } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
 import { MyMath } from '../utils/MyMath.js';
 import { FieldCell } from './FieldCell.js';

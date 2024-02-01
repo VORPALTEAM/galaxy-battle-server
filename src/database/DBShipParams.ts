@@ -46,8 +46,8 @@ export class DBShipParams {
 
     static getHitPenetration(aShipType: ShipType): RangeValue {
         let res: RangeValue = {
-            min: Number(DB.repo.readRecord(`${aShipType}_hitPenetrationPercent_min`) || '10'),
-            max: Number(DB.repo.readRecord(`${aShipType}_hitPenetrationPercent_max`) || '15'),
+            min: Number(DB.repo.readRecord(`${aShipType}_hitPenetrationPercent_min`) || '1'),
+            max: Number(DB.repo.readRecord(`${aShipType}_hitPenetrationPercent_max`) || '3'),
             incPercentByLevel: Number(DB.repo.readRecord(`${aShipType}_hitPenetrationPercent_incPercentByLevel`) || '0')
         };
         return res;

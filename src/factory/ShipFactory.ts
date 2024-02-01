@@ -36,7 +36,7 @@ export abstract class ShipFactory {
         return [min, max];
     }
 
-    private getHitPenetration(aLevel: number): number[] {
+    private getHitPenetration(aLevel: number): number {
         let params = DBShipParams.getHitPenetration(this._shipType);
         let min = params.min;
         let max = params.max;
@@ -44,10 +44,11 @@ export abstract class ShipFactory {
             min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
             max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
         }
-        return [min, max];
+        // return [min, max];
+        return MyMath.randomInRange(min, max);
     }
 
-    private getCritChance(aLevel: number): number[] {
+    private getCritChance(aLevel: number): number {
         let params = DBShipParams.getCritChance(this._shipType);
         let min = params.min;
         let max = params.max;
@@ -55,21 +56,23 @@ export abstract class ShipFactory {
             min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
             max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
         }
-        return [min, max];
+        // return [min, max];
+        return MyMath.randomInRange(min, max);
     }
 
-    private getCritFactor(aLevel: number): number[] {
+    private getCritFactor(aLevel: number): number {
         let params = DBShipParams.getCritFactor(this._shipType);
-        let min = params.min;
-        let max = params.max;
+        let min = params.min / 100;
+        let max = params.max / 100;
         if (params.incPercentByLevel > 0) {
             min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
             max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
         }
-        return [min, max];
+        // return [min, max];
+        return MyMath.randomInRange(min, max);
     }
 
-    private getEvasion(aLevel: number): number[] {
+    private getEvasion(aLevel: number): number {
         let params = DBShipParams.getEvasion(this._shipType);
         let min = params.min;
         let max = params.max;
@@ -77,7 +80,8 @@ export abstract class ShipFactory {
             min += params.min * (100 / params.incPercentByLevel) * (aLevel - 1);
             max += params.max * (100 / params.incPercentByLevel) * (aLevel - 1);
         }
-        return [min, max];
+        // return [min, max];
+        return MyMath.randomInRange(min, max);
     }
 
     getShipParams(aLevel: number): ShipParams {

@@ -3,10 +3,10 @@ export type ShipParams = {
     hp: number,
     shield: number,
     damage: number[], // [min, max]
-    hitPenetration: number[], // [min, max]
-    evasion: number[], // [min, max]
-    critChance: number[], // [min, max]
-    critFactor: number[], // [min, max]
+    hitPenetration: number, // [min, max]
+    evasion: number, // [min, max]
+    critChance: number, // [min, max]
+    critFactor: number, // [min, max]
 }
 
 // net
@@ -19,7 +19,6 @@ export enum PackTitle {
     gameSearching = 'gameSearching', // status, update, info
     exitGame = 'exitGame',
     gameStart = 'gameStart',
-    // exitGame = 'exitGame',
     gameComplete = 'gameComplete',
     // for game
     fieldInit = 'fieldInit',
@@ -31,7 +30,8 @@ export enum PackTitle {
     attack = 'attack',
     rayStart = 'rayStart',
     rayStop = 'rayStop',
-    planetLaser = 'planetLaser'
+    planetLaser = 'planetLaser',
+    damage = 'damage'
 }
 
 export type ObjectType = 'Star' | 'Planet' | 'FighterShip' | 'BattleShip' | 'Homing';
@@ -54,10 +54,11 @@ export type GameCompleteData = {
     status: 'win' | 'lose' | 'draw'
 }
 
-export type AttackInfo = {
-    isMiss: boolean,
-    isCrit: boolean,
-    damage: number
+export type DamageInfo = {
+    damage: number,
+    isMiss?: boolean,
+    isCrit?: boolean,
+    critFactor?: number
 }
 
 export type ObjectUpdateData = {

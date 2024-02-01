@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -76,10 +76,7 @@ const SETTINGS = {
 
     fighters: {
         radius: 3,
-        // hp: 100,
         attackRadius: 12,
-        // minDmg: 10,
-        // maxDmg: 15,
         attackPeriod: 1,
         rotationTime: 1,
         prepareJumpTime: 0.5,
@@ -88,10 +85,7 @@ const SETTINGS = {
 
     battleShips: {
         radius: 5,
-        // hp: 300,
         attackRadius: 36,
-        // minDmg: 20,
-        // maxDmg: 30,
         attackPeriod: 1,
         rotationTime: 1,
         prepareJumpTime: 0.5,
@@ -215,6 +209,7 @@ export class Game implements ILogger {
         let stars: Star[] = [];
         for (let i = 0; i < starsData.length; i++) {
             const starData = starsData[i];
+
             let star = new Star({
                 id: this.generateObjectId(),
                 owner: this._clients[i].walletId,
@@ -233,6 +228,7 @@ export class Game implements ILogger {
 
             star.onFighterSpawn.add(this.onStarFighterSpawn, this);
             star.onLinkorSpawn.add(this.onStarLinkorSpawn, this);
+            star.onDamage.add(this.onObjectDamage, this);
 
             this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
             PackSender.getInstance().starCreate(this._clients, star.getCreateData());
@@ -278,11 +274,6 @@ export class Game implements ILogger {
         return null;
     }
 
-    private onStarAttack(aStar: Star, aTarget: GameObject) {
-        const dmg = aStar.getAttackDamage();
-        aTarget.damage(dmg.damage);
-    }
-
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.fighters;
@@ -322,6 +313,7 @@ export class Game implements ILogger {
         fighter.onJump.add(this.onShipJump, this);
         fighter.onAttack.add(this.onShipAttack, this);
         fighter.onRayStart.add(this.onShipRayStart, this);
+        fighter.onDamage.add(this.onObjectDamage, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
         PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
@@ -367,13 +359,14 @@ export class Game implements ILogger {
         linkor.onJump.add(this.onShipJump, this);
         linkor.onAttack.add(this.onShipAttack, this);
         linkor.onRayStart.add(this.onShipRayStart, this);
+        linkor.onDamage.add(this.onObjectDamage, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
         PackSender.getInstance().starCreate(this._clients, linkor.getCreateData());
 
         this._objects.set(linkor.id, linkor);
     }
-
+    
     private onShipRotate(aShip: SpaceShip, aPoint: THREE.Vector3, aDur: number) {
         PackSender.getInstance().rotate(this._clients, {
             id: aShip.id,
@@ -392,7 +385,10 @@ export class Game implements ILogger {
     }
 
     private onShipAttack(aShip: SpaceShip, aEnemy: GameObject, aType: AttackType) {
-        const dmg = aShip.getAttackDamage();
+        const isStar = aEnemy instanceof Star;
+        const dmg = aShip.getAttackDamage({
+            noCrit: isStar
+        });
         PackSender.getInstance().attack(this._clients, {
             attackType: aType,
             idFrom: aShip.id,
@@ -402,15 +398,22 @@ export class Game implements ILogger {
             isCrit: dmg.isCrit
         });
 
-        if (!dmg.isMiss) {
-            aEnemy.damage(dmg.damage);
-        }
+        aEnemy.damage(dmg);
+        
     }
 
     onShipRayStart(aShip: SpaceShip, aEnemy: GameObject) {
         PackSender.getInstance().rayStart(this._clients, {
             idFrom: aShip.id,
             idTo: aEnemy.id
+        });
+    }
+
+    private onObjectDamage(aSender: GameObject, aAttackInfo: DamageInfo) {
+        PackSender.getInstance().damage(this._clients, {
+            id: aSender.id,
+            pos: aSender.position,
+            info: aAttackInfo
         });
     }
 
