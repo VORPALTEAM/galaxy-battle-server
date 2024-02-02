@@ -183,6 +183,7 @@ export class GameObject implements IUpdatable, ILogger {
         let enemyEvasion = this._attackObject?.getEvasion() || 0;
         enemyEvasion = Math.max(0, enemyEvasion - hit);
         let isMiss = MyMath.randomInRange(0, 100) <= enemyEvasion;
+        if (aParams?.noMiss) isMiss = false;
 
         if (isMiss) {
             LogMng.debug(`miss:`, {
@@ -214,6 +215,7 @@ export class GameObject implements IUpdatable, ILogger {
             isCrit: isCrit,
             critFactor: critFactor
         };
+        
     }
 
     damage(aAtkInfo: DamageInfo) {
@@ -228,7 +230,6 @@ export class GameObject implements IUpdatable, ILogger {
     }
 
     lookAt(aTarget: THREE.Vector3) {
-        // let p = new THREE.Vector3(aPoint.x, 0, aPoint.y);
         this._mesh.lookAt(aTarget);
     }
 

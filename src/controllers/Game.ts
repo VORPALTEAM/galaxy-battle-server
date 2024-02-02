@@ -385,9 +385,9 @@ export class Game implements ILogger {
     }
 
     private onShipAttack(aShip: SpaceShip, aEnemy: GameObject, aType: AttackType) {
-        const isStar = aEnemy instanceof Star;
         const dmg = aShip.getAttackDamage({
-            noCrit: isStar
+            noCrit: aType == 'ray',
+            noMiss: aType == 'ray'
         });
         PackSender.getInstance().attack(this._clients, {
             attackType: aType,
