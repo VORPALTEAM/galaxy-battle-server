@@ -93,19 +93,4 @@ export class PackSender {
         this.sendData(aClients, PackTitle.planetLaser, aData);
     }
 
-
-    
-
-    attackRay_OLD(aData: {
-        idFrom: string,
-        idTo: string,
-        state: 'start' | 'end'
-    }): string {
-        return JSON.stringify({
-            title: PackTitle.attack,
-            type: 'ray',
-            data: aData
-        });
-    }
-
 }

@@ -3,12 +3,9 @@ import { Star } from "../objects/Star.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Field } from "../objects/Field.js";
 import { Fighter } from "../objects/Fighter.js";
-import { IUpdatable } from "../interfaces/IUpdatable.js";
 import { GameObject } from "../objects/GameObject.js";
 import { SpaceShip } from "../objects/SpaceShip.js";
 import { AttackType } from "src/data/Types.js";
-
-const THINK_PERIOD = 10;
 
 export class FighterManager implements ILogger {
     protected _className = 'FighterManager';
@@ -173,10 +170,7 @@ export class FighterManager implements ILogger {
                 this._field.takeCell(nextCell.x, nextCell.y);
 
             } break;
-        
-            default:
-                // this.logWarn(`unknown Fighter state = ${aFighter.state}`);
-                break;
+            
         }
 
     }

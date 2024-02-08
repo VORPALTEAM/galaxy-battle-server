@@ -19,6 +19,8 @@ import { PlanetLaserManager } from '../systems/PlanetLaserManager.js';
 import { SpaceShip } from '../objects/SpaceShip.js';
 import { FighterFactory } from '../factory/FighterFactory.js';
 import { LinkorFactory } from '../factory/LinkorFactory.js';
+import { Tower } from '../objects/Tower.js';
+import { TowerManager } from '../systems/TowerManager.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -66,6 +68,32 @@ const SETTINGS = {
         }
     ],
 
+    towerParams: {
+        hp: 500,
+        radius: 3,
+        attackRadius: 22,
+        minDmg: 20,
+        maxDmg: 40
+    },
+    towers: [
+        {
+            cellPos: { x: 3 - 2, y: 1 + 2 },
+            ownerId: 0
+        },
+        {
+            cellPos: { x: 3 + 2, y: 1 + 2 },
+            ownerId: 0
+        },
+        {
+            cellPos: { x: 3 - 2, y: 9 - 2 },
+            ownerId: 1
+        },
+        {
+            cellPos: { x: 3 + 2, y: 9 - 2 },
+            ownerId: 1
+        }
+    ],
+
     planet: {
         radius: 1,
         orbitRadius: 15, // planet orbit radius
@@ -103,6 +131,7 @@ export class Game implements ILogger {
     private _clients: Client[];
     private _field: Field;
     private _starMng: StarManager;
+    private _towerMng: TowerManager;
     private _fighterMng: FighterManager;
     private _battleShipMng: BattleShipManager;
     private _abilsMng: PlanetLaserManager;
@@ -197,11 +226,21 @@ export class Game implements ILogger {
         this._field = new Field(SETTINGS.field);
 
         this._starMng = new StarManager(this._objects);
+        this._towerMng = new TowerManager({ field: this._field, objects: this._objects });
         this._fighterMng = new FighterManager(this._field, this._objects);
         this._battleShipMng = new BattleShipManager(this._field, this._objects);
 
         this._abilsMng = new PlanetLaserManager(this._objects);
         this._abilsMng.onLaserAttack.add(this.onPlanetLaserAttack, this);
+
+        this.initStars();
+        this.initTowers();
+
+        this._inited = true;
+
+    }
+
+    private initStars() {
 
         // create stars
         const starParams = SETTINGS.starParams;
@@ -262,7 +301,39 @@ export class Game implements ILogger {
             this._objects.set(planet.id, planet);
         }
 
-        this._inited = true;
+    }
+
+    private initTowers() {
+
+        // create stars
+        const towerParams = SETTINGS.towerParams;
+        const towers = SETTINGS.towers;
+        for (let i = 0; i < towers.length; i++) {
+            const towerData = towers[i];
+
+            let tower = new Tower({
+                id: this.generateObjectId(),
+                owner: this._clients[towerData.ownerId].walletId,
+                position: this._field.cellPosToGlobalVec3(towerData.cellPos),
+                radius: towerParams.radius,
+                hp: towerParams.hp,
+                attackParams: {
+                    radius: towerParams.attackRadius,
+                    damage: [towerParams.minDmg, towerParams.maxDmg],
+                },
+                attackPeriod: 1
+            });
+
+            tower.onAttack.add(this.onShipAttack, this);
+            tower.onDamage.add(this.onObjectDamage, this);
+
+            this._field.takeCell(towerData.cellPos.x, towerData.cellPos.y);
+            PackSender.getInstance().starCreate(this._clients, tower.getCreateData());
+            this._objects.set(tower.id, tower);
+
+            // this._towerMng.addStar(tower);
+
+        }
 
     }
 
@@ -544,6 +615,10 @@ export class Game implements ILogger {
                 this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
                 obj.free();
                 return;
+            }
+
+            if (obj instanceof Tower) {
+                this._towerMng.updateTower(obj);
             }
 
             if (obj instanceof Fighter) {

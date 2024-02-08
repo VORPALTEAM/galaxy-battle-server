@@ -32,6 +32,7 @@ export class Star extends GameObject {
     
     constructor(aParams: StarParams) {
         super(aParams);
+        this._type = 'Star';
         this._params = aParams;
         this._timerFighterSpawn = FIGHTER_SPAWN_START_DELAY;
         this._timerBattleShipSpawn = BATTLESHIP_SPAWN_START_DELAY;
