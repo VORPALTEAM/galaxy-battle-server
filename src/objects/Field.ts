@@ -221,6 +221,11 @@ export class Field implements ILogger {
         return c;
     }
 
+    isPosOnCell(aPosition: THREE.Vector3, aCell: { x: number, y: number }): boolean {
+        let cp = this.globalVec3ToCellPos(aPosition);
+        return cp.x == aCell.x && cp.y == aCell.y;
+    }
+
     isCellTaken(aCell: { x: number, y: number }): boolean {
         let cell = this.getCell(aCell.x, aCell.y);
         if (!cell) return false;

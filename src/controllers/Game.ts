@@ -345,6 +345,15 @@ export class Game implements ILogger {
         return null;
     }
 
+    private getObjectOnCell(aCellPos: { x: number, y: number }): GameObject {
+        this._objects.forEach(obj => {
+            if (this._field.isPosOnCell(obj.position, aCellPos)) {
+                return obj;
+            }
+        });
+        return null;
+    }
+
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.fighters;
@@ -355,8 +364,20 @@ export class Game implements ILogger {
         cellPos.y += aCellDeltaPos.y;
 
         if (this._field.isCellTaken(cellPos)) {
-            let neighbors = this._field.getNeighbors(cellPos);
-            
+            let neighbors = this._field.getNeighbors(cellPos, true);
+            if (neighbors.length <= 0) {
+                // explosion current object on the cell
+                let obj = this.getObjectOnCell(cellPos);
+                if (obj) {
+                    obj.damage({
+                        damage: obj.hp * 2
+                    });
+                }
+                return;
+            }
+            else {
+                cellPos = neighbors[0];
+            }
         }
 
 
