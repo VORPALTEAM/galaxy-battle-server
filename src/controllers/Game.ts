@@ -38,7 +38,7 @@ const SETTINGS = {
     starParams: {
         hp: 1000,
         radius: 5,
-        attackRadius: 12,
+        attackRadius: 14,
         minDmg: 10,
         maxDmg: 20,
         minusHpPerSec: 1
@@ -68,10 +68,18 @@ const SETTINGS = {
         }
     ],
 
+    planet: {
+        radius: 1,
+        orbitRadius: 15, // planet orbit radius
+        orbitRotationPeriod: 60, // planet orbit rotation period in sec
+        rotationPeriod: 5, // planet rotation period in sec
+        laserDamage: 120
+    },
+
     towerParams: {
         hp: 500,
         radius: 3,
-        attackRadius: 22,
+        attackRadius: 23,
         minDmg: 20,
         maxDmg: 40
     },
@@ -94,17 +102,9 @@ const SETTINGS = {
         }
     ],
 
-    planet: {
-        radius: 1,
-        orbitRadius: 15, // planet orbit radius
-        orbitRotationPeriod: 60, // planet orbit rotation period in sec
-        rotationPeriod: 5, // planet rotation period in sec
-        laserDamage: 120
-    },
-
     fighters: {
         radius: 3,
-        attackRadius: 12,
+        attackRadius: 14,
         attackPeriod: 1,
         rotationTime: 1,
         prepareJumpTime: 0.5,
@@ -113,7 +113,7 @@ const SETTINGS = {
 
     battleShips: {
         radius: 5,
-        attackRadius: 36,
+        attackRadius: 22,
         attackPeriod: 1,
         rotationTime: 1,
         prepareJumpTime: 0.5,

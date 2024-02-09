@@ -116,15 +116,15 @@ export class Tower extends GameObject {
         this._state = 'fight';
         this._attackObject = aAttackObject;
         this._attackType = aAttackType;
-        if (this._attackType == 'ray') {
-            this.refreshAttackTimer();
-            this._isRayCreated = false;
-        }
+        // if (this._attackType == 'ray') {
+        //     this.refreshAttackTimer();
+        //     this._isRayCreated = false;
+        // }
         // rotate to target
-        let anDeg = Math.abs(this.getAngleToPointInDeg(this._attackObject.position));
-        let t = this._towerParams.rotationTime * 1000;
-        let rotateDur = anDeg >= 30 ? t : t * anDeg / 30;
-        this.rotateToPoint(this._attackObject.position, rotateDur);
+        // let anDeg = Math.abs(this.getAngleToPointInDeg(this._attackObject.position));
+        // let t = this._towerParams.rotationTime * 1000;
+        // let rotateDur = anDeg >= 30 ? t : t * anDeg / 30;
+        // this.rotateToPoint(this._attackObject.position, rotateDur);
     }
 
     stopAttack() {
@@ -184,22 +184,20 @@ export class Tower extends GameObject {
 
     update(dt: number) {
         
+        if (this._attackTimer > 0) this._attackTimer -= dt;
+
         switch (this._state) {
             
             case 'fight':
-
                 if (this.isTurning) break;
-                if (this._attackTimer > 0) this._attackTimer -= dt;
-                switch (this._attackType) {
-                    case 'ray':
-                        if (!this._isRayCreated) {
-                            this.createRay();
-                        }
-                        break;
-                }
-                
+                // switch (this._attackType) {
+                //     case 'ray':
+                //         if (!this._isRayCreated) {
+                //             this.createRay();
+                //         }
+                //         break;
+                // }
                 this.updateAttack(dt);
-
                 break;
             
         }

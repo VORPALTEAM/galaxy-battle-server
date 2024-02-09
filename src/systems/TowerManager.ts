@@ -4,8 +4,9 @@ import { LogMng } from "../utils/LogMng.js";
 import { Field } from "../objects/Field.js";
 import { GameObject } from "../objects/GameObject.js";
 import { SpaceShip } from "../objects/SpaceShip.js";
-import { AttackType } from "src/data/Types.js";
-import { Tower } from "src/objects/Tower.js";
+import { AttackType } from "../data/Types.js";
+import { Tower } from "../objects/Tower.js";
+import { Linkor } from "../objects/Linkor.js";
 
 export class TowerManager implements ILogger {
     protected _className = 'TowerManager';
@@ -34,20 +35,20 @@ export class TowerManager implements ILogger {
     private getNearestEnemyInAtkRadius(aTower: Tower): GameObject {
         let minDist = Number.MAX_SAFE_INTEGER;
         let enemy: GameObject = null;
-        let starFound = false;
+        let mainTargetFound = false;
         this._objects.forEach(obj => {
 
-            if (starFound) return;
+            if (mainTargetFound) return;
             
             const dist = aTower.position.distanceTo(obj.position);
             const isEnemy = obj.owner != aTower.owner;
             if (isEnemy && !obj.isImmortal) {
-                const isEnemyStar = obj instanceof Star;
+                const isEnemyLinkor = obj instanceof Linkor;
                 // this.logDebug(`getNearestEnemyInAtkRadius: atkRadius: ${aFighter.attackRadius} dist: ${dist}`);
-                if (dist <= aTower.attackRadius && (dist < minDist || isEnemyStar)) {
+                if (dist <= aTower.attackRadius && (dist < minDist || isEnemyLinkor)) {
                     minDist = dist;
                     enemy = obj;
-                    if (isEnemyStar) starFound = true;
+                    if (isEnemyLinkor) mainTargetFound = true;
                 }
             }
 
