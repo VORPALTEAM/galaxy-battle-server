@@ -2,20 +2,22 @@ import { ILogger } from "../interfaces/ILogger.js";
 import { Star } from "../objects/Star.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Field } from "../objects/Field.js";
-import { GameObject } from "../objects/GameObject.js";
+import { AttackInfo, GameObject } from "../objects/GameObject.js";
 import { Linkor } from "../objects/Linkor.js";
 import { SpaceShip } from "../objects/SpaceShip.js";
-import { AttackType } from "src/data/Types.js";
+import { AttackType } from "../data/Types.js";
 
-export class BattleShipManager implements ILogger {
-    protected _className = 'BattleShipManager';
+export class LinkorManager implements ILogger {
+    protected _className = 'LinkorManager';
     protected _field: Field;
     protected _objects: Map<number, GameObject>;
+    protected _linkors: Linkor[];
     protected _thinkTimer = 0;
 
     constructor(aField: Field, aObjects: Map<number, GameObject>) {
         this._field = aField;
         this._objects = aObjects;
+        this._linkors = [];
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -39,12 +41,9 @@ export class BattleShipManager implements ILogger {
             const dist = aFighter.position.distanceTo(obj.position);
             const isEnemy = obj.owner != aFighter.owner;
             if (isEnemy && !obj.isImmortal) {
-                const isEnemyStar = obj instanceof Star;
-                // this.logDebug(`getNearestEnemyInAtkRadius: atkRadius: ${aFighter.attackRadius} dist: ${dist}`);
-                if (dist <= aFighter.attackRadius && (dist < minDist || isEnemyStar)) {
+                if (dist <= aFighter.attackRadius) {
                     minDist = dist;
                     enemy = obj;
-                    if (isEnemyStar) starFound = true;
                 }
             }
 
@@ -64,7 +63,7 @@ export class BattleShipManager implements ILogger {
         return stars[0];
     }
     
-    updateShip(aShip: Linkor) {
+    private updateLinkor(aShip: Linkor) {
 
         switch (aShip.state) {
 
@@ -78,7 +77,7 @@ export class BattleShipManager implements ILogger {
                 if (enemy) {
                     // attack enemy
                     const atkType: AttackType = enemy instanceof Star ? 'ray' : 'laser';
-                    aShip.attackTarget(enemy, atkType);
+                    aShip.attack(enemy, atkType);
                     return;
                 }
 
@@ -199,6 +198,31 @@ export class BattleShipManager implements ILogger {
                 break;
         }
 
+    }
+
+    private onDamage(aSender: Linkor, aInfo: AttackInfo) {
+        let enemy = this._objects.get(aInfo.attackerId);
+        if (!enemy) return;
+        switch (aSender.state) {
+            case 'fight':
+                if (aSender.attackObject instanceof Star) {
+                    aSender.stopAttack();
+                    aSender.attack(enemy, 'laser');
+                }
+                break;
+        }
+    }
+
+    addLinkor(aLinkor: Linkor) {
+        this._linkors.push(aLinkor);
+        aLinkor.onDamage.add(this.onDamage, this);
+    }
+
+    update(dt: number) {
+        for (let i = 0; i < this._linkors.length; i++) {
+            const linkor = this._linkors[i];
+            this.updateLinkor(linkor);
+        }
     }
 
     free() {

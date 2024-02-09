@@ -78,7 +78,7 @@ export class FighterManager implements ILogger {
                 if (enemy) {
                     // attack enemy
                     const atkType: AttackType = enemy instanceof Star ? 'ray' : 'laser';
-                    aFighter.attackTarget(enemy, atkType);
+                    aFighter.attack(enemy, atkType);
                     return;
                 }
                 

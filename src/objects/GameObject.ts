@@ -18,6 +18,10 @@ type AttackParams = {
     crit?: CritParams
 }
 
+export type AttackInfo = DamageInfo & {
+    attackerId?: number
+}
+
 export type GameObjectParams = {
     owner: string,
     id: number,
@@ -218,7 +222,7 @@ export class GameObject implements IUpdatable, ILogger {
         
     }
 
-    damage(aAtkInfo: DamageInfo) {
+    damage(aAtkInfo: AttackInfo) {
         const dmg = aAtkInfo.damage;
         if (!aAtkInfo.isMiss) {
             let shieldDmg = Math.min(this._shield, dmg);

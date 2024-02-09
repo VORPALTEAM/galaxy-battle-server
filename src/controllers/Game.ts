@@ -14,7 +14,7 @@ import { Signal } from '../utils/events/Signal.js';
 import { Planet } from '../objects/Planet.js';
 import { StarManager } from '../systems/StarManager.js';
 import { Linkor } from '../objects/Linkor.js';
-import { BattleShipManager } from '../systems/BattleShipManager.js';
+import { LinkorManager } from '../systems/LinkorManager.js';
 import { PlanetLaserManager } from '../systems/PlanetLaserManager.js';
 import { SpaceShip } from '../objects/SpaceShip.js';
 import { FighterFactory } from '../factory/FighterFactory.js';
@@ -133,7 +133,7 @@ export class Game implements ILogger {
     private _starMng: StarManager;
     private _towerMng: TowerManager;
     private _fighterMng: FighterManager;
-    private _battleShipMng: BattleShipManager;
+    private _linkorMng: LinkorManager;
     private _abilsMng: PlanetLaserManager;
     // events
     onGameComplete = new Signal();
@@ -228,7 +228,7 @@ export class Game implements ILogger {
         this._starMng = new StarManager(this._objects);
         this._towerMng = new TowerManager({ field: this._field, objects: this._objects });
         this._fighterMng = new FighterManager(this._field, this._objects);
-        this._battleShipMng = new BattleShipManager(this._field, this._objects);
+        this._linkorMng = new LinkorManager(this._field, this._objects);
 
         this._abilsMng = new PlanetLaserManager(this._objects);
         this._abilsMng.onLaserAttack.add(this.onPlanetLaserAttack, this);
@@ -270,7 +270,7 @@ export class Game implements ILogger {
             star.onDamage.add(this.onObjectDamage, this);
 
             this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
-            PackSender.getInstance().starCreate(this._clients, star.getCreateData());
+            PackSender.getInstance().objectCreate(this._clients, star.getCreateData());
             this._objects.set(star.id, star);
             stars.push(star);
             this._starMng.addStar(star);
@@ -297,7 +297,7 @@ export class Game implements ILogger {
                 laserDamage: planetParams.laserDamage
             });
 
-            PackSender.getInstance().starCreate(this._clients, planet.getCreateData());
+            PackSender.getInstance().objectCreate(this._clients, planet.getCreateData());
             this._objects.set(planet.id, planet);
         }
 
@@ -328,7 +328,7 @@ export class Game implements ILogger {
             tower.onDamage.add(this.onObjectDamage, this);
 
             this._field.takeCell(towerData.cellPos.x, towerData.cellPos.y);
-            PackSender.getInstance().starCreate(this._clients, tower.getCreateData());
+            PackSender.getInstance().objectCreate(this._clients, tower.getCreateData());
             this._objects.set(tower.id, tower);
 
             // this._towerMng.addStar(tower);
@@ -353,6 +353,11 @@ export class Game implements ILogger {
         let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
+
+        if (this._field.isCellTaken(cellPos)) {
+            let neighbors = this._field.getNeighbors(cellPos);
+            
+        }
 
 
         let fighter = new Fighter({
@@ -387,7 +392,7 @@ export class Game implements ILogger {
         fighter.onDamage.add(this.onObjectDamage, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
-        PackSender.getInstance().starCreate(this._clients, fighter.getCreateData());
+        PackSender.getInstance().objectCreate(this._clients, fighter.getCreateData());
 
         this._objects.set(fighter.id, fighter);
     }
@@ -430,12 +435,14 @@ export class Game implements ILogger {
         linkor.onJump.add(this.onShipJump, this);
         linkor.onAttack.add(this.onShipAttack, this);
         linkor.onRayStart.add(this.onShipRayStart, this);
+        linkor.onRayStop.add(this.onShipRayStop, this);
         linkor.onDamage.add(this.onObjectDamage, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
-        PackSender.getInstance().starCreate(this._clients, linkor.getCreateData());
-
+        PackSender.getInstance().objectCreate(this._clients, linkor.getCreateData());
+        
         this._objects.set(linkor.id, linkor);
+        this._linkorMng.addLinkor(linkor);
     }
     
     private onShipRotate(aShip: SpaceShip, aPoint: THREE.Vector3, aDur: number) {
@@ -469,7 +476,10 @@ export class Game implements ILogger {
             isCrit: dmg.isCrit
         });
 
-        aEnemy.damage(dmg);
+        aEnemy.damage({
+            ...dmg,
+            attackerId: aShip.id
+        });
         
     }
 
@@ -477,6 +487,12 @@ export class Game implements ILogger {
         PackSender.getInstance().rayStart(this._clients, {
             idFrom: aShip.id,
             idTo: aEnemy.id
+        });
+    }
+
+    onShipRayStop(aShip: SpaceShip) {
+        PackSender.getInstance().rayStop(this._clients, {
+            idFrom: aShip.id
         });
     }
 
@@ -606,6 +622,8 @@ export class Game implements ILogger {
         let updateData: ObjectUpdateData[] = [];
         let destroyList: number[] = [];
 
+        this._linkorMng.update(dt);
+
         this._objects.forEach((obj) => {
 
             if (!obj.isImmortal && obj.hp <= 0) {
@@ -623,10 +641,6 @@ export class Game implements ILogger {
 
             if (obj instanceof Fighter) {
                 this._fighterMng.updateShip(obj);
-            }
-
-            if (obj instanceof Linkor) {
-                this._battleShipMng.updateShip(obj);
             }
 
             obj.update(dt);
@@ -653,7 +667,7 @@ export class Game implements ILogger {
         this.onGameComplete.removeAll();
         this._starMng.free();
         this._fighterMng.free();
-        this._battleShipMng.free();
+        this._linkorMng.free();
         this._field.free();
         this._objects.clear();
         this._objects = null;

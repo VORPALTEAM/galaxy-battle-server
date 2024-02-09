@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { SpaceShip, SpaceShipParams } from './SpaceShip.js';
-import { GameObject } from './GameObject.js';
-import { AttackType } from '../data/Types.js';
+import { AttackInfo, GameObject } from './GameObject.js';
+import { AttackType, DamageInfo } from '../data/Types.js';
 
 export type LinkorParams = SpaceShipParams & {
 
@@ -14,7 +14,7 @@ export class Linkor extends SpaceShip {
         this._type = 'BattleShip';
     }
 
-    attackTarget(aAttackObject: GameObject, aAttackType: AttackType) {
+    attack(aAttackObject: GameObject, aAttackType: AttackType) {
         this._state = 'fight';
         this._attackObject = aAttackObject;
         this._attackType = aAttackType;

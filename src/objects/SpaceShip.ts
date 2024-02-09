@@ -14,7 +14,7 @@ export type SpaceShipParams = GameObjectParams & {
     level: number,
 }
 
-export type SpaceShipState = 'idle' | 'rotateForJump' | 'jump' | 'fight' | 'starAttack' | 'dead';
+export type SpaceShipState = 'idle' | 'rotateForJump' | 'jump' | 'fight' | 'dead';
 
 export class SpaceShip extends GameObject {
     protected _shipParams: SpaceShipParams;
@@ -70,7 +70,21 @@ export class SpaceShip extends GameObject {
     protected refreshAttackTimer() {
         this._attackTimer = this._shipParams.attackPeriod;
     }
-    
+
+    private createRay() {
+        if (!this._isRayCreated) {
+            this._isRayCreated = true;
+            this.onRayStart.dispatch(this, this._attackObject);
+        }
+    }
+
+    private stopRay() {
+        if (this._isRayCreated) {
+            this._isRayCreated = false;
+            this.onRayStop.dispatch(this);
+        }
+    }
+
     get state(): SpaceShipState {
         return this._state;
     }
@@ -135,7 +149,7 @@ export class SpaceShip extends GameObject {
         }, preTime + jumpDur);
     }
 
-    attackTarget(aAttackObject: GameObject, aAttackType: AttackType) {
+    attack(aAttackObject: GameObject, aAttackType: AttackType) {
         this._state = 'fight';
         this._attackObject = aAttackObject;
         this._attackType = aAttackType;
@@ -153,6 +167,7 @@ export class SpaceShip extends GameObject {
     stopAttack() {
         this._state = 'idle';
         this._attackObject = null;
+        this.stopRay();
     }
 
     getCreateData(): FighterCreateData {
@@ -193,16 +208,6 @@ export class SpaceShip extends GameObject {
             this.onAttack.dispatch(this, this._attackObject, this._attackType);
         }
 
-    }
-
-    private createRay() {
-        this._isRayCreated = true;
-        this.onRayStart.dispatch(this, this._attackObject);
-    }
-
-    private stopRay() {
-        this._isRayCreated = false;
-        this.onRayStop.dispatch(this);
     }
 
     update(dt: number) {

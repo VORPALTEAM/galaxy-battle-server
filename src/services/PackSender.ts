@@ -30,12 +30,12 @@ export class PackSender {
         this.sendData([aClient], PackTitle.gameComplete, aData);
     }
 
-    starCreate(aClients: Client[], aData: StarCreateData) {
-        this.sendData(aClients, PackTitle.objectCreate, aData);
-    }
-
     fieldInit(aClients: Client[], aData: FieldInitData) {
         this.sendData(aClients, PackTitle.fieldInit, aData);
+    }
+
+    objectCreate(aClients: Client[], aData: StarCreateData) {
+        this.sendData(aClients, PackTitle.objectCreate, aData);
     }
 
     objectUpdate(aClients: Client[], aData: ObjectUpdateData[]) {
@@ -79,6 +79,12 @@ export class PackSender {
         idTo: number
     }) {
         this.sendData(aClients, PackTitle.rayStart, aData);
+    }
+
+    rayStop(aClients: Client[], aData: {
+        idFrom: number
+    }) {
+        this.sendData(aClients, PackTitle.rayStop, aData);
     }
 
     damage(aClients: Client[], aData: {
