@@ -11,13 +11,13 @@ export class LinkorManager implements ILogger {
     protected _className = 'LinkorManager';
     protected _field: Field;
     protected _objects: Map<number, GameObject>;
-    protected _linkors: Linkor[];
+    protected _ships: Map<number, Linkor>;
     protected _thinkTimer = 0;
 
     constructor(aField: Field, aObjects: Map<number, GameObject>) {
         this._field = aField;
         this._objects = aObjects;
-        this._linkors = [];
+        this._ships = new Map();
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -214,15 +214,18 @@ export class LinkorManager implements ILogger {
     }
 
     addLinkor(aLinkor: Linkor) {
-        this._linkors.push(aLinkor);
+        this._ships.set(aLinkor.id, aLinkor);
         aLinkor.onDamage.add(this.onDamage, this);
     }
 
+    deleteShip(aId: number) {
+        this._ships.delete(aId);
+    }
+
     update(dt: number) {
-        for (let i = 0; i < this._linkors.length; i++) {
-            const linkor = this._linkors[i];
+        this._ships.forEach((linkor) => {
             this.updateLinkor(linkor);
-        }
+        });
     }
 
     free() {

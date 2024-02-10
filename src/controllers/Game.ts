@@ -21,6 +21,7 @@ import { FighterFactory } from '../factory/FighterFactory.js';
 import { LinkorFactory } from '../factory/LinkorFactory.js';
 import { Tower } from '../objects/Tower.js';
 import { TowerManager } from '../systems/TowerManager.js';
+import { ExpManager } from 'src/systems/ExpManager.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -73,7 +74,7 @@ const SETTINGS = {
         orbitRadius: 15, // planet orbit radius
         orbitRotationPeriod: 60, // planet orbit rotation period in sec
         rotationPeriod: 5, // planet rotation period in sec
-        laserDamage: 120
+        laserDamage: 80
     },
 
     towerParams: {
@@ -135,6 +136,7 @@ export class Game implements ILogger {
     private _fighterMng: FighterManager;
     private _linkorMng: LinkorManager;
     private _abilsMng: PlanetLaserManager;
+    private _expMng: ExpManager;
     // events
     onGameComplete = new Signal();
 
@@ -380,7 +382,6 @@ export class Game implements ILogger {
             }
         }
 
-
         let fighter = new Fighter({
             owner: aStar.owner,
             id: this.generateObjectId(),
@@ -416,6 +417,7 @@ export class Game implements ILogger {
         PackSender.getInstance().objectCreate(this._clients, fighter.getCreateData());
 
         this._objects.set(fighter.id, fighter);
+        this._fighterMng.addShip(fighter);
     }
 
     private onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
@@ -643,6 +645,7 @@ export class Game implements ILogger {
         let updateData: ObjectUpdateData[] = [];
         let destroyList: number[] = [];
 
+        this._fighterMng.update(dt);
         this._linkorMng.update(dt);
 
         this._objects.forEach((obj) => {
@@ -650,6 +653,9 @@ export class Game implements ILogger {
             if (!obj.isImmortal && obj.hp <= 0) {
                 destroyList.push(obj.id);
                 this._objects.delete(obj.id);
+                // remove from managers
+                this._fighterMng.deleteShip(obj.id);
+                this._linkorMng.deleteShip(obj.id);
                 // free the field cell
                 this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
                 obj.free();
@@ -658,10 +664,6 @@ export class Game implements ILogger {
 
             if (obj instanceof Tower) {
                 this._towerMng.updateTower(obj);
-            }
-
-            if (obj instanceof Fighter) {
-                this._fighterMng.updateShip(obj);
             }
 
             obj.update(dt);

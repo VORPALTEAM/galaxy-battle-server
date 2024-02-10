@@ -11,11 +11,13 @@ export class FighterManager implements ILogger {
     protected _className = 'FighterManager';
     protected _field: Field;
     protected _objects: Map<number, GameObject>;
+    protected _ships: Map<number, Fighter>;
     protected _thinkTimer = 0;
 
     constructor(aField: Field, aObjects: Map<number, GameObject>) {
         this._field = aField;
         this._objects = aObjects;
+        this._ships = new Map();
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -64,7 +66,7 @@ export class FighterManager implements ILogger {
         return stars[0];
     }
     
-    updateShip(aFighter: Fighter) {
+    private updateShip(aFighter: Fighter) {
 
         switch (aFighter.state) {
 
@@ -173,6 +175,20 @@ export class FighterManager implements ILogger {
             
         }
 
+    }
+
+    addShip(aShip: Fighter) {
+        this._ships.set(aShip.id, aShip);
+    }
+
+    deleteShip(aId: number) {
+        this._ships.delete(aId);
+    }
+
+    update(dt: number) {
+        this._ships.forEach((fighter) => {
+            this.updateShip(fighter);
+        });
     }
 
     free() {
