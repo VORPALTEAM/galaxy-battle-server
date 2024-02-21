@@ -1,11 +1,11 @@
-import { GameObject } from "src/objects/GameObject.js";
+import { GameObject } from "../objects/GameObject.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { MyMath } from "../utils/MyMath.js";
 import { Signal } from "../utils/events/Signal.js";
-import { Fighter } from "src/objects/Fighter.js";
-import { Linkor } from "src/objects/Linkor.js";
-import { ExpData } from "src/data/Types.js";
+import { Fighter } from "../objects/Fighter.js";
+import { Linkor } from "../objects/Linkor.js";
+import { ExpData } from "../data/Types.js";
 
 const CONFIG = {
     

@@ -3,6 +3,7 @@ import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { PackTitle } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
+import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 
 export class Client implements ILogger {
 
@@ -73,6 +74,21 @@ export class Client implements ILogger {
         this._socket.on(PackTitle.exitGame, () => {
             // client click exit
             this.onExitGame.dispatch(this);
+        });
+
+        this._socket.on(PackTitle.claimReward, () => {
+            // client claim reward click
+            this.logDebug(`RecordWinnerWithChoose call with (${this._walletId}, false)`);
+            RecordWinnerWithChoose(this._walletId, false).then(() => {
+                // resolve
+                this.logDebug(`RecordWinnerWithChoose resolved`);
+                this.sendClaimRewardAccept();
+            }, (aReasone: any) => {
+                // rejected
+                this.logDebug(`RecordWinnerWithChoose rejected`);
+                this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                this.sendClaimRewardReject(aReasone);
+            })
         });
 
         this._socket.on('disconnect', () => {
@@ -158,6 +174,18 @@ export class Client implements ILogger {
         });
     }
 
+    sendClaimRewardAccept() {
+        this.sendPack(PackTitle.claimReward, {
+            msg: 'accept'
+        });
+    }
+
+    sendClaimRewardReject(aReasone: any) {
+        this.sendPack(PackTitle.claimReward, {
+            msg: 'reject',
+            reasone: aReasone
+        });
+    }
 
 
 }

@@ -10,6 +10,10 @@ import { DB } from './database/DB.js';
 
 const configPath = './src/config.json';
 
+LogMng.setMode(LogMng.MODE_DEBUG);
+LogMng.system(`LogMng.mode = ${LogMng.mode}`);
+
+LogMng.debug(`env init...`);
 if (process.env.NODE_ENV === 'development') {
     LogMng.setMode(LogMng.MODE_DEBUG);
     dotenv.config({ path: '.env.development' });
@@ -19,8 +23,6 @@ else {
     dotenv.config({ path: '.env.production' });
 }
 
-LogMng.setMode(LogMng.MODE_DEBUG);
-LogMng.system(`LogMng.mode = ${LogMng.mode}`);
 
 // init DB
 

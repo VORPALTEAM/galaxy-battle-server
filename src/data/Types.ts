@@ -32,7 +32,11 @@ export enum PackTitle {
     rayStop = 'rayStop',
     planetLaser = 'planetLaser',
     damage = 'damage',
-    exp = 'exp'
+    exp = 'exp',
+
+    claimReward = 'claimReward',
+    openBox = 'openBox',
+    
 }
 
 export type ObjectType = 'Star' | 'Planet' | 'Tower' | 'FighterShip' | 'BattleShip' | 'Homing';
