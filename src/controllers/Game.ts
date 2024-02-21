@@ -21,7 +21,7 @@ import { FighterFactory } from '../factory/FighterFactory.js';
 import { LinkorFactory } from '../factory/LinkorFactory.js';
 import { Tower } from '../objects/Tower.js';
 import { TowerManager } from '../systems/TowerManager.js';
-import { ExpManager } from 'src/systems/ExpManager.js';
+import { ExpManager } from '../systems/ExpManager.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -120,7 +120,7 @@ const SETTINGS = {
         prepareJumpTime: 0.5,
         jumpTime: 1
     },
-
+    
 }
 
 export class Game implements ILogger {
@@ -145,6 +145,7 @@ export class Game implements ILogger {
         this._id = aGameId;
         this._objects = new Map();
         this._clients = [aClientA, aClientB];
+        this._expMng = new ExpManager();
         this.initClientListeners();
         this.startLoop();
     }
@@ -634,6 +635,19 @@ export class Game implements ILogger {
 
     }
 
+    onObjectKill(aObj: GameObject) {
+        let objOwner = aObj.owner;
+        let enemyClient: Client;
+        for (let i = 0; i < this._clients.length; i++) {
+            const cli = this._clients[i];
+            if (cli.id != objOwner) {
+                enemyClient = cli;
+            }
+        }
+        let expData = this._expMng.addExpForObject(enemyClient.id, aObj);
+        PackSender.getInstance().exp(enemyClient, expData);
+    }
+
     /**
      * 
      * @param dt delta time in sec
@@ -651,6 +665,7 @@ export class Game implements ILogger {
         this._objects.forEach((obj) => {
 
             if (!obj.isImmortal && obj.hp <= 0) {
+                this.onObjectKill(obj);
                 destroyList.push(obj.id);
                 this._objects.delete(obj.id);
                 // remove from managers

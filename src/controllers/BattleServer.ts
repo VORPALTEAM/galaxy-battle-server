@@ -4,7 +4,6 @@ import { LogMng } from "../utils/LogMng.js";
 import { Matchmaker } from "./Matchmaker.js";
 import { ILogger } from "src/interfaces/ILogger.js";
 import { SignService } from "../services/SignService.js";
-import { PackTitle } from "../data/Types.js";
 
 export class BattleServer implements ILogger {
     private _server: Server;

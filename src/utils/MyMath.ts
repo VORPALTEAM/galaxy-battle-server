@@ -141,6 +141,14 @@ export class MyMath {
     }
 
     /**
+     * Percent of value in range
+     * example: v = 140, a = 100, b = 200, result = 0.4 (40%)
+     */
+    public static percentInRange(value: number, a: number, b: number): number {
+        return (value - a) / (b - a);
+    }
+
+    /**
      * Degrees to Radians
      * @param deg - Angle in degrees
      * @returns Angle in radians

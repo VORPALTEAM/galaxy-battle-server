@@ -31,7 +31,8 @@ export enum PackTitle {
     rayStart = 'rayStart',
     rayStop = 'rayStop',
     planetLaser = 'planetLaser',
-    damage = 'damage'
+    damage = 'damage',
+    exp = 'exp'
 }
 
 export type ObjectType = 'Star' | 'Planet' | 'Tower' | 'FighterShip' | 'BattleShip' | 'Homing';
@@ -100,5 +101,11 @@ export type PlanetLaserData = {
     pos: { x, y, z },
     dir: { x, y, z },
     length: number
+}
+
+export type ExpData = {
+    exp: number,
+    level: number,
+    levelExpPercent: number
 }
 

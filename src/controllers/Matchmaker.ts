@@ -3,20 +3,29 @@ import { Game } from "./Game.js";
 import { ILogger } from "../interfaces/ILogger";
 import { LogMng } from "../utils/LogMng.js";
 import { SignService } from "../services/SignService.js";
-import { PackSender } from "../services/PackSender.js";
 import { Config } from "../data/Config.js";
 import { BotClient } from "../models/BotClient.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
+class ClientPair {
+
+    constructor(aClientA: Client, aClientB: Client) {
+        
+    }
+
+}
+
 export class Matchmaker implements ILogger {
-    private _clients: Map<string, Client>;
     private _loopInterval: NodeJS.Timeout;
+    private _clients: Map<string, Client>;
+    private _pairs: ClientPair[];
     private _games: Map<number, Game>;
     private _gameIdCounter = 0;
 
     constructor() {
         this._clients = new Map();
+        this._pairs = [];
         this._games = new Map();
         this.startLoop();
 
@@ -59,6 +68,14 @@ export class Matchmaker implements ILogger {
             clearInterval(this._loopInterval);
             this._loopInterval = null;
         }
+    }
+
+    private createPair(aClientA: Client, aClientB: Client) {
+        this.logDebug('pair creation...');
+        let pair = new ClientPair(aClientA, aClientB);
+        // pair.onGameComplete.addOnce(this.onGameComplete, this);
+        // pair.start();
+        // this._games.set(game.id, game);
     }
 
     private createGame(aClientA: Client, aClientB: Client) {
@@ -128,15 +145,16 @@ export class Matchmaker implements ILogger {
             this.createGame(bot, client);
         }
 
-        if (readyClientIds.length >= 2) {
+        while (readyClientIds.length >= 2) {
             // match the game with first 2 players
-            const id1 = readyClientIds[0];
-            const id2 = readyClientIds[1];
+            const id1 = readyClientIds.shift();
+            const id2 = readyClientIds.shift();
             let client1 = this._clients.get(id1);
             let client2 = this._clients.get(id2);
             this.removeClient(client1);
             this.removeClient(client2);
             this.createGame(client1, client2);
+            // this.createPair(client1, client2);
         }
 
     }
