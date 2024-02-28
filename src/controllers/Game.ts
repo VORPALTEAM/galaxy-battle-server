@@ -175,7 +175,7 @@ export class Game implements ILogger {
         let winner: Client;
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
-            if (client.id != aClient.id) {
+            if (client.connectionId != aClient.connectionId) {
                 winner = client;
                 break;
             }
@@ -200,7 +200,7 @@ export class Game implements ILogger {
             let data: GameCompleteData = {
                 status: 'draw'
             };
-            if (aWinner) data.status = client.id == aWinner.id ? 'win' : 'lose';
+            if (aWinner) data.status = client.connectionId == aWinner.connectionId ? 'win' : 'lose';
             PackSender.getInstance().gameComplete(client, data);
         }
         this.onGameComplete.dispatch(this);
@@ -636,16 +636,24 @@ export class Game implements ILogger {
     }
 
     onObjectKill(aObj: GameObject) {
+
         let objOwner = aObj.owner;
-        let enemyClient: Client;
+        let attackerClient: Client;
         for (let i = 0; i < this._clients.length; i++) {
             const cli = this._clients[i];
-            if (cli.id != objOwner) {
-                enemyClient = cli;
+            if (cli.walletId != objOwner) {
+                attackerClient = cli;
             }
         }
-        let expData = this._expMng.addExpForObject(enemyClient.id, aObj);
-        PackSender.getInstance().exp(enemyClient, expData);
+
+        this.logDebug(`onObjectKill owner: ${objOwner}, attacker id: ${attackerClient.walletId}`);
+
+        if (!attackerClient) return;
+
+        let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj);
+        this.logDebug(`onObjectKill: expData:`);
+        console.log(expData);
+        PackSender.getInstance().exp(attackerClient, expData);
     }
 
     /**

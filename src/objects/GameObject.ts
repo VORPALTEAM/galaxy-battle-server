@@ -190,11 +190,11 @@ export class GameObject implements IUpdatable, ILogger {
         if (aParams?.noMiss) isMiss = false;
 
         if (isMiss) {
-            LogMng.debug(`miss:`, {
-                hit: hit,
-                enemyEvasion: this._attackObject?.getEvasion(),
-                resEvasion: enemyEvasion
-            });
+            // LogMng.debug(`miss:`, {
+            //     hit: hit,
+            //     enemyEvasion: this._attackObject?.getEvasion(),
+            //     resEvasion: enemyEvasion
+            // });
         }
 
         let critChance = this.getCritChancePercent();

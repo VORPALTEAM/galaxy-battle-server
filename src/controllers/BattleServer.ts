@@ -62,7 +62,7 @@ export class BattleServer implements ILogger {
     }
 
     private onDisconnect(aClient: Client) {
-        const cid = aClient.id;
+        const cid = aClient.connectionId;
         this._matchmaker.onClientDisconnected(aClient);
         SignService.getInstance().removeClient(cid);
         this._clients.delete(cid);

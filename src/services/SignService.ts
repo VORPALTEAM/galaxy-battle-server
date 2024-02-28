@@ -38,7 +38,7 @@ export class SignService {
     }
 
     addClient(aClient: Client) {
-        this._clients.set(aClient.id, aClient);
+        this._clients.set(aClient.connectionId, aClient);
         const socket = aClient.socket;
         // init listeners
         socket.on(PackTitle.sign, (aSignature: string) => {

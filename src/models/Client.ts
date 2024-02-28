@@ -9,7 +9,7 @@ export class Client implements ILogger {
 
     protected _className: string;
     protected _socket: Socket;
-    protected _id: string;
+    protected _connectionId: string;
     protected _walletId: string;
 
     // flags
@@ -43,7 +43,7 @@ export class Client implements ILogger {
     }
 
     protected setIdBySocket() {
-        this._id = this._socket.id;
+        this._connectionId = this._socket.id;
     }
 
     protected initListeners() {
@@ -103,8 +103,8 @@ export class Client implements ILogger {
         return this._socket;
     }
 
-    get id(): string {
-        return this._id;
+    get connectionId(): string {
+        return this._connectionId;
     }
 
     get isSigned() {

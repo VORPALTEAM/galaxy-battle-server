@@ -40,7 +40,7 @@ export class BotClient extends Client {
     }
 
     protected setIdBySocket() {
-        this._id = this.generateSocketId();
+        this._connectionId = this.generateSocketId();
     }
 
     protected initListeners() {

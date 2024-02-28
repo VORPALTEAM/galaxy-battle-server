@@ -2,10 +2,9 @@ import { GameObject } from "../objects/GameObject.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { MyMath } from "../utils/MyMath.js";
-import { Signal } from "../utils/events/Signal.js";
 import { Fighter } from "../objects/Fighter.js";
 import { Linkor } from "../objects/Linkor.js";
-import { ExpData } from "../data/Types.js";
+import { ExpData, SkillData } from "../data/Types.js";
 
 const CONFIG = {
     
@@ -48,20 +47,105 @@ const CONFIG = {
                 max: 120
             }
         },
+    },
+
+    skills: [
+        { name: 'laser', startFromLevel: 1, cd: 3000 },
+        { name: 'rocket', startFromLevel: 2, cd: 6000 },
+        { name: 'slow', startFromLevel: 2, cd: 9000 },
+        { name: 'ulta', startFromLevel: 6, cd: 12000 },
+    ],
+
+}
+
+function levelByExp(aExp: number): number {
+    const levels = CONFIG.levels;
+    for (let i = 0; i < levels.length; i++) {
+        const levelData = CONFIG.levels[i];
+        const nextLevelData = CONFIG.levels[i + 1];
+        if (aExp >= levelData.exp) {
+            
+            if (!nextLevelData) {
+                return levelData.level;
+            }
+            else if (aExp < nextLevelData.exp) {
+                return levelData.level;
+            }
+
+        }
+    }
+    this.logError(`levelByExp: unreal result for exp value = ${aExp}`);
+    return 1;
+}
+
+class ExpRecord {
+    private _exp = 0;
+    private _skillPoints = 0;
+    private _skillLevels = [1, 0, 0, 0];
+
+    constructor() {
+
+    }
+
+    public get exp() {
+        return this._exp;
+    }
+
+    public get skillPoints() {
+        return this._skillPoints;
+    }
+
+    addExp(aExp: number) {
+        let prevLevel = levelByExp(this._exp);
+        this._exp += aExp;
+        let level = levelByExp(this._exp);
+        if (level > prevLevel) {
+            this._skillPoints++;
+        }
+    }
+
+    isSkillLevelUpAvailable(aSkillId: number) {
+        let sd = CONFIG.skills[aSkillId];
+        const currLevel = levelByExp(this._exp);
+        return currLevel >= sd.startFromLevel;
+    }
+
+    getSkillCooldownDur(aSkillId: number): number {
+        return CONFIG.skills[aSkillId].cd;
+    }
+
+    skillLevelUp(aSkillId: number) {
+        if (this._skillPoints <= 0) return;
+        if (!this.isSkillLevelUpAvailable(aSkillId)) return;
+        let currSkillLevel = this._skillLevels[aSkillId];
+        if (currSkillLevel >= 4) return;
+        this._skillLevels[aSkillId]++;
+    }
+
+    getSkills(): SkillData[] {
+        let res: SkillData[] = [];
+        for (let i = 0; i < CONFIG.skills.length; i++) {
+            const sd = CONFIG.skills[i];
+            res.push({
+                level: this._skillLevels[i],
+                levelUpAvailable: this.isSkillLevelUpAvailable(i),
+                cooldown: {
+                    duration: this.getSkillCooldownDur(i)
+                }
+            });
+        }
+        return res;
     }
 
 }
 
 export class ExpManager implements ILogger {
     // current exp of players
-    private _exp: Map<string, number>;
-    /**
-     * (aSender: ExpManager, aClientId: string, aExp: number, aLevel: number, aLevelExpPercent: number)
-     */
-    onExpChangeSignal = new Signal();
+    private _exp: Map<string, ExpRecord>;
 
     constructor() {
         this._exp = new Map();
+        this.getLevelPercentTest();
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -72,6 +156,23 @@ export class ExpManager implements ILogger {
     }
     logError(aMsg: string, aData?: any): void {
         LogMng.error(`ExpManager: ${aMsg}`, aData);
+    }
+
+    private getLevelPercentTest() {
+        const tests = [0, 25, 650, 1000, 3700, 4040, 4500];
+        for (let i = 0; i < tests.length; i++) {
+            const val = tests[i];
+            this.logDebug(`exp perc ${val}: ${this.getLevelExpPercent(val)}`);
+        }
+    }
+
+    private getExpRecord(aKey: string): ExpRecord {
+        let rec = this._exp.get(aKey);
+        if (!rec) {
+            rec = new ExpRecord();
+            this._exp.set(aKey, rec);
+        }
+        return rec;
     }
 
     private expForFighter(aActiveKill: boolean): number {
@@ -88,73 +189,54 @@ export class ExpManager implements ILogger {
         return MyMath.randomIntInRange(data.min, data.max);
     }
 
-    private levelByExp(aExp: number): number {
-        const levels = CONFIG.levels;
-        for (let i = 0; i < levels.length; i++) {
-            const levelData = CONFIG.levels[i];
-            const nextLevelData = CONFIG.levels[i + 1];
-            if (!nextLevelData) {
-                return levelData.level;
-            }
-            else if (aExp < nextLevelData.exp) {
-                return levelData.level;
-            }
-        }
-        this.logError(`levelByExp: unreal result for exp value = ${aExp}`);
-        return 1;
-    }
-
     private getLevelExpPercent(aExp: number): number {
         const levels = CONFIG.levels;
         for (let i = 0; i < levels.length; i++) {
             const levelData = CONFIG.levels[i];
             const nextLevelData = CONFIG.levels[i + 1];
-            if (!nextLevelData) {
-                return MyMath.percentInRange(aExp, levelData.exp, nextLevelData.exp);
+
+            if (aExp >= levelData.exp) {
+                if (!nextLevelData) {
+                    return 100;
+                }
+                else {
+                    if (aExp < nextLevelData.exp) {
+                        return MyMath.percentInRange(aExp, levelData.exp, nextLevelData.exp) * 100;
+                    }
+                }
             }
-            else if (aExp < nextLevelData.exp) {
-                return 0;
-            }
+            
         }
         this.logError(`getLevelExpPercent: unreal result for exp value = ${aExp}`);
         return 0;
     }
 
-    private onExpChange(aClientId: string) {
-        let expInfo = this.getExpInfo(aClientId);
-        // const currExp = this._exp.get(aClientId) || 0;
-        // const currLevel = this.levelByExp(currExp);
-        // const levelExpPercent = this.getLevelExpPercent(currExp);
-        this.onExpChangeSignal.dispatch(this, aClientId, expInfo.exp, expInfo.level, expInfo.levelExpPercent);
-    }
-
-    addExp(aClientId: string, aExp: number) {
-        const currExp = this._exp.get(aClientId) || 0;
-        const newExp = currExp + aExp;
-        this._exp.set(aClientId, newExp);
-        this.onExpChange(aClientId);
-    }
-
     getExpInfo(aClientId: string): ExpData {
-        const currExp = Math.trunc(this._exp.get(aClientId)) || 0;
-        const currLevel = this.levelByExp(currExp);
+        let exp = this.getExpRecord(aClientId);
+        const currExp = Math.trunc(exp.exp);
+        const currLevel = levelByExp(currExp);
         const levelExpPercent = this.getLevelExpPercent(currExp);
         return {
             exp: currExp,
             level: currLevel,
-            levelExpPercent: levelExpPercent
+            levelExpPercent: levelExpPercent,
+            skills: exp.getSkills()
         };
     }
 
+    addExp(aClientId: string, aExp: number) {
+        let expRec = this.getExpRecord(aClientId);
+        expRec.addExp(aExp);
+    }
+
     addExpForObject(aClientId: string, aObj: GameObject): ExpData {
-        let exp = this._exp.get(aClientId) || 0;
+        let exp = this.getExpRecord(aClientId);
         if (aObj instanceof Fighter) {
-            exp += this.expForFighter(false);
+            exp.addExp(this.expForFighter(false));
         }
         else if (aObj instanceof Linkor) {
-            exp += this.expForLinkor(false);
+            exp.addExp(this.expForLinkor(false));
         }
-        this._exp.set(aClientId, exp);
         return this.getExpInfo(aClientId);
     }
 
