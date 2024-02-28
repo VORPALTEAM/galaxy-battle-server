@@ -57,7 +57,9 @@ export type FieldInitData = {
 }
 
 export type GameCompleteData = {
-    status: 'win' | 'lose' | 'draw'
+    status: 'win' | 'loss',
+    showBoxClaim?: boolean,
+    boxLevel?: number
 }
 
 export type DamageInfo = {

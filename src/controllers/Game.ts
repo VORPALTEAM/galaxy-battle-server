@@ -221,13 +221,28 @@ export class Game implements ILogger {
 
     private completeGame(aWinner: Client) {
         this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
-
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
-            let data: GameCompleteData = {
-                status: 'draw'
-            };
-            if (aWinner) data.status = client.connectionId == aWinner.connectionId ? 'win' : 'lose';
+            let data: GameCompleteData;
+            if (aWinner) {
+                if (client.connectionId == aWinner.connectionId) {
+                    data = {
+                        status: 'win',
+                        showBoxClaim: true,
+                        boxLevel: 1
+                    };
+                }
+                else {
+                    data = {
+                        status: 'loss'
+                    };
+                }
+            }
+            else {
+                data = {
+                    status: 'loss'
+                };
+            }
             PackSender.getInstance().gameComplete(client, data);
         }
         this.onGameComplete.dispatch(this);
@@ -567,9 +582,10 @@ export class Game implements ILogger {
         return stars;
     }
 
-    protected checkWinner(dt: number) {
+    protected checkWinner() {
 
         let stars: Star[] = this.getAllStars();
+        
         // check Stars count and winner
         if (stars.length < 2) {
             if (stars.length == 1) {
@@ -700,6 +716,11 @@ export class Game implements ILogger {
         this._objects.forEach((obj) => {
 
             if (!obj.isImmortal && obj.hp <= 0) {
+
+                let isStar = obj instanceof Star;
+                let stars: Star[] = this.getAllStars();
+                if (isStar && stars.length <= 1) return;
+
                 this.onObjectKill(obj);
                 destroyList.push(obj.id);
                 this._objects.delete(obj.id);
@@ -730,7 +751,7 @@ export class Game implements ILogger {
             PackSender.getInstance().objectDestroy(this._clients, destroyList);
         }
 
-        this.checkWinner(dt);
+        this.checkWinner();
 
     }
 
