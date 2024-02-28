@@ -107,7 +107,7 @@ class ExpRecord {
     isSkillLevelUpAvailable(aSkillId: number) {
         let sd = CONFIG.skills[aSkillId];
         const currLevel = levelByExp(this._exp);
-        return currLevel >= sd.startFromLevel;
+        return this._skillPoints > 0 && currLevel >= sd.startFromLevel;
     }
 
     getSkillCooldownDur(aSkillId: number): number {
