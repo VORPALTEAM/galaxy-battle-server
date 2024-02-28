@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -165,6 +165,7 @@ export class Game implements ILogger {
             const client = this._clients[i];
             client.onDisconnect.add(this.onClientDisconnect, this);
             client.onLaser.add(this.onClientLaser, this);
+            client.onSkillRequest.add(this.onSkillRequest, this);
             client.onExitGame.add(this.onClientExitGame, this);
         }
     }
@@ -185,6 +186,32 @@ export class Game implements ILogger {
 
     private onClientLaser(aClient: Client) {
         this._abilsMng?.laserAttack(aClient);
+    }
+
+    private onSkillRequest(aClient: Client, aData: SkillRequest) {
+        switch (aData.action) {
+
+            case 'click':
+                switch (aData.skillId) {
+                    case 0:
+                        this._abilsMng?.laserAttack(aClient);
+                        break;
+                    default:
+                        this.logError(`onSkillRequest: unhandled click skill id: ${aData}`);
+                        break;
+                }
+                break;
+            
+            case 'levelUp':
+                let expData = this._expMng.upSkillLevel(aClient.walletId, aData.skillId);
+                PackSender.getInstance().exp(aClient, expData);
+                break;
+            
+            default:
+                this.logError(`onSkillRequest: unknown skill action: ${aData}`);
+                break;
+            
+        }
     }
 
     private onClientExitGame(aClient: Client) {
@@ -651,8 +678,8 @@ export class Game implements ILogger {
         if (!attackerClient) return;
 
         let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj);
-        this.logDebug(`onObjectKill: expData:`);
-        console.log(expData);
+        // this.logDebug(`onObjectKill: expData:`);
+        // console.log(expData);
         PackSender.getInstance().exp(attackerClient, expData);
     }
 

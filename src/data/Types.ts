@@ -33,6 +33,7 @@ export enum PackTitle {
     planetLaser = 'planetLaser',
     damage = 'damage',
     exp = 'exp',
+    skill = 'skill',
 
     claimReward = 'claimReward',
     openBox = 'openBox',
@@ -122,3 +123,7 @@ export type ExpData = {
     skills: SkillData[]
 }
 
+export type SkillRequest = {
+    action: 'levelUp' | 'click',
+    skillId: number
+}

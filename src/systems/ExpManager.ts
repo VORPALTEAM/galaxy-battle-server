@@ -119,6 +119,7 @@ class ExpRecord {
         if (!this.isSkillLevelUpAvailable(aSkillId)) return;
         let currSkillLevel = this._skillLevels[aSkillId];
         if (currSkillLevel >= 4) return;
+        this._skillPoints--;
         this._skillLevels[aSkillId]++;
     }
 
@@ -237,6 +238,12 @@ export class ExpManager implements ILogger {
         else if (aObj instanceof Linkor) {
             exp.addExp(this.expForLinkor(false));
         }
+        return this.getExpInfo(aClientId);
+    }
+
+    upSkillLevel(aClientId: string, aSkillId: number): ExpData {
+        let exp = this.getExpRecord(aClientId);
+        exp.skillLevelUp(aSkillId);
         return this.getExpInfo(aClientId);
     }
 

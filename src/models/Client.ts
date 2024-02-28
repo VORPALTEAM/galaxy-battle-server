@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { PackTitle } from "../data/Types.js";
+import { PackTitle, SkillRequest } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 
@@ -21,6 +21,7 @@ export class Client implements ILogger {
     onStartSearchGame = new Signal();
     onStopSearchGame = new Signal();
     onLaser = new Signal();
+    onSkillRequest = new Signal();
     onExitGame = new Signal();
     onDisconnect = new Signal();
 
@@ -69,6 +70,10 @@ export class Client implements ILogger {
         this._socket.on(PackTitle.planetLaser, () => {
             // laser click event
             this.onLaser.dispatch(this);
+        });
+
+        this._socket.on(PackTitle.skill, (aData: SkillRequest) => {
+            this.onSkillRequest.dispatch(this, aData);
         });
 
         this._socket.on(PackTitle.exitGame, () => {
