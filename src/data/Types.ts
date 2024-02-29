@@ -36,7 +36,7 @@ export enum PackTitle {
     skill = 'skill',
 
     claimReward = 'claimReward',
-    openBox = 'openBox',
+    // openBox = 'openBox',
     
 }
 
@@ -128,4 +128,12 @@ export type ExpData = {
 export type SkillRequest = {
     action: 'levelUp' | 'click',
     skillId: number
+}
+
+export type RewardType = 'reward' | 'box';
+
+export type ClaimRewardData = {
+    type: RewardType,
+    action?: 'request' | 'accept' | 'reject',
+    reasone?: any
 }

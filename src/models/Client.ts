@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { PackTitle, SkillRequest } from "../data/Types.js";
+import { ClaimRewardData, PackTitle, RewardType, SkillRequest } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 
@@ -81,19 +81,45 @@ export class Client implements ILogger {
             this.onExitGame.dispatch(this);
         });
 
-        this._socket.on(PackTitle.claimReward, () => {
-            // client claim reward click
-            this.logDebug(`RecordWinnerWithChoose call with (${this._walletId}, false)`);
-            RecordWinnerWithChoose(this._walletId, false).then(() => {
-                // resolve
-                this.logDebug(`RecordWinnerWithChoose resolved`);
-                this.sendClaimRewardAccept();
-            }, (aReasone: any) => {
-                // rejected
-                this.logDebug(`RecordWinnerWithChoose rejected`);
-                this.logError(`RecordWinnerWithChoose: ${aReasone}`);
-                this.sendClaimRewardReject(aReasone);
-            })
+        this._socket.on(PackTitle.claimReward, (aData: ClaimRewardData) => {
+            this.logDebug(`onSocket claimReward: ${aData}`);
+
+            switch (aData.type) {
+                case 'reward':
+                    // client claim reward click
+                    this.logDebug(`Claim Reward: RecordWinnerWithChoose call with (${this._walletId}, false)`);
+                    RecordWinnerWithChoose(this._walletId, false).then(() => {
+                        // resolve
+                        this.logDebug(`RecordWinnerWithChoose resolved`);
+                        this.sendClaimRewardAccept();
+                    }, (aReasone: any) => {
+                        // rejected
+                        this.logDebug(`RecordWinnerWithChoose rejected`);
+                        this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                        this.sendClaimRewardReject(aData.type, aReasone);
+                    })
+                    break;
+                    
+                case 'box':
+                    // client claim reward click
+                    this.logDebug(`Open Box: RecordWinnerWithChoose call with (${this._walletId}, true)`);
+                    RecordWinnerWithChoose(this._walletId, true).then(() => {
+                        // resolve
+                        this.logDebug(`RecordWinnerWithChoose resolved`);
+                        this.sendClaimBoxAccept();
+                    }, (aReasone: any) => {
+                        // rejected
+                        this.logDebug(`RecordWinnerWithChoose rejected`);
+                        this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                        this.sendClaimRewardReject(aData.type, aReasone);
+                    })
+                    break;
+                
+                default:
+
+                    break;
+            }
+            
         });
 
         this._socket.on('disconnect', () => {
@@ -180,17 +206,28 @@ export class Client implements ILogger {
     }
 
     sendClaimRewardAccept() {
-        this.sendPack(PackTitle.claimReward, {
-            msg: 'accept'
-        });
+        let data: ClaimRewardData = {
+            type: 'reward',
+            action: 'accept'
+        }
+        this.sendPack(PackTitle.claimReward, data);
     }
 
-    sendClaimRewardReject(aReasone: any) {
-        this.sendPack(PackTitle.claimReward, {
-            msg: 'reject',
+    sendClaimBoxAccept() {
+        let data: ClaimRewardData = {
+            type: 'box',
+            action: 'accept'
+        }
+        this.sendPack(PackTitle.claimReward, data);
+    }
+
+    sendClaimRewardReject(aRewardType: RewardType, aReasone: any) {
+        let data: ClaimRewardData = {
+            type: aRewardType,
+            action: 'reject',
             reasone: aReasone
-        });
+        }
+        this.sendPack(PackTitle.claimReward, data);
     }
-
 
 }
