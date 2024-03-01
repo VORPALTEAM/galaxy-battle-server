@@ -50,10 +50,10 @@ const CONFIG = {
     },
 
     skills: [
-        { name: 'laser', startFromLevel: 1, cd: 3000, damage: [80, 100, 150, 200] },
-        { name: 'rocket', startFromLevel: 2, cd: 10000, damage: [100, 150, 200, 250] },
-        { name: 'slow', startFromLevel: 2, cd: 30000 },
-        { name: 'ulta', startFromLevel: 6, cd: 60000 },
+        { name: 'laser', isActive: true, startFromLevel: 1, cd: 3000, damage: [80, 100, 150, 200] },
+        { name: 'rocket', isActive: true, startFromLevel: 2, cd: 10000, damage: [100, 150, 200, 250] },
+        { name: 'slow', isActive: false, startFromLevel: 2, cd: 30000 },
+        { name: 'ulta', isActive: false, startFromLevel: 6, cd: 60000 },
     ],
 
 }
@@ -107,7 +107,11 @@ class ExpRecord {
     isSkillLevelUpAvailable(aSkillId: number) {
         let sd = CONFIG.skills[aSkillId];
         const currLevel = levelByExp(this._exp);
-        return this._skillPoints > 0 && currLevel >= sd.startFromLevel;
+        const skillLvl = this._skillLevels[aSkillId];
+        return sd.isActive
+            && this._skillPoints > 0
+            && currLevel >= sd.startFromLevel
+            && skillLvl < 4;
     }
 
     getSkillCooldownDur(aSkillId: number): number {
