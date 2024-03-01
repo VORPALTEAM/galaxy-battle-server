@@ -50,10 +50,10 @@ const CONFIG = {
     },
 
     skills: [
-        { name: 'laser', startFromLevel: 1, cd: 3000 },
-        { name: 'rocket', startFromLevel: 2, cd: 6000 },
-        { name: 'slow', startFromLevel: 2, cd: 9000 },
-        { name: 'ulta', startFromLevel: 6, cd: 12000 },
+        { name: 'laser', startFromLevel: 1, cd: 3000, damage: [80, 100, 150, 200] },
+        { name: 'rocket', startFromLevel: 2, cd: 10000, damage: [100, 150, 200, 250] },
+        { name: 'slow', startFromLevel: 2, cd: 30000 },
+        { name: 'ulta', startFromLevel: 6, cd: 60000 },
     ],
 
 }
@@ -136,6 +136,16 @@ class ExpRecord {
             });
         }
         return res;
+    }
+
+    getSkillDamage(aSkillId: number): number {
+        const level = this._skillLevels[aSkillId];
+        if (CONFIG.skills[aSkillId].damage) {
+            return CONFIG.skills[aSkillId].damage[level - 1];
+        }
+        else {
+            return 0;
+        }
     }
 
 }
@@ -245,6 +255,11 @@ export class ExpManager implements ILogger {
         let exp = this.getExpRecord(aClientId);
         exp.skillLevelUp(aSkillId);
         return this.getExpInfo(aClientId);
+    }
+
+    getSkillDamage(aClientId: string, aSkillId: number): number {
+        let exp = this.getExpRecord(aClientId);
+        return exp.getSkillDamage(aSkillId);
     }
 
 }

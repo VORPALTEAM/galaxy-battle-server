@@ -74,7 +74,6 @@ const SETTINGS = {
         orbitRadius: 15, // planet orbit radius
         orbitRotationPeriod: 60, // planet orbit rotation period in sec
         rotationPeriod: 5, // planet rotation period in sec
-        laserDamage: 80
     },
 
     towerParams: {
@@ -164,7 +163,7 @@ export class Game implements ILogger {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
             client.onDisconnect.add(this.onClientDisconnect, this);
-            client.onLaser.add(this.onClientLaser, this);
+            // client.onLaser.add(this.onClientLaser, this);
             client.onSkillRequest.add(this.onSkillRequest, this);
             client.onExitGame.add(this.onClientExitGame, this);
         }
@@ -184,9 +183,10 @@ export class Game implements ILogger {
         this.completeGame(winner);
     }
 
-    private onClientLaser(aClient: Client) {
-        this._abilsMng?.laserAttack(aClient);
-    }
+    // private onClientLaser(aClient: Client) {
+    //     const dmg = this._expMng.getSkillDamage(aClient.walletId, 0);
+    //     this._abilsMng?.laserAttack(aClient, dmg);
+    // }
 
     private onSkillRequest(aClient: Client, aData: SkillRequest) {
         switch (aData.action) {
@@ -194,7 +194,8 @@ export class Game implements ILogger {
             case 'click':
                 switch (aData.skillId) {
                     case 0:
-                        this._abilsMng?.laserAttack(aClient);
+                        const dmg = this._expMng.getSkillDamage(aClient.walletId, 0);
+                        this._abilsMng?.laserAttack(aClient, dmg);
                         break;
                     default:
                         this.logError(`onSkillRequest: unhandled click skill id: ${aData}`);
@@ -339,7 +340,7 @@ export class Game implements ILogger {
                 rotationPeriod: planetParams.rotationPeriod,
                 startAngle: MyMath.randomInRange(0, Math.PI * 2),
                 startOrbitAngle: isTopStar ? Math.PI / 2 : -Math.PI / 2,
-                laserDamage: planetParams.laserDamage
+                // laserDamage: planetParams.laserDamage
             });
 
             PackSender.getInstance().objectCreate(this._clients, planet.getCreateData());

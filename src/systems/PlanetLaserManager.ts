@@ -51,13 +51,14 @@ export class PlanetLaserManager implements ILogger {
         return res;
     }
 
-    laserAttack(aClient: Client) {
+    laserAttack(aClient: Client, aDamage: number) {
         let planet = this.getPlanetByPlayer(aClient.walletId);
         if (!planet) return;
         const origin = planet.position.clone();
         let dir = planet.getDirrection();
 
-        const damage = planet.laserDamage;
+        // const damage = planet.laserDamage;
+        const damage = aDamage;
         let rayLen = 500;
 
         // let raycaster = new THREE.Raycaster(planet.position, dir, 0, rayLen);

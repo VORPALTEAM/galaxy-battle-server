@@ -10,7 +10,6 @@ export type PlanetParams = GameObjectParams & {
     orbitRotationPeriod: number, // planet orbit rotation period in sec
     rotationPeriod: number, // planet rotation period in sec
     startAngle: number, // start planet angle
-    laserDamage: number
 }
 
 export class Planet extends GameObject {
@@ -24,8 +23,6 @@ export class Planet extends GameObject {
     protected _rotationSpeed: number;
     protected _angle: number;
 
-    private _laserDamage: number;
-    
     constructor(aParams: PlanetParams) {
         super(aParams);
         this._className = 'Planet';
@@ -41,8 +38,6 @@ export class Planet extends GameObject {
         this._rotationSpeed = (Math.PI * 2) / this._rotationPeriod;
         this._angle = aParams.startAngle;
 
-        this._laserDamage = aParams.laserDamage;
-
         this.updatePosition();
         this.updateRotation();
 
@@ -56,10 +51,6 @@ export class Planet extends GameObject {
 
     protected updateRotation() {
         this.mesh.rotation.y = this._angle;
-    }
-
-    get laserDamage(): number {
-        return this._laserDamage;
     }
 
     getDirrection(): THREE.Vector3 {
