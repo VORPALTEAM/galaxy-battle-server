@@ -56,7 +56,9 @@ const CONFIG = {
                 { min: 100, max: 150 },
                 { min: 150, max: 200 },
                 { min: 200, max: 300 }
-            ]
+            ],
+            critChancePercent: 3,
+            critFactor: 1.75
         },
         {
             name: 'rocket', isActive: true, startFromLevel: 2, cd: 10000, damage: [
