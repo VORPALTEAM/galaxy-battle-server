@@ -33,6 +33,17 @@ async function GetUserWinsCount(address: string) {
     })
 }
 
+async function GetUserWinHistory (address: string) {
+    return new Promise(async (resolve, reject) => {
+        try {
+        const dt = await rewardContract.methods.getUserWinHistory(address).call();
+        resolve(Number(dt))
+        } catch (e) {
+            reject(`Request to network failed: ${e.message}`)
+        }
+    })
+}
+
 export interface WinData {
     winner: string,
     rewardAddress: string,
@@ -96,6 +107,11 @@ export async function getUserBoxesToOpen(_user: string) {
         if (!dt.isPaid) list.push(allBoxes[j]);
     }
     return list;
+}
+
+export async function getUserWinContractBalance (_user: string) {
+    const balance = await rewardContract.methods.balanceOf(_user).call();
+	return Number(balance);
 }
 
 export async function RecordWinnerWithChoose(address: string, _unfix: boolean = true) {
