@@ -50,8 +50,22 @@ const CONFIG = {
     },
 
     skills: [
-        { name: 'laser', isActive: true, startFromLevel: 1, cd: 3000, damage: [80, 100, 150, 200] },
-        { name: 'rocket', isActive: true, startFromLevel: 2, cd: 10000, damage: [100, 150, 200, 250] },
+        {
+            name: 'laser', isActive: true, startFromLevel: 1, cd: 3000, damage: [
+                { min: 80, max: 100 },
+                { min: 100, max: 150 },
+                { min: 150, max: 200 },
+                { min: 200, max: 300 }
+            ]
+        },
+        {
+            name: 'rocket', isActive: true, startFromLevel: 2, cd: 10000, damage: [
+                { min: 250, max: 300 },
+                { min: 300, max: 350 },
+                { min: 350, max: 400 },
+                { min: 400, max: 500 }
+            ]
+        },
         { name: 'slow', isActive: false, startFromLevel: 2, cd: 30000 },
         { name: 'ulta', isActive: false, startFromLevel: 6, cd: 60000 },
     ],
@@ -145,7 +159,9 @@ class ExpRecord {
     getSkillDamage(aSkillId: number): number {
         const level = this._skillLevels[aSkillId];
         if (CONFIG.skills[aSkillId].damage) {
-            return CONFIG.skills[aSkillId].damage[level - 1];
+            const minDmg = CONFIG.skills[aSkillId].damage[level - 1].min;
+            const maxDmg = CONFIG.skills[aSkillId].damage[level - 1].max;
+            return MyMath.randomIntInRange(minDmg, maxDmg);
         }
         else {
             return 0;
