@@ -33,27 +33,29 @@ async function GetUserWinsCount(address: string) {
     })
 }
 
-export async function GetUserWinHistory (address: string) {
+export async function GetUserWinHistory(address: string): Promise<number[]> {
     return new Promise(async (resolve, reject) => {
         try {
-        const dt = await rewardContract.methods.getUserWinHistory(address).call();
-		try {
-		   resolve(Array.from(dt))
-		} catch (e) {
-		   resolve(0)
-		}
+            const dt: any = await rewardContract.methods.getUserWinHistory(address).call();
+            try {
+                resolve(Array.from(dt))
+            } catch (e) {
+                resolve([])
+            }
         } catch (e) {
             reject(`Request to network failed: ${e.message}`)
         }
     })
 }
+
 // ToDo: make another realization
-export async function GetUserWinStreak (address: string) {
-   try {
-      return await GetUserWinHistory (address).length + 1
-   } catch (e) {
-      return 1;
-   }
+export async function GetUserWinStreak(address: string) {
+    try {
+        let wh = await GetUserWinHistory(address);
+        return wh.length + 1;
+    } catch (e) {
+        return 1;
+    }
 }
 
 export interface WinData {
@@ -121,16 +123,16 @@ export async function getUserBoxesToOpen(_user: string) {
     return list;
 }
 
-export async function getUserWinContractBalance (_user: string) {
+export async function getUserWinContractBalance(_user: string) {
     const balance = await rewardContract.methods.balanceOf(_user).call();
-	return Number(balance);
+    return Number(balance);
 }
 
 export async function RecordWinnerWithChoose(address: string, _unfix: boolean = true) {
 
     const privateKey = process.env.ADMIN_PRIVATE_KEY
     const publicKey = process.env.ADMIN_ADDRESS
-    
+
     return new Promise(async (resolve, reject) => {
 
         if (!privateKey || !publicKey) {

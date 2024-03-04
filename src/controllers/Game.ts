@@ -22,7 +22,7 @@ import { LinkorFactory } from '../factory/LinkorFactory.js';
 import { Tower } from '../objects/Tower.js';
 import { TowerManager } from '../systems/TowerManager.js';
 import { ExpManager } from '../systems/ExpManager.js';
-import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
+import { GetUserWinHistory, GetUserWinStreak, getNextWinId, getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -171,6 +171,17 @@ export class Game implements ILogger {
         }
     }
 
+    private clearAllClientListeners() {
+        for (let i = 0; i < this._clients.length; i++) {
+            const client = this._clients[i];
+            client.onDisconnect.remove(this.onClientDisconnect, this);
+            // client.onLaser.add(this.onClientLaser, this);
+            client.onSkillRequest.remove(this.onSkillRequest, this);
+            client.onExitGame.remove(this.onClientExitGame, this);
+            client.onDebugTest.remove(this.onClientDebugTest, this);
+        }
+    }
+
     private onClientDisconnect(aClient: Client) {
         this.logDebug(`client (${aClient.walletId}) disconnect`);
 
@@ -230,8 +241,28 @@ export class Game implements ILogger {
         }
     }
 
-    private completeGame(aWinner: Client) {
+    private async isWinStreak(aAddr: string): Promise<boolean> {
+        // let res1 = await getNextWinId();
+        // this.logDebug(`getNextWinId:`);
+        // console.log(res1);
+        // let res2 = await GetUserWinHistory(aAddr);
+        // this.logDebug(`GetUserWinHistory:`);
+        // console.log(res2);
+        // GetUserWinHistory(aAddr)
+        let ws = await GetUserWinStreak(aAddr);
+        this.logDebug(`GetUserWinStreak:`);
+        console.log(ws);
+        return ws >= 3;
+    }
+
+    private async completeGame(aWinner: Client) {
         this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
+
+        let isWinStreak = false;
+        if (!aWinner.isBot && aWinner.isSigned) {
+            isWinStreak = await this.isWinStreak(aWinner.walletId);
+        }
+
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
             let data: GameCompleteData;
@@ -239,7 +270,7 @@ export class Game implements ILogger {
                 if (client.connectionId == aWinner.connectionId) {
                     data = {
                         status: 'win',
-                        showBoxClaim: true,
+                        showBoxClaim: isWinStreak,
                         boxLevel: 1
                     };
                 }
@@ -798,6 +829,7 @@ export class Game implements ILogger {
     }
 
     free() {
+        this.clearAllClientListeners();
         this.stopLoop();
         this._loopInterval = null;
         this.onGameComplete.removeAll();
