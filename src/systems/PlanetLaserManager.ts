@@ -113,7 +113,8 @@ export class PlanetLaserManager implements ILogger {
             planetId: planet.id,
             pos: planet.position,
             dir: dir,
-            length: rayLen
+            length: rayLen,
+            skin: planet.laserSkin
         }
         this.onLaserAttack.dispatch(this, data);
 

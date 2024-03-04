@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -22,6 +22,7 @@ import { LinkorFactory } from '../factory/LinkorFactory.js';
 import { Tower } from '../objects/Tower.js';
 import { TowerManager } from '../systems/TowerManager.js';
 import { ExpManager } from '../systems/ExpManager.js';
+import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -286,7 +287,7 @@ export class Game implements ILogger {
 
     }
 
-    private initStars() {
+    private async initStars() {
 
         // create stars
         const starParams = SETTINGS.starParams;
@@ -325,9 +326,39 @@ export class Game implements ILogger {
 
         // create planets
         for (let i = 0; i < stars.length; i++) {
+            let client = this._clients[i];
             const star = stars[i];
             const isTopStar = star.position.z < (SETTINGS.field.size.rows * SETTINGS.field.size.sectorHeight) / 2;
             const planetParams = SETTINGS.planet;
+
+            let lasers: number[] = [];
+            let laserSkin: PlanetLaserSkin = 'blue';
+
+            if (!client.isFreeConnection && !client.isBot) {
+                lasers = await getUserAvailableLaserLevels(client.walletId);
+                this.logDebug(`laser list:`, lasers);
+
+                if (lasers?.length > 0) {
+                    
+                    lasers.sort((a, b) => {
+                        return a - b;
+                    })
+                    this.logDebug(`sorted laser list:`, lasers);
+                    let maxLevel = lasers[0];
+
+                    switch (maxLevel) {
+                        case 0:
+                            laserSkin = 'red';
+                            break;
+                        case 1:
+                            laserSkin = 'green';
+                            break;
+                        case 2:
+                            laserSkin = 'violet';
+                            break;
+                    }
+                }
+            }
 
             let planet = new Planet({
                 id: this.generateObjectId(),
@@ -341,6 +372,7 @@ export class Game implements ILogger {
                 startAngle: MyMath.randomInRange(0, Math.PI * 2),
                 startOrbitAngle: isTopStar ? Math.PI / 2 : -Math.PI / 2,
                 // laserDamage: planetParams.laserDamage
+                laserSkin: laserSkin
             });
 
             PackSender.getInstance().objectCreate(this._clients, planet.getCreateData());

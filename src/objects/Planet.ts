@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Signal } from "../utils/events/Signal.js";
-import { ObjectUpdateData, StarCreateData } from "../data/Types.js";
+import { ObjectUpdateData, PlanetLaserSkin, StarCreateData } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
 
 export type PlanetParams = GameObjectParams & {
@@ -10,9 +10,12 @@ export type PlanetParams = GameObjectParams & {
     orbitRotationPeriod: number, // planet orbit rotation period in sec
     rotationPeriod: number, // planet rotation period in sec
     startAngle: number, // start planet angle
+    laserSkin: PlanetLaserSkin
 }
 
 export class Planet extends GameObject {
+    protected _laserSkin: PlanetLaserSkin;
+
     protected _orbitCenter: THREE.Vector3;
     protected _orbitRadius: number;
     protected _orbitRotationPeriod: number; // sec
@@ -27,6 +30,7 @@ export class Planet extends GameObject {
         super(aParams);
         this._className = 'Planet';
 
+        this._laserSkin = aParams.laserSkin;
         this._orbitCenter = aParams.orbitCenter;
         this._orbitRadius = aParams.orbitRadius;
         this._orbitRotationPeriod = aParams.orbitRotationPeriod;
@@ -51,6 +55,10 @@ export class Planet extends GameObject {
 
     protected updateRotation() {
         this.mesh.rotation.y = this._angle;
+    }
+
+    get laserSkin(): PlanetLaserSkin {
+        return 'blue';
     }
 
     getDirrection(): THREE.Vector3 {

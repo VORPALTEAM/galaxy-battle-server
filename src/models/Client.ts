@@ -17,7 +17,10 @@ export class Client implements ILogger {
     protected _isSignPending = false;
     protected _isDisconnected = false;
     private _isWithBot = false;
+    protected _isBot = false;
+    protected _isFreeConnection = false;
     
+    onSignRecv = new Signal();
     onStartSearchGame = new Signal();
     onStopSearchGame = new Signal();
     // onLaser = new Signal();
@@ -49,9 +52,15 @@ export class Client implements ILogger {
 
     protected initListeners() {
 
-        this._socket.on(PackTitle.startSearchGame, (aData?: { withBot: boolean }) => {
-            // client.withBot = aData?.withBot;
+        this._socket.on(PackTitle.startSearchGame, (aData?: {
+            isFreeConnect?: boolean
+            withBot?: boolean
+        }) => {
             this._isWithBot = aData?.withBot;
+            this._isFreeConnection = aData?.isFreeConnect;
+            if (this._isFreeConnection) {
+                this._walletId = '0x0';
+            }
             if (this._isWithBot) {
                 this.logDebug(`search game with bot request...`);
             }
@@ -84,40 +93,14 @@ export class Client implements ILogger {
         this._socket.on(PackTitle.claimReward, (aData: ClaimRewardData) => {
             this.logDebug(`onSocket claimReward: ${aData}`);
 
-            switch (aData.type) {
-                case 'reward':
-                    // client claim reward click
-                    this.logDebug(`Claim Reward: RecordWinnerWithChoose call with (${this._walletId}, false)`);
-                    RecordWinnerWithChoose(this._walletId, false).then(() => {
-                        // resolve
-                        this.logDebug(`RecordWinnerWithChoose resolved`);
-                        this.sendClaimRewardAccept();
-                    }, (aReasone: any) => {
-                        // rejected
-                        this.logDebug(`RecordWinnerWithChoose rejected`);
-                        this.logError(`RecordWinnerWithChoose: ${aReasone}`);
-                        this.sendClaimRewardReject(aData.type, aReasone);
-                    })
-                    break;
-                    
-                case 'box':
-                    // client claim reward click
-                    this.logDebug(`Open Box: RecordWinnerWithChoose call with (${this._walletId}, true)`);
-                    RecordWinnerWithChoose(this._walletId, true).then(() => {
-                        // resolve
-                        this.logDebug(`RecordWinnerWithChoose resolved`);
-                        this.sendClaimBoxAccept();
-                    }, (aReasone: any) => {
-                        // rejected
-                        this.logDebug(`RecordWinnerWithChoose rejected`);
-                        this.logError(`RecordWinnerWithChoose: ${aReasone}`);
-                        this.sendClaimRewardReject(aData.type, aReasone);
-                    })
-                    break;
-                
-                default:
-
-                    break;
+            if (this._isSigned) {
+                this.handleClaimRewardRequest(aData);
+            }
+            else {
+                this.onSignRecv.addOnce(() => {
+                    this.handleClaimRewardRequest(aData);
+                }, this);
+                this.signRequest();
             }
             
         });
@@ -128,6 +111,44 @@ export class Client implements ILogger {
             this.onDisconnect.dispatch(this);
         });
 
+    }
+
+    private handleClaimRewardRequest(aData: ClaimRewardData) {
+        switch (aData.type) {
+            case 'reward':
+                // client claim reward click
+                this.logDebug(`Claim Reward: RecordWinnerWithChoose call with (${this._walletId}, false)`);
+                RecordWinnerWithChoose(this._walletId, false).then(() => {
+                    // resolve
+                    this.logDebug(`RecordWinnerWithChoose resolved`);
+                    this.sendClaimRewardAccept();
+                }, (aReasone: any) => {
+                    // rejected
+                    this.logDebug(`RecordWinnerWithChoose rejected`);
+                    this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                    this.sendClaimRewardReject(aData.type, aReasone);
+                })
+                break;
+
+            case 'box':
+                // client claim reward click
+                this.logDebug(`Open Box: RecordWinnerWithChoose call with (${this._walletId}, true)`);
+                RecordWinnerWithChoose(this._walletId, true).then(() => {
+                    // resolve
+                    this.logDebug(`RecordWinnerWithChoose resolved`);
+                    this.sendClaimBoxAccept();
+                }, (aReasone: any) => {
+                    // rejected
+                    this.logDebug(`RecordWinnerWithChoose rejected`);
+                    this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                    this.sendClaimRewardReject(aData.type, aReasone);
+                })
+                break;
+
+            default:
+                this.logWarn(`handleClaimRewardRequest: unknown aData.type = ${aData.type}`);
+                break;
+        }
     }
 
     get socket(): Socket {
@@ -162,6 +183,14 @@ export class Client implements ILogger {
         return this._isWithBot;
     }
 
+    get isFreeConnection() {
+        return this._isFreeConnection;
+    }
+
+    public get isBot() {
+        return this._isBot;
+    }
+
     sign(aPublicKey: string) {
         this._walletId = aPublicKey;
         this._isSigned = true;
@@ -173,9 +202,19 @@ export class Client implements ILogger {
         this._socket.emit(aPackTitle, aData);
     }
 
-    signRequest() {
+    async signRequest() {
         this.sendPack(PackTitle.sign, {
             cmd: 'request'
+        });
+    }
+
+    signSuccess(aWalletId: string) {
+        this.sendPack(PackTitle.sign, {
+            cmd: 'success',
+            walletId: aWalletId
+        });
+        this.onSignRecv.dispatch({
+            status: 'success'
         });
     }
 
@@ -184,12 +223,8 @@ export class Client implements ILogger {
             cmd: 'reject',
             message: aMsg
         });
-    }
-
-    signSuccess(aWalletId: string) {
-        this.sendPack(PackTitle.sign, {
-            cmd: 'success',
-            walletId: aWalletId
+        this.onSignRecv.dispatch({
+            status: 'reject'
         });
     }
 

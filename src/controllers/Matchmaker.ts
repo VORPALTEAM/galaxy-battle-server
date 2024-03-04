@@ -99,7 +99,7 @@ export class Matchmaker implements ILogger {
         aClient.sendStartGameSearch();
         
         // check sign of this client
-        if (!aClient.isSigned && !aClient.isSignPending) {
+        if (!aClient.isFreeConnection && !aClient.isSigned && !aClient.isSignPending) {
             SignService.getInstance().sendRequest(aClient);
         }
 
@@ -127,7 +127,7 @@ export class Matchmaker implements ILogger {
 
         // find ready clients
         this._clients.forEach(client => {
-            if (client.isSigned) {
+            if (client.isSigned || client.isFreeConnection) {
                 if (client.isWithBot) {
                     readyBotClientIds.push(client.connectionId);
                 }

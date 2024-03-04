@@ -12,6 +12,7 @@ export class BotClient extends Client {
     constructor() {
         super(null);
         this._className = 'BotClient';
+        this._isBot = true;
         this.sign(this.generateWalletId(10));
     }
 
