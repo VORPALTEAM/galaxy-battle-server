@@ -52,20 +52,20 @@ const CONFIG = {
     skills: [
         {
             name: 'laser', isActive: true, startFromLevel: 1, cd: 3000, damage: [
-                { min: 80, max: 100 },
-                { min: 100, max: 150 },
-                { min: 150, max: 200 },
-                { min: 200, max: 300 }
+                { min: 30, max: 50 },
+                { min: 35, max: 55 },
+                { min: 40, max: 60 },
+                { min: 50, max: 80 }
             ],
             critChancePercent: 3,
             critFactor: 1.75
         },
         {
             name: 'rocket', isActive: true, startFromLevel: 2, cd: 10000, damage: [
-                { min: 250, max: 300 },
-                { min: 300, max: 350 },
-                { min: 350, max: 400 },
-                { min: 400, max: 500 }
+                { min: 45, max: 65 },
+                { min: 50, max: 75 },
+                { min: 60, max: 90 },
+                { min: 80, max: 120 }
             ]
         },
         { name: 'slow', isActive: false, startFromLevel: 2, cd: 30000 },
