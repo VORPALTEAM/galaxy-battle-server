@@ -35,7 +35,7 @@ async function GetUserWinsCount (address: string) {
     })
 }
 
-async function GetUserWinHistory (address: string) {
+export async function GetUserWinHistory (address: string) {
     return new Promise(async (resolve, reject) => {
         try {
         const dt = await rewardContract.methods.getUserWinHistory(address).call();
