@@ -36,7 +36,8 @@ export enum PackTitle {
     skill = 'skill',
 
     claimReward = 'claimReward',
-    // openBox = 'openBox',
+
+    debugTest = 'debugTest'
     
 }
 
@@ -139,4 +140,8 @@ export type ClaimRewardData = {
     type: RewardType,
     action?: 'request' | 'accept' | 'reject',
     reasone?: any
+}
+
+export type DebugTestData = {
+    action: 'win'
 }

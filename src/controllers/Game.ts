@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -167,6 +167,7 @@ export class Game implements ILogger {
             // client.onLaser.add(this.onClientLaser, this);
             client.onSkillRequest.add(this.onSkillRequest, this);
             client.onExitGame.add(this.onClientExitGame, this);
+            client.onDebugTest.add(this.onClientDebugTest, this);
         }
     }
 
@@ -219,6 +220,14 @@ export class Game implements ILogger {
     private onClientExitGame(aClient: Client) {
         let aWinner = this._clients[0] == aClient ? this._clients[1] : this._clients[0];
         this.completeGame(aWinner);
+    }
+
+    private onClientDebugTest(aClient: Client, aData: DebugTestData) {
+        switch (aData.action) {
+            case 'win':
+                this.completeGame(aClient);
+                break;
+        }
     }
 
     private completeGame(aWinner: Client) {
@@ -335,8 +344,8 @@ export class Game implements ILogger {
             let laserSkin: PlanetLaserSkin = 'blue';
 
             if (!client.isFreeConnection && !client.isBot) {
-                lasers = await getUserAvailableLaserLevels(client.walletId);
-                this.logDebug(`laser list:`, lasers);
+                // lasers = await getUserAvailableLaserLevels(client.walletId);
+                // this.logDebug(`laser list:`, lasers);
 
                 if (lasers?.length > 0) {
                     

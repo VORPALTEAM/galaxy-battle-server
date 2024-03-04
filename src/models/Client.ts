@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { ClaimRewardData, PackTitle, RewardType, SkillRequest } from "../data/Types.js";
+import { ClaimRewardData, DebugTestData, PackTitle, RewardType, SkillRequest } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 
@@ -27,6 +27,7 @@ export class Client implements ILogger {
     onSkillRequest = new Signal();
     onExitGame = new Signal();
     onDisconnect = new Signal();
+    onDebugTest = new Signal();
 
 
     constructor(aSocket: Socket) {
@@ -88,6 +89,10 @@ export class Client implements ILogger {
         this._socket.on(PackTitle.exitGame, () => {
             // client click exit
             this.onExitGame.dispatch(this);
+        });
+
+        this._socket.on(PackTitle.debugTest, (aData: DebugTestData) => {
+            this.onDebugTest.dispatch(this, aData);
         });
 
         this._socket.on(PackTitle.claimReward, (aData: ClaimRewardData) => {
