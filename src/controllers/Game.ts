@@ -341,7 +341,7 @@ export class Game implements ILogger {
                 if (lasers?.length > 0) {
                     
                     lasers.sort((a, b) => {
-                        return a - b;
+                        return b - a;
                     })
                     this.logDebug(`sorted laser list:`, lasers);
                     let maxLevel = lasers[0];
