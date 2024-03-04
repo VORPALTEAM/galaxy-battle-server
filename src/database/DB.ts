@@ -2,6 +2,10 @@ import { IRepository } from "./repo/IRepository.js";
 import { LocalRepository } from "./repo/LocalRepository.js";
 import { PostgreRepository } from "./repo/PostgreRepository.js";
 
+export let WINSTREAKS: {[index: string]: number} = {
+    
+}
+
 export class DB {
     static repo: IRepository;
 

@@ -143,5 +143,5 @@ export type ClaimRewardData = {
 }
 
 export type DebugTestData = {
-    action: 'win'
+    action: 'win' | 'loss'
 }

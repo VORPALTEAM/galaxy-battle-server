@@ -4,6 +4,7 @@ import { LogMng } from "../utils/LogMng.js";
 import { ClaimRewardData, DebugTestData, PackTitle, RewardType, SkillRequest } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
+import { WINSTREAKS } from "src/database/DB.js";
 
 export class Client implements ILogger {
 
