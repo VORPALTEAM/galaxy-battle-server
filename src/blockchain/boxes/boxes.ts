@@ -39,11 +39,23 @@ export async function GetUserWinHistory (address: string) {
     return new Promise(async (resolve, reject) => {
         try {
         const dt = await rewardContract.methods.getUserWinHistory(address).call();
-        resolve(Number(dt))
+		try {
+		   resolve(Array.from(dt))
+		} catch (e) {
+		   resolve(0)
+		}
         } catch (e) {
             reject(`Request to network failed: ${e.message}`)
         }
     })
+}
+// ToDo: make another realization
+export async function GetUserWinStreak (address: string) {
+   try {
+      return await GetUserWinHistory (address).length + 1
+   } catch (e) {
+      return 1;
+   }
 }
 
 export interface WinData {
