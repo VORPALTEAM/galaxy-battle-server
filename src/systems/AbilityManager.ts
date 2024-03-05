@@ -130,10 +130,7 @@ export class AbilityManager implements ILogger {
         if (!planet) return;
         const origin = planet.position.clone();
         let dir = planet.getDirrection();
-
         
-
-
     }
 
     free() {
