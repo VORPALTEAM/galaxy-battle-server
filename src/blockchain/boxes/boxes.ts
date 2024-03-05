@@ -42,7 +42,7 @@ export async function GetUserWinHistory (address: string) {
 		try {
 		   resolve(Array.from(dt))
 		} catch (e) {
-		   resolve(0)
+		   resolve([])
 		}
         } catch (e) {
             reject(`Request to network failed: ${e.message}`)
@@ -149,7 +149,7 @@ export async function RecordWinnerWithChoose (address: string, _unfix: boolean =
                 gasLimit: web3.utils.toHex(await rewardContract.methods.noteWinner(address, _unfix).estimateGas({ from: publicKey})),
                 value: '0x00',
                 data: rewardContract.methods.noteWinner(address, _unfix).encodeABI(),
-                nonce: count + 1
+                nonce: count
             }
 
             const signedTx = await web3.eth.accounts.signTransaction(txnData, privateKey);
