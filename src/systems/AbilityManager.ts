@@ -9,11 +9,12 @@ import { Client } from "../models/Client.js";
 import { Planet } from "../objects/Planet.js";
 import { PlanetLaserData } from "../data/Types.js";
 
-export class PlanetLaserManager implements ILogger {
-    protected _className = 'AbilsManager';
+export class AbilityManager implements ILogger {
+    protected _className = 'AbilityManager';
     protected _objects: Map<number, GameObject>;
     protected _thinkTimer = 0;
     onLaserAttack = new Signal();
+    onRocketCreate = new Signal();
 
     constructor(aObjects: Map<number, GameObject>) {
         this._objects = aObjects;
@@ -52,6 +53,7 @@ export class PlanetLaserManager implements ILogger {
     }
 
     laserAttack(aClient: Client, aDamage: number) {
+
         let planet = this.getPlanetByPlayer(aClient.walletId);
         if (!planet) return;
         const origin = planet.position.clone();
@@ -117,6 +119,20 @@ export class PlanetLaserManager implements ILogger {
             skin: planet.laserSkin
         }
         this.onLaserAttack.dispatch(this, data);
+
+    }
+
+    rocketAttack(aClient: Client, aDamage: number) {
+
+        const damage = aDamage;
+
+        let planet = this.getPlanetByPlayer(aClient.walletId);
+        if (!planet) return;
+        const origin = planet.position.clone();
+        let dir = planet.getDirrection();
+
+        
+
 
     }
 

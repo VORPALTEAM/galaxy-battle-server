@@ -15,7 +15,7 @@ import { Planet } from '../objects/Planet.js';
 import { StarManager } from '../systems/StarManager.js';
 import { Linkor } from '../objects/Linkor.js';
 import { LinkorManager } from '../systems/LinkorManager.js';
-import { PlanetLaserManager } from '../systems/PlanetLaserManager.js';
+import { AbilityManager } from '../systems/AbilityManager.js';
 import { SpaceShip } from '../objects/SpaceShip.js';
 import { FighterFactory } from '../factory/FighterFactory.js';
 import { LinkorFactory } from '../factory/LinkorFactory.js';
@@ -136,7 +136,7 @@ export class Game implements ILogger {
     private _towerMng: TowerManager;
     private _fighterMng: FighterManager;
     private _linkorMng: LinkorManager;
-    private _abilsMng: PlanetLaserManager;
+    private _abilsMng: AbilityManager;
     private _expMng: ExpManager;
     // events
     onGameComplete = new Signal();
@@ -207,10 +207,14 @@ export class Game implements ILogger {
 
             case 'click':
                 switch (aData.skillId) {
-                    case 0:
-                        const dmg = this._expMng.getSkillDamage(aClient.walletId, 0);
+                    case 0: {
+                        const dmg = this._expMng.getSkillDamage(aClient.walletId, aData.skillId);
                         this._abilsMng?.laserAttack(aClient, dmg);
-                        break;
+                    } break;
+                    case 1: {
+                        const dmg = this._expMng.getSkillDamage(aClient.walletId, aData.skillId);
+                        this._abilsMng?.rocketAttack(aClient, dmg);
+                    } break;
                     default:
                         this.logError(`onSkillRequest: unhandled click skill id: ${aData}`);
                         break;
@@ -338,7 +342,7 @@ export class Game implements ILogger {
         this._fighterMng = new FighterManager(this._field, this._objects);
         this._linkorMng = new LinkorManager(this._field, this._objects);
 
-        this._abilsMng = new PlanetLaserManager(this._objects);
+        this._abilsMng = new AbilityManager(this._objects);
         this._abilsMng.onLaserAttack.add(this.onPlanetLaserAttack, this);
 
         this.initStars();
@@ -634,7 +638,7 @@ export class Game implements ILogger {
         });
     }
 
-    private onPlanetLaserAttack(aMng: PlanetLaserManager, aData: PlanetLaserData) {
+    private onPlanetLaserAttack(aMng: AbilityManager, aData: PlanetLaserData) {
         PackSender.getInstance().planetLaserAttack(this._clients, aData);
     }
 
