@@ -22,7 +22,7 @@ import { LinkorFactory } from '../factory/LinkorFactory.js';
 import { Tower } from '../objects/Tower.js';
 import { TowerManager } from '../systems/TowerManager.js';
 import { ExpManager } from '../systems/ExpManager.js';
-import { GetUserWinHistory, GetUserWinStreak, getNextWinId, getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
+import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { WINSTREAKS } from '../database/DB.js';
 
 const SETTINGS = {
@@ -252,20 +252,6 @@ export class Game implements ILogger {
                 }
                 break;
         }
-    }
-
-    private async isWinStreak(aAddr: string): Promise<boolean> {
-        // let res1 = await getNextWinId();
-        // this.logDebug(`getNextWinId:`);
-        // console.log(res1);
-        // let res2 = await GetUserWinHistory(aAddr);
-        // this.logDebug(`GetUserWinHistory:`);
-        // console.log(res2);
-        // GetUserWinHistory(aAddr)
-        let ws = await GetUserWinStreak(aAddr);
-        this.logDebug(`GetUserWinStreak:`);
-        console.log(ws);
-        return ws >= 3;
     }
 
     private async completeGame(aWinner: Client) {
