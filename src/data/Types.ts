@@ -104,7 +104,7 @@ export type FighterCreateData = ObjectCreateData & {
     shield: number
 }
 
-export type PlanetLaserSkin = 'blue' | 'red' | 'green' | 'violet';
+export type PlanetLaserSkin = 'blue' | 'red' | 'white' | 'violet';
 
 export type PlanetLaserData = {
     planetId: number,

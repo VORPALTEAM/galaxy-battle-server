@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { ClaimRewardData, DebugTestData, PackTitle, RewardType, SkillRequest } from "../data/Types.js";
+import { ClaimRewardData, DebugTestData, PackTitle, PlanetLaserSkin, RewardType, SkillRequest } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 import { WINSTREAKS } from "src/database/DB.js";
@@ -13,6 +13,9 @@ export class Client implements ILogger {
     protected _connectionId: string;
     protected _walletId: string;
 
+    // data
+    private _laserSkin: PlanetLaserSkin;
+    
     // flags
     protected _isSigned = false;
     protected _isSignPending = false;
@@ -34,6 +37,7 @@ export class Client implements ILogger {
     constructor(aSocket: Socket) {
         this._className = 'Client';
         this._socket = aSocket;
+        this._laserSkin = 'blue';
         this.setIdBySocket();
         this.initListeners();
     }
@@ -193,8 +197,15 @@ export class Client implements ILogger {
         return this._isFreeConnection;
     }
 
-    public get isBot() {
+    get isBot() {
         return this._isBot;
+    }
+
+    get laserSkin(): PlanetLaserSkin {
+        return this._laserSkin;
+    }
+    set laserSkin(value: PlanetLaserSkin) {
+        this._laserSkin = value;
     }
 
     sign(aPublicKey: string) {

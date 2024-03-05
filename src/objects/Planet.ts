@@ -58,7 +58,7 @@ export class Planet extends GameObject {
     }
 
     get laserSkin(): PlanetLaserSkin {
-        return 'blue';
+        return this._laserSkin;
     }
 
     getDirrection(): THREE.Vector3 {

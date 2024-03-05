@@ -392,35 +392,6 @@ export class Game implements ILogger {
             const isTopStar = star.position.z < (SETTINGS.field.size.rows * SETTINGS.field.size.sectorHeight) / 2;
             const planetParams = SETTINGS.planet;
 
-            let lasers: number[] = [];
-            let laserSkin: PlanetLaserSkin = 'blue';
-
-            if (!client.isFreeConnection && !client.isBot) {
-                // lasers = await getUserAvailableLaserLevels(client.walletId);
-                // this.logDebug(`laser list:`, lasers);
-
-                if (lasers?.length > 0) {
-                    
-                    lasers.sort((a, b) => {
-                        return b - a;
-                    })
-                    this.logDebug(`sorted laser list:`, lasers);
-                    let maxLevel = lasers[0];
-
-                    switch (maxLevel) {
-                        case 0:
-                            laserSkin = 'red';
-                            break;
-                        case 1:
-                            laserSkin = 'green';
-                            break;
-                        case 2:
-                            laserSkin = 'violet';
-                            break;
-                    }
-                }
-            }
-
             let planet = new Planet({
                 id: this.generateObjectId(),
                 owner: star.owner,
@@ -432,8 +403,7 @@ export class Game implements ILogger {
                 rotationPeriod: planetParams.rotationPeriod,
                 startAngle: MyMath.randomInRange(0, Math.PI * 2),
                 startOrbitAngle: isTopStar ? Math.PI / 2 : -Math.PI / 2,
-                // laserDamage: planetParams.laserDamage
-                laserSkin: laserSkin
+                laserSkin: client.laserSkin
             });
 
             PackSender.getInstance().objectCreate(this._clients, planet.getCreateData());
@@ -696,11 +666,57 @@ export class Game implements ILogger {
 
     }
 
+    private async loadLaserSkinForClient(aClient: Client) {
+        let lasers: number[] = [];
+        let laserSkin: PlanetLaserSkin = 'blue';
+
+        if (aClient.isSigned && !aClient.isBot) {
+            lasers = await getUserAvailableLaserLevels(aClient.walletId);
+            lasers = lasers.map(n => Number(n));
+            this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
+            if (lasers?.length > 0) {
+                lasers.sort((a, b) => {
+                    return b - a;
+                })
+                // this.logDebug(`sorted laser list:`, lasers);
+                let maxLevel = Number(lasers[0]);
+
+                switch (maxLevel) {
+                    case 0:
+                        laserSkin = 'red';
+                        break;
+                    case 1:
+                        laserSkin = 'white';
+                        break;
+                    case 2:
+                        laserSkin = 'violet';
+                        break;
+                }
+            }
+        }
+
+        // test
+        // laserSkin = 'violet';
+
+        this.logDebug(`set laser skin for client(${aClient.walletId}):`, laserSkin);
+        aClient.laserSkin = laserSkin;
+    }
+
+    private loadLaserSkins() {
+        for (let i = 0; i < this._clients.length; i++) {
+            const cli = this._clients[i];
+            this.loadLaserSkinForClient(cli);
+        }
+    }
+
     get id(): number {
         return this._id;
     }
 
     start() {
+
+        this.loadLaserSkins();
+
         PackSender.getInstance().gameStart([this._clients[0]], {
             timer: SETTINGS.beginTimer,
             playerWallet: this._clients[0].walletId,
