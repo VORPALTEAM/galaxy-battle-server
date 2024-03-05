@@ -36,12 +36,12 @@ export async function GetUserWinsCount (address: string) {
 export async function GetUserWinHistory(address: string): Promise<number[]> {
     return new Promise(async (resolve, reject) => {
         try {
-            const dt: any = await rewardContract.methods.getUserWinHistory(address).call();
-            try {
-                resolve(Array.from(dt))
-            } catch (e) {
-                resolve([])
-            }
+        const dt: any = await rewardContract.methods.getUserWinHistory(address).call();
+		try {
+		   resolve(Array.from(dt))
+		} catch (e) {
+		   resolve([])
+		}
         } catch (e) {
             reject(`Request to network failed: ${e.message}`)
         }
@@ -152,7 +152,7 @@ export async function RecordWinnerWithChoose(address: string, _unfix: boolean = 
                 gasLimit: web3.utils.toHex(await rewardContract.methods.noteWinner(address, _unfix).estimateGas({ from: publicKey })),
                 value: '0x00',
                 data: rewardContract.methods.noteWinner(address, _unfix).encodeABI(),
-                nonce: count + 1
+                nonce: count
             }
 
             const signedTx = await web3.eth.accounts.signTransaction(txnData, privateKey);
