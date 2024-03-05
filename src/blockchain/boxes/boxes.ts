@@ -24,7 +24,7 @@ const nftContracts = {
 
 const rewardContract = new web3.eth.Contract(ABIs.RewardSenderWithChoose, contracts.RewardSender);
 
-async function GetUserWinsCount (address: string) {
+export async function GetUserWinsCount (address: string) {
     return new Promise(async (resolve, reject) => {
         try {
         const dt = await rewardContract.methods.getUserWinsCount(address).call();
@@ -38,7 +38,7 @@ async function GetUserWinsCount (address: string) {
 export async function GetUserWinHistory (address: string) {
     return new Promise(async (resolve, reject) => {
         try {
-        const dt = await rewardContract.methods.getUserWinHistory(address).call();
+        const dt: any = await rewardContract.methods.getUserWinHistory(address).call();
 		try {
 		   resolve(Array.from(dt))
 		} catch (e) {
@@ -50,13 +50,14 @@ export async function GetUserWinHistory (address: string) {
     })
 }
 // ToDo: make another realization
-export async function GetUserWinStreak (address: string) {
+/* export async function GetUserWinStreak (address: string) {
    try {
+      
       return await GetUserWinHistory (address).length + 1
    } catch (e) {
       return 1;
    }
-}
+} */
 
 export interface WinData {
     winner: string,
@@ -140,14 +141,15 @@ export async function RecordWinnerWithChoose (address: string, _unfix: boolean =
         const winId = Number(await getNextWinId ());
 
         try{
-
+            const count = Number(await web3.eth.getTransactionCount(publicKey));
             const txnData = {
                 from: publicKey,
                 to: contracts.RewardSender,
                 gasPrice,
                 gasLimit: web3.utils.toHex(await rewardContract.methods.noteWinner(address, _unfix).estimateGas({ from: publicKey})),
                 value: '0x00',
-                data: rewardContract.methods.noteWinner(address, _unfix).encodeABI()
+                data: rewardContract.methods.noteWinner(address, _unfix).encodeABI(),
+                nonce: count + 1
             }
 
             const signedTx = await web3.eth.accounts.signTransaction(txnData, privateKey);
