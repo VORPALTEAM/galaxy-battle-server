@@ -238,8 +238,7 @@ export class GameObject implements IUpdatable, ILogger {
     }
 
     lookByDir(aDir: THREE.Vector3) {
-        let p = aDir.clone();
-        p.add(this._mesh.position);
+        let p = this._mesh.position.clone().add(aDir);
         this._mesh.lookAt(p);
     }
 

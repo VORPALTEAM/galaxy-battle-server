@@ -41,7 +41,7 @@ export enum PackTitle {
     
 }
 
-export type ObjectType = 'Star' | 'Planet' | 'Tower' | 'FighterShip' | 'BattleShip' | 'Homing';
+export type ObjectType = 'Star' | 'Planet' | 'Tower' | 'FighterShip' | 'BattleShip' | 'HomingMissile';
 export type AttackType = 'laser' | 'ray';
 export type RaceType = 'Humans' | 'Waters' | 'Insects' | 'Lizards';
 

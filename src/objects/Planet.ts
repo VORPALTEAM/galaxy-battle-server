@@ -63,6 +63,7 @@ export class Planet extends GameObject {
 
     getDirrection(): THREE.Vector3 {
         let dir = new THREE.Vector3(0, 0, 1);
+        // let dir = new THREE.Vector3(1, 0, 0);
         dir.applyQuaternion(this.mesh.quaternion);
         return dir;
     }

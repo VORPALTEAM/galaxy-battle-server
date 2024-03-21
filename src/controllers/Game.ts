@@ -24,6 +24,8 @@ import { TowerManager } from '../systems/TowerManager.js';
 import { ExpManager } from '../systems/ExpManager.js';
 import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { WINSTREAKS } from '../database/DB.js';
+import { IdGenerator } from '../utils/game/IdGenerator.js';
+import { MissileController } from './MissileController.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -128,7 +130,7 @@ export class Game implements ILogger {
     private _inited = false;
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
-    private _objIdCounter = 0;
+    private _objIdGen: IdGenerator;
     private _objects: Map<number, GameObject>;
     private _clients: Client[];
     private _field: Field;
@@ -137,6 +139,7 @@ export class Game implements ILogger {
     private _fighterMng: FighterManager;
     private _linkorMng: LinkorManager;
     private _abilsMng: AbilityManager;
+    private _missilesController: MissileController;
     private _expMng: ExpManager;
     // events
     onGameComplete = new Signal();
@@ -144,6 +147,7 @@ export class Game implements ILogger {
     constructor(aGameId: number, aClientA: Client, aClientB: Client) {
         this._inited = false;
         this._id = aGameId;
+        this._objIdGen = new IdGenerator();
         this._objects = new Map();
         this._clients = [aClientA, aClientB];
         this._expMng = new ExpManager();
@@ -213,7 +217,10 @@ export class Game implements ILogger {
                     } break;
                     case 1: {
                         const dmg = this._expMng.getSkillDamage(aClient.walletId, aData.skillId);
-                        this._abilsMng?.rocketAttack(aClient, dmg);
+                        this._missilesController.launchMissile({
+                            client: aClient,
+                            damage: dmg
+                        });
                     } break;
                     default:
                         this.logError(`onSkillRequest: unhandled click skill id: ${aData}`);
@@ -300,9 +307,9 @@ export class Game implements ILogger {
         }
         this.onGameComplete.dispatch(this);
     }
-
+    
     private generateObjectId(): number {
-        return this._objIdCounter++;
+        return this._objIdGen.nextId();
     }
 
     private startLoop() {
@@ -330,6 +337,13 @@ export class Game implements ILogger {
 
         this._abilsMng = new AbilityManager(this._objects);
         this._abilsMng.onLaserAttack.add(this.onPlanetLaserAttack, this);
+
+        this._missilesController = new MissileController({
+            game: this,
+            field: this._field,
+            objects: this._objects,
+            objIdGen: this._objIdGen
+        });
 
         this.initStars();
         this.initTowers();
@@ -368,8 +382,7 @@ export class Game implements ILogger {
             star.onDamage.add(this.onObjectDamage, this);
 
             this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
-            PackSender.getInstance().objectCreate(this._clients, star.getCreateData());
-            this._objects.set(star.id, star);
+            this.addObject(star);
             stars.push(star);
             this._starMng.addStar(star);
 
@@ -396,8 +409,7 @@ export class Game implements ILogger {
                 laserSkin: client.laserSkin
             });
 
-            PackSender.getInstance().objectCreate(this._clients, planet.getCreateData());
-            this._objects.set(planet.id, planet);
+            this.addObject(planet);
         }
 
     }
@@ -427,8 +439,7 @@ export class Game implements ILogger {
             tower.onDamage.add(this.onObjectDamage, this);
 
             this._field.takeCell(towerData.cellPos.x, towerData.cellPos.y);
-            PackSender.getInstance().objectCreate(this._clients, tower.getCreateData());
-            this._objects.set(tower.id, tower);
+            this.addObject(tower);
 
             // this._towerMng.addStar(tower);
 
@@ -511,9 +522,8 @@ export class Game implements ILogger {
         fighter.onDamage.add(this.onObjectDamage, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
-        PackSender.getInstance().objectCreate(this._clients, fighter.getCreateData());
 
-        this._objects.set(fighter.id, fighter);
+        this.addObject(fighter);
         this._fighterMng.addShip(fighter);
     }
 
@@ -559,9 +569,8 @@ export class Game implements ILogger {
         linkor.onDamage.add(this.onObjectDamage, this);
 
         this._field.takeCell(cellPos.x, cellPos.y);
-        PackSender.getInstance().objectCreate(this._clients, linkor.getCreateData());
         
-        this._objects.set(linkor.id, linkor);
+        this.addObject(linkor);
         this._linkorMng.addLinkor(linkor);
     }
     
@@ -703,6 +712,15 @@ export class Game implements ILogger {
         return this._id;
     }
 
+    /**
+     * Adding new objects to main list of the game
+     * @param obj 
+     */
+    addObject(obj: GameObject) {
+        PackSender.getInstance().objectCreate(this._clients, obj.getCreateData());
+        this._objects.set(obj.id, obj);
+    }
+
     start() {
 
         this.loadLaserSkins();
@@ -789,7 +807,7 @@ export class Game implements ILogger {
             }
         }
 
-        this.logDebug(`onObjectKill owner: ${objOwner}, attacker id: ${attackerClient.walletId}`);
+        // this.logDebug(`onObjectKill owner: ${objOwner}, attacker id: ${attackerClient.walletId}`);
 
         if (!attackerClient) return;
 
@@ -812,6 +830,7 @@ export class Game implements ILogger {
 
         this._fighterMng.update(dt);
         this._linkorMng.update(dt);
+        this._missilesController.update(dt);
 
         this._objects.forEach((obj) => {
 
@@ -827,6 +846,7 @@ export class Game implements ILogger {
                 // remove from managers
                 this._fighterMng.deleteShip(obj.id);
                 this._linkorMng.deleteShip(obj.id);
+                this._missilesController.deleteMissile(obj.id);
                 // free the field cell
                 this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
                 obj.free();

@@ -179,16 +179,36 @@ export class MyMath {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
+    public static normalizeVector(v: { x: number, y: number }): { x: number, y: number } {
+        const length = this.getVec2Length(0, 0, v.x, v.y);
+        return { x: v.x / length, y: v.y / length };
+    }
+
+    public static distanceBetween(p1: { x: number, y: number }, p2: { x: number, y: number }): number {
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /**
+     * Convert angle to Vec2
+     * @param aAngle angle in radians
+     * @returns 
+     */
+    public static angleToVec2(aAngle: number): Vec2 {
+        return new Vec2(Math.cos(aAngle), Math.sin(aAngle));
+    }
+
     /**
      * Find the angle between 2 vectors (x1, y1) -> (x2, y2) via Math.atan2 function.
      * @param p1 - The first point.
      * @param p2 - The second point.
      * @return The angle in radians.
      */
-    public static angleBetweenATan(p1: { x: number, y: number }, p2: { x: number, y: number }): number {
-        return Math.atan2(p2.y - p1.y, p2.x - p1.x);
-    };
-
+    // public static angleBetweenATan(p1: { x: number, y: number }, p2: { x: number, y: number }): number {
+    //     return Math.atan2(p2.y - p1.y, p2.x - p1.x);
+    // }
+    
     /**
      * Angle between 2 vectors (x1, y1) -> (x2, y2) via Math.acos function.
      * @param p1 - The first point.
@@ -214,6 +234,13 @@ export class MyMath {
         let len2 = Math.sqrt(p2.x ** 2 + p2.y ** 2);
         return Math.asin(scalar / (len1 * len2));
     };
+
+    public static angleBetweenVectors(v1: { x: number, y: number }, v2: { x: number, y: number }): number {
+        const dot = v1.x * v2.x + v1.y * v2.y;
+        const det = v1.x * v2.y - v1.y * v2.x;
+        const angle = Math.atan2(det, dot);
+        return angle;
+    }
 
     public static isPointInTriangle(ax, ay, bx, by, cx, cy, px, py: number): boolean {
         let b0x, b0y, c0x, c0y, p0x, p0y: number;

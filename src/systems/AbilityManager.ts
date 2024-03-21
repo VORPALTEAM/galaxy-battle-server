@@ -8,6 +8,7 @@ import { Signal } from "../utils/events/Signal.js";
 import { Client } from "../models/Client.js";
 import { Planet } from "../objects/Planet.js";
 import { PlanetLaserData } from "../data/Types.js";
+import { HomingMissile } from 'src/objects/HomingMissile.js';
 
 export class AbilityManager implements ILogger {
     protected _className = 'AbilityManager';
@@ -122,19 +123,7 @@ export class AbilityManager implements ILogger {
 
     }
 
-    rocketAttack(aClient: Client, aDamage: number) {
-
-        const damage = aDamage;
-
-        let planet = this.getPlanetByPlayer(aClient.walletId);
-        if (!planet) return;
-        const origin = planet.position.clone();
-        let dir = planet.getDirrection();
-        
-    }
-
     free() {
-        // this._field = null;
         this._objects.clear();
         this._objects = null;
     }
