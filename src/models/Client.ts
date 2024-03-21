@@ -12,7 +12,8 @@ export class Client implements ILogger {
     protected _socket: Socket;
     protected _connectionId: string;
     protected _walletId: string;
-
+    protected _displayName: string;
+    
     // data
     private _laserSkin: PlanetLaserSkin;
     
@@ -185,6 +186,10 @@ export class Client implements ILogger {
         return this._walletId;
     }
 
+    get displayName(): string {
+        return this._displayName;
+    }
+
     get isDisconnected() {
         return this._isDisconnected;
     }
@@ -208,8 +213,9 @@ export class Client implements ILogger {
         this._laserSkin = value;
     }
 
-    sign(aPublicKey: string) {
+    sign(aPublicKey: string, aDisplayName = '') {
         this._walletId = aPublicKey;
+        this._displayName = aDisplayName;;
         this._isSigned = true;
         this.logDebug(`signed...`);
     }

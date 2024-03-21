@@ -21,7 +21,7 @@ export class SignService {
         return SignService._instance;
     }
 
-    private onSignRecv(aClient: Client, aSignature: string) {
+    private onSignRecv(aClient: Client, aSignature: string, aDisplayName = '') {
         const walletId = Web3Service.getInstance().getWalletId(aSignature);
 
         // check the player in connections
@@ -33,7 +33,7 @@ export class SignService {
         });
 
         // update client
-        aClient.sign(walletId);
+        aClient.sign(walletId, aDisplayName);
         aClient.signSuccess(walletId);
     }
 
@@ -41,8 +41,8 @@ export class SignService {
         this._clients.set(aClient.connectionId, aClient);
         const socket = aClient.socket;
         // init listeners
-        socket.on(PackTitle.sign, (aSignature: string) => {
-            this.onSignRecv(aClient, aSignature);
+        socket.on(PackTitle.sign, (aSignature: string, aDisplayName = '') => {
+            this.onSignRecv(aClient, aSignature, aDisplayName);
         });
     }
 

@@ -725,22 +725,25 @@ export class Game implements ILogger {
 
         this.loadLaserSkins();
 
-        PackSender.getInstance().gameStart([this._clients[0]], {
+        const cli1 = this._clients[0];
+        const cli2 = this._clients[1];
+
+        PackSender.getInstance().gameStart([cli1], {
             timer: SETTINGS.beginTimer,
-            playerWallet: this._clients[0].walletId,
-            enemyWallet: this._clients[1].walletId
+            playerWallet: cli1.displayName.length > 0 ? cli1.displayName : cli1.walletId,
+            enemyWallet: cli2.walletId
         });
-        PackSender.getInstance().gameStart([this._clients[1]], {
+        PackSender.getInstance().gameStart([cli2], {
             timer: SETTINGS.beginTimer,
-            playerWallet: this._clients[1].walletId,
-            enemyWallet: this._clients[0].walletId
+            playerWallet: cli2.displayName.length > 0 ? cli2.displayName : cli2.walletId,
+            enemyWallet: cli1.walletId
         });
 
-        PackSender.getInstance().fieldInit([this._clients[0]], {
+        PackSender.getInstance().fieldInit([cli1], {
             fieldParams: SETTINGS.field,
             playerPosition: 'top'
         });
-        PackSender.getInstance().fieldInit([this._clients[1]], {
+        PackSender.getInstance().fieldInit([cli2], {
             fieldParams: SETTINGS.field,
             playerPosition: 'bot'
         });
