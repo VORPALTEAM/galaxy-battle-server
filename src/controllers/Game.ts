@@ -26,6 +26,7 @@ import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { WINSTREAKS } from '../database/DB.js';
 import { IdGenerator } from '../utils/game/IdGenerator.js';
 import { MissileController } from './MissileController.js';
+import { HomingMissile } from '../objects/HomingMissile.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -340,7 +341,6 @@ export class Game implements ILogger {
 
         this._missilesController = new MissileController({
             game: this,
-            field: this._field,
             objects: this._objects,
             objIdGen: this._objIdGen
         });
@@ -839,21 +839,31 @@ export class Game implements ILogger {
 
             if (!obj.isImmortal && obj.hp <= 0) {
 
-                let isStar = obj instanceof Star;
-                let stars: Star[] = this.getAllStars();
-                if (isStar && stars.length <= 1) return;
+                if (obj instanceof Star) {
+                    let stars: Star[] = this.getAllStars();
+                    if (stars.length <= 1) return;
+                }
+
+                if (obj instanceof HomingMissile) {
+                    this._missilesController.explodeMissile(obj);
+                    destroyList.push(obj.id);
+                    this._objects.delete(obj.id);
+                    this._missilesController.deleteMissile(obj.id);
+                    return;
+                }
 
                 this.onObjectKill(obj);
+
                 destroyList.push(obj.id);
                 this._objects.delete(obj.id);
                 // remove from managers
                 this._fighterMng.deleteShip(obj.id);
                 this._linkorMng.deleteShip(obj.id);
-                this._missilesController.deleteMissile(obj.id);
                 // free the field cell
                 this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
                 obj.free();
                 return;
+
             }
 
             if (obj instanceof Tower) {

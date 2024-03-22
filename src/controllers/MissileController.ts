@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { Field } from "../objects/Field.js";
 import { GameObject } from "../objects/GameObject.js";
 import { HomingMissile } from "../objects/HomingMissile.js";
 import { IdGenerator } from "../utils/game/IdGenerator.js";
@@ -10,26 +9,36 @@ import { Planet } from "../objects/Planet.js";
 import { MyMath } from "../utils/MyMath.js";
 import { Game } from "./Game.js";
 import { Star } from '../objects/Star.js';
+import { MissileCollisionSystem } from '../systems/MissileCollisionSystem.js';
 
 export class MissileController implements ILogger {
     protected _className = 'MissileController';
     protected _game: Game;
     protected _objIdGen: IdGenerator;
-    protected _field: Field;
     protected _objects: Map<number, GameObject>;
     protected _missiles: Map<number, HomingMissile>;
+    protected _collisionSystem: MissileCollisionSystem;
 
     constructor(aParams: {
         game: Game,
         objIdGen: IdGenerator,
-        field: Field,
         objects: Map<number, GameObject>
     }) {
         this._game = aParams.game;
         this._objIdGen = aParams.objIdGen;
-        this._field = aParams.field;
         this._objects = aParams.objects;
         this._missiles = new Map();
+        this._collisionSystem = new MissileCollisionSystem(this._objects, this._missiles);
+        this._collisionSystem.onCollisionSignal.add(this.onMissileCollided, this);
+    }
+
+    free() {
+        this._collisionSystem.free();
+        this._game = null;
+        this._objIdGen = null;
+        this._objects = null;
+        this._missiles.clear();
+        this._missiles = null;
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -40,6 +49,12 @@ export class MissileController implements ILogger {
     }
     logError(aMsg: string, aData?: any): void {
         LogMng.error(`${this._className}: ${aMsg}`, aData);
+    }
+
+    private onMissileCollided(aMissile: HomingMissile, aObject: GameObject) {
+        aMissile.damage({
+            damage: aMissile.hp * 2
+        });
     }
 
     private getPlanetByPlayer(aOwner: string): Planet {
@@ -65,6 +80,21 @@ export class MissileController implements ILogger {
         return res;
     }
 
+    private getObjectsInAtkRadius(aMissile: HomingMissile): GameObject[] {
+        let objects: GameObject[] = [];
+        this._objects.forEach(obj => {
+            const dist = aMissile.position.distanceTo(obj.position);
+            // const isEnemy = obj.owner != aMissile.owner;
+            if (!obj.isImmortal) {
+                if (obj instanceof Star) return;
+                if (dist <= aMissile.attackRadius) {
+                    objects.push(obj);
+                }
+            }
+        });
+        return objects;
+    }
+
     private findClosestTargetInSector(aOwner: string,
         missilePosition: { x: number, y: number },
         missileDirectionVector: { x: number, y: number },
@@ -72,7 +102,7 @@ export class MissileController implements ILogger {
     ): GameObject | null {
         let closestTarget: GameObject | null = null;
         let closestDistance = Infinity;
-        let closestAngle = sectorAngle; // Измените, если нужно другое поведение внутри сектора
+        let closestAngle = sectorAngle;
         let objects = this.getTargetObjects(aOwner);
 
         for (const obj of objects) {
@@ -80,7 +110,7 @@ export class MissileController implements ILogger {
             const angle = Math.abs(MyMath.angleBetweenVectors(MyMath.normalizeVector(targetVector), missileDirectionVector));
 
             if (angle <= sectorAngle / 2) {
-                // Цель внутри сектора
+                // target in sector
                 const distance = MyMath.distanceBetween(missilePosition, obj.position);
                 if (distance < closestDistance) {
                     closestTarget = obj;
@@ -88,7 +118,7 @@ export class MissileController implements ILogger {
                 }
             }
             else {
-                // Цель вне сектора, но может быть ближайшей общей
+                // target out of sector, but can be nearest
                 const distance = MyMath.distanceBetween(missilePosition, obj.position);
                 if (distance < closestDistance && (closestTarget === null || angle < closestAngle)) {
                     closestTarget = obj;
@@ -131,9 +161,9 @@ export class MissileController implements ILogger {
             owner: aParams.client.walletId,
             radius: 1,
             velocity: 8,
-            hp: 10,
+            hp: 100,
             attackParams: {
-                radius: 10,
+                radius: 14,
                 damage: [damage, damage]
             }
         });
@@ -142,20 +172,22 @@ export class MissileController implements ILogger {
         this._game.addObject(newMissile);
     }
 
-    deleteMissile(aId: number) {
-        this._missiles.delete(aId);
+    explodeMissile(aMissile: HomingMissile) {
+        // explosion missile
+        let dmg = aMissile.getAttackDamage({ noCrit: true, noMiss: true });
+        let objects = this.getObjectsInAtkRadius(aMissile);
+        objects.map(obj => obj.damage(dmg));
     }
 
-    free() {
-        this._field = null;
-        this._missiles.clear();
-        this._missiles = null;
+    deleteMissile(aId: number) {
+        this._missiles.delete(aId);
     }
 
     update(dt: number) {
         this._missiles.forEach((obj) => {
             obj.update(dt);
         });
+        this._collisionSystem.update(dt);
     }
     
 }

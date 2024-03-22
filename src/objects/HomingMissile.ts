@@ -80,19 +80,27 @@ export class HomingMissile extends GameObject {
 
     private updateDirection(dt: number, withLog = false) {
 
-        if (this._target && this._target.position) {
+        if (this._target && this._target.hp > 0 && this._target.position) {
+
+            let targetPos: THREE.Vector3;
+            try {
+                targetPos = this._target.position.clone();
+            } catch (error) {
+                this._target = null;
+                return;
+            }
 
             // Calculate the angle from the missile to the mouse cursor game.input.x
             // and game.input.y are the mouse position; substitute with whatever
             // target coordinates you need.
             let dir = this.getDirrection();
             let pos = this.position;
-            let angle = dir.angleTo(this._target.position.clone().sub(pos));
+            let angle = dir.angleTo(targetPos.clone().sub(pos));
             const anFactor = Math.min(1, Math.PI / 6 / angle);
 
             let targetAngle = MyMath.angleBetweenVectors(
                 { x: 1, y: 0 },
-                { x: this._target.position.x - pos.x, y: this._target.position.z - pos.z }
+                { x: targetPos.x - pos.x, y: targetPos.z - pos.z }
             );
 
             if (withLog) {
@@ -101,7 +109,7 @@ export class HomingMissile extends GameObject {
                     testAn2: MyMath.toDeg(MyMath.angleBetweenVectors({ x: 1, y: 0 }, { x: 0, y: -1 })),
                     pos: pos,
                     dir: dir,
-                    targetPos: this._target.position,
+                    targetPos: targetPos,
                     currAngleY: MyMath.toDeg(this._mesh.rotation.y),
                     targetAngle: MyMath.toDeg(targetAngle),
                     angleTo: MyMath.toDeg(angle)
@@ -109,7 +117,7 @@ export class HomingMissile extends GameObject {
             }
 
             const prevQuat = this._mesh.quaternion.clone();
-            this.lookAt(this._target.position);
+            this.lookAt(targetPos);
             let targetQuaternion = this._mesh.quaternion.clone();
             // targetAngle = this._mesh.rotation.y;
             this._mesh.quaternion.copy(prevQuat);
