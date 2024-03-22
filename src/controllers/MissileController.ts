@@ -19,14 +19,10 @@ export class MissileController implements ILogger {
     protected _missiles: Map<number, HomingMissile>;
     protected _collisionSystem: MissileCollisionSystem;
 
-    constructor(aParams: {
-        game: Game,
-        objIdGen: IdGenerator,
-        objects: Map<number, GameObject>
-    }) {
-        this._game = aParams.game;
-        this._objIdGen = aParams.objIdGen;
-        this._objects = aParams.objects;
+    constructor(aGame: Game, aObjIdGen: IdGenerator, aObjects: Map<number, GameObject>) {
+        this._game = aGame;
+        this._objIdGen = aObjIdGen;
+        this._objects = aObjects;
         this._missiles = new Map();
         this._collisionSystem = new MissileCollisionSystem(this._objects, this._missiles);
         this._collisionSystem.onCollisionSignal.add(this.onMissileCollided, this);

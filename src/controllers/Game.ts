@@ -27,6 +27,7 @@ import { WINSTREAKS } from '../database/DB.js';
 import { IdGenerator } from '../utils/game/IdGenerator.js';
 import { MissileController } from './MissileController.js';
 import { HomingMissile } from '../objects/HomingMissile.js';
+import { ObjectController } from './ObjectController.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -132,7 +133,7 @@ export class Game implements ILogger {
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
     private _objIdGen: IdGenerator;
-    private _objects: Map<number, GameObject>;
+    private _objectController: ObjectController;
     private _clients: Client[];
     private _field: Field;
     private _starMng: StarManager;
@@ -149,7 +150,7 @@ export class Game implements ILogger {
         this._inited = false;
         this._id = aGameId;
         this._objIdGen = new IdGenerator();
-        this._objects = new Map();
+        this._objectController = new ObjectController(this, this._objIdGen);
         this._clients = [aClientA, aClientB];
         this._expMng = new ExpManager();
         this.initClientListeners();
@@ -212,10 +213,12 @@ export class Game implements ILogger {
 
             case 'click':
                 switch (aData.skillId) {
+
                     case 0: {
                         const dmg = this._expMng.getSkillDamage(aClient.walletId, aData.skillId);
                         this._abilsMng?.laserAttack(aClient, dmg);
                     } break;
+
                     case 1: {
                         const dmg = this._expMng.getSkillDamage(aClient.walletId, aData.skillId);
                         this._missilesController.launchMissile({
@@ -223,6 +226,21 @@ export class Game implements ILogger {
                             damage: dmg
                         });
                     } break;
+
+                    case 2: {
+                        let slowFactor = this._expMng.getSniperSpeedFactor(aClient.walletId);
+                        let slowTime = 5;
+                        let planet = this._objectController.getPlayerPlanet(aClient.walletId);
+                        if (planet) {
+                            this.logDebug(`onSkillRequest: Sniper Activate...`);
+                            planet.activateSniperSkill(slowFactor, slowTime);
+                        }
+                        else {
+                            this.logWarn(`onSkillRequest: Sniper: No Planet Detected!`);
+                        }
+
+                    } break;
+
                     default:
                         this.logError(`onSkillRequest: unhandled click skill id: ${aData}`);
                         break;
@@ -331,19 +349,15 @@ export class Game implements ILogger {
         // create field
         this._field = new Field(SETTINGS.field);
 
-        this._starMng = new StarManager(this._objects);
-        this._towerMng = new TowerManager({ field: this._field, objects: this._objects });
-        this._fighterMng = new FighterManager(this._field, this._objects);
-        this._linkorMng = new LinkorManager(this._field, this._objects);
+        this._starMng = new StarManager(this._objectController.objects);
+        this._towerMng = new TowerManager({ field: this._field, objects: this._objectController.objects });
+        this._fighterMng = new FighterManager(this._field, this._objectController.objects);
+        this._linkorMng = new LinkorManager(this._field, this._objectController.objects);
 
-        this._abilsMng = new AbilityManager(this._objects);
+        this._abilsMng = new AbilityManager(this._objectController.objects);
         this._abilsMng.onLaserAttack.add(this.onPlanetLaserAttack, this);
 
-        this._missilesController = new MissileController({
-            game: this,
-            objects: this._objects,
-            objIdGen: this._objIdGen
-        });
+        this._missilesController = new MissileController(this, this._objIdGen, this._objectController.objects);
 
         this.initStars();
         this.initTowers();
@@ -455,15 +469,6 @@ export class Game implements ILogger {
         return null;
     }
 
-    private getObjectOnCell(aCellPos: { x: number, y: number }): GameObject {
-        this._objects.forEach(obj => {
-            if (this._field.isPosOnCell(obj.position, aCellPos)) {
-                return obj;
-            }
-        });
-        return null;
-    }
-
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.fighters;
@@ -477,7 +482,7 @@ export class Game implements ILogger {
             let neighbors = this._field.getNeighbors(cellPos, true);
             if (neighbors.length <= 0) {
                 // explosion current object on the cell
-                let obj = this.getObjectOnCell(cellPos);
+                let obj = this._objectController.getObjectOnCell(this._field, cellPos);
                 if (obj) {
                     obj.damage({
                         damage: obj.hp * 2
@@ -639,7 +644,7 @@ export class Game implements ILogger {
 
     protected getAllStars(): Star[] {
         let stars: Star[] = [];
-        this._objects.forEach((obj) => {
+        this._objectController.objects.forEach((obj) => {
             if (obj instanceof Star) stars.push(obj);
         });
         return stars;
@@ -718,7 +723,7 @@ export class Game implements ILogger {
      */
     addObject(obj: GameObject) {
         PackSender.getInstance().objectCreate(this._clients, obj.getCreateData());
-        this._objects.set(obj.id, obj);
+        this._objectController.addObject(obj);
     }
 
     start() {
@@ -835,7 +840,8 @@ export class Game implements ILogger {
         this._linkorMng.update(dt);
         this._missilesController.update(dt);
 
-        this._objects.forEach((obj) => {
+        let objects = this._objectController.objects;
+        objects.forEach((obj) => {
 
             if (!obj.isImmortal && obj.hp <= 0) {
 
@@ -847,7 +853,7 @@ export class Game implements ILogger {
                 if (obj instanceof HomingMissile) {
                     this._missilesController.explodeMissile(obj);
                     destroyList.push(obj.id);
-                    this._objects.delete(obj.id);
+                    objects.delete(obj.id);
                     this._missilesController.deleteMissile(obj.id);
                     return;
                 }
@@ -855,7 +861,7 @@ export class Game implements ILogger {
                 this.onObjectKill(obj);
 
                 destroyList.push(obj.id);
-                this._objects.delete(obj.id);
+                objects.delete(obj.id);
                 // remove from managers
                 this._fighterMng.deleteShip(obj.id);
                 this._linkorMng.deleteShip(obj.id);
@@ -897,8 +903,8 @@ export class Game implements ILogger {
         this._fighterMng.free();
         this._linkorMng.free();
         this._field.free();
-        this._objects.clear();
-        this._objects = null;
+        this._objectController.free();
+        this._objectController = null;
         this._clients = [];
     }
 

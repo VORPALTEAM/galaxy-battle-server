@@ -68,7 +68,7 @@ const CONFIG = {
                 { min: 80, max: 120 }
             ]
         },
-        { name: 'slow', isActive: false, startFromLevel: 2, cd: 30000 },
+        { name: 'slow', isActive: true, startFromLevel: 2, cd: 30000, speedFactor: [.75, .6, .45, .25] },
         { name: 'ulta', isActive: false, startFromLevel: 6, cd: 60000 },
     ],
 
@@ -167,6 +167,21 @@ class ExpRecord {
         }
         else {
             return 0;
+        }
+    }
+
+    getSkillLevel(aSkillId: number): number {
+        return this._skillLevels[aSkillId];
+    }
+
+    getSniperSpeedFactor(): number {
+        const aSkillId = 2;
+        const level = this._skillLevels[aSkillId];
+        if (CONFIG.skills[aSkillId].speedFactor) {
+            return CONFIG.skills[aSkillId].speedFactor[level - 1];
+        }
+        else {
+            return 1;
         }
     }
 
@@ -282,6 +297,11 @@ export class ExpManager implements ILogger {
     getSkillDamage(aClientId: string, aSkillId: number): number {
         let exp = this.getExpRecord(aClientId);
         return exp.getSkillDamage(aSkillId);
+    }
+
+    getSniperSpeedFactor(aClientId: string): number {
+        let exp = this.getExpRecord(aClientId);
+        return exp.getSniperSpeedFactor();
     }
 
 }

@@ -26,6 +26,8 @@ export class Planet extends GameObject {
     protected _rotationSpeed: number;
     protected _angle: number;
 
+    protected _speedFactor = 1;
+
     constructor(aParams: PlanetParams) {
         super(aParams);
         this._className = 'Planet';
@@ -68,6 +70,13 @@ export class Planet extends GameObject {
         return dir;
     }
 
+    activateSniperSkill(aSpeedFactor: number, aTimeSec: number) {
+        this._speedFactor = aSpeedFactor;
+        setTimeout(() => {
+            this._speedFactor = 1;
+        }, aTimeSec * 1000);
+    }
+
     getCreateData(): StarCreateData {
         return {
             id: this.id,
@@ -106,9 +115,9 @@ export class Planet extends GameObject {
     }
 
     update(dt: number) {
-        this._orbitAngle += this._orbitSpeed * dt;
+        this._orbitAngle += this._orbitSpeed * this._speedFactor * dt;
         this.updatePosition();
-        this._angle += this._rotationSpeed * dt;
+        this._angle += this._rotationSpeed * this._speedFactor * dt;
         this.updateRotation();
     }
 
