@@ -2,23 +2,17 @@ import * as THREE from 'three';
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { GameObject } from "../objects/GameObject.js";
-import { IdGenerator } from "../utils/game/IdGenerator.js";
-import { Client } from "../models/Client.js";
 import { Planet } from "../objects/Planet.js";
-import { MyMath } from "../utils/MyMath.js";
 import { Game } from "./Game.js";
-import { PackSender } from 'src/services/PackSender.js';
 import { Field } from 'src/objects/Field.js';
 
 export class ObjectController implements ILogger {
     protected _className = 'ObjectController';
     protected _game: Game;
-    protected _objIdGen: IdGenerator;
     protected _objects: Map<number, GameObject>;
     
-    constructor(aGame: Game, aObjIdGen: IdGenerator) {
+    constructor(aGame: Game) {
         this._game = aGame;
-        this._objIdGen = aObjIdGen;
         this._objects = new Map();
     }
 
@@ -101,7 +95,6 @@ export class ObjectController implements ILogger {
 
     free() {
         this._game = null;
-        this._objIdGen = null;
         this._objects.clear();
         this._objects = null;
     }

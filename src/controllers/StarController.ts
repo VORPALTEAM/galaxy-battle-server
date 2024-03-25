@@ -1,3 +1,4 @@
+import { Game } from "src/controllers/Game.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { Star } from "../objects/Star.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -5,9 +6,11 @@ import { ObjectController } from "src/controllers/ObjectController.js";
 
 export class StarController implements ILogger {
     protected _className = 'StarManager';
+    protected _game: Game;
     protected _objectController: ObjectController;
 
-    constructor(aObjectController: ObjectController) {
+    constructor(aGame: Game, aObjectController: ObjectController) {
+        this._game = aGame;
         this._objectController = aObjectController;
     }
 
@@ -32,10 +35,20 @@ export class StarController implements ILogger {
         }
     }
 
-    addStar(aStar: Star) {
-        aStar.onAttack.add(this.onStarAttack, this);
+    private onStarLinkorSpawn(aStar: Star, aCellDeltaPos) {
+        this._game.onStarLinkorSpawn(aStar, aCellDeltaPos)
     }
 
+    private onStarFighterSpawn(aStar: Star, aCellDeltaPos) {
+        this._game.onStarFighterSpawn(aStar, aCellDeltaPos)
+    }
+
+    addStar(aStar: Star) {
+        aStar.onAttack.add(this.onStarAttack, this);
+        aStar.onFighterSpawn.add(this.onStarFighterSpawn, this);
+        aStar.onLinkorSpawn.add(this.onStarLinkorSpawn, this);
+    }
+    
     free() {
         this._objectController = null;
     }

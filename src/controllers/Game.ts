@@ -7,12 +7,12 @@ import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Star } from "../objects/Star.js";
 import { Fighter } from "../objects/Fighter.js";
-import { GameObject } from "src/objects/GameObject.js";
+import { GameObject } from "../objects/GameObject.js";
 import { FighterManager } from "../systems/FighterManager.js";
 import { MyMath } from '../utils/MyMath.js';
 import { Signal } from '../utils/events/Signal.js';
 import { Planet } from '../objects/Planet.js';
-import { StarController } from '../systems/StarController.js';
+import { StarController } from './StarController.js';
 import { Linkor } from '../objects/Linkor.js';
 import { LinkorManager } from '../systems/LinkorManager.js';
 import { AbilityManager } from '../systems/AbilityManager.js';
@@ -28,6 +28,7 @@ import { IdGenerator } from '../utils/game/IdGenerator.js';
 import { MissileController } from './MissileController.js';
 import { HomingMissile } from '../objects/HomingMissile.js';
 import { ObjectController } from './ObjectController.js';
+import { GameObjectFactory } from '../factory/GameObjectFactory.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -133,7 +134,9 @@ export class Game implements ILogger {
     private _inited = false;
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
+
     private _objIdGen: IdGenerator;
+    private _objectFactory: GameObjectFactory;
     private _objectController: ObjectController;
     private _clients: Client[];
     private _field: Field;
@@ -151,7 +154,8 @@ export class Game implements ILogger {
         this._inited = false;
         this._id = aGameId;
         this._objIdGen = new IdGenerator();
-        this._objectController = new ObjectController(this, this._objIdGen);
+        this._objectFactory = new GameObjectFactory(this._objIdGen);
+        this._objectController = new ObjectController(this);
         this._clients = [aClientA, aClientB];
         this._expMng = new ExpManager();
         this.initClientListeners();
@@ -343,7 +347,7 @@ export class Game implements ILogger {
         // create field
         this._field = new Field(SETTINGS.field);
 
-        this._starController = new StarController(this._objectController);
+        this._starController = new StarController(this, this._objectController);
         this._towerMng = new TowerManager({ field: this._field, objects: this._objectController.objects });
         this._fighterMng = new FighterManager(this._field, this._objectController.objects);
         this._linkorMng = new LinkorManager(this._field, this._objectController.objects);
@@ -384,14 +388,13 @@ export class Game implements ILogger {
                 battleShipSpawnDeltaPos: starData.battleShipSpawnDeltaPos,
                 minusHpPerSec: starParams.minusHpPerSec
             });
-
-            star.onFighterSpawn.add(this.onStarFighterSpawn, this);
-            star.onLinkorSpawn.add(this.onStarLinkorSpawn, this);
+            
             star.onDamage.add(this.onObjectDamage, this);
 
             this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
             this.addObject(star);
             stars.push(star);
+
             this._starController.addStar(star);
 
         }
@@ -463,7 +466,7 @@ export class Game implements ILogger {
         return null;
     }
 
-    private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+    onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.fighters;
         const shipFactoryParams = new FighterFactory().getShipParams(level);
@@ -526,7 +529,7 @@ export class Game implements ILogger {
         this._fighterMng.addShip(fighter);
     }
 
-    private onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+    onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.battleShips;
         const shipFactoryParams = new LinkorFactory().getShipParams(level);
