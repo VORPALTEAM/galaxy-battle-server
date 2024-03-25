@@ -62,6 +62,38 @@ export class ObjectController implements ILogger {
         return planet;
     }
 
+    getEnemiesInAtkRadius(aObj: GameObject): GameObject[] {
+        const atkRadius = aObj.attackRadius || 0;
+        let enemies: GameObject[] = [];
+        this._objects.forEach(obj => {
+            const dist = aObj.position.distanceTo(obj.position);
+            const isEnemy = obj.owner != aObj.owner;
+            if (isEnemy && !obj.isImmortal) {
+                if (dist <= atkRadius) {
+                    enemies.push(obj);
+                }
+            }
+        });
+        return enemies;
+    }
+
+    getNearestEnemieInAtkRadius(aObj: GameObject): GameObject {
+        const atkRadius = aObj.attackRadius || 0;
+        let minDist = Number.MAX_SAFE_INTEGER;
+        let enemie: GameObject;
+        this._objects.forEach(obj => {
+            const dist = aObj.position.distanceTo(obj.position);
+            const isEnemy = obj.owner != aObj.owner;
+            if (isEnemy && !obj.isImmortal) {
+                if (dist <= atkRadius && dist < minDist) {
+                    minDist = dist;
+                    enemie = obj;
+                }
+            }
+        });
+        return enemie;
+    }
+
     update(dt: number) {
         // TODO: refactoring to here
 

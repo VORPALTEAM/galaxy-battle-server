@@ -28,7 +28,6 @@ export class Client implements ILogger {
     onSignRecv = new Signal();
     onStartSearchGame = new Signal();
     onStopSearchGame = new Signal();
-    // onLaser = new Signal();
     onSkillRequest = new Signal();
     onExitGame = new Signal();
     onDisconnect = new Signal();

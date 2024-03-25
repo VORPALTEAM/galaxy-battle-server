@@ -206,11 +206,11 @@ export class GameObject implements IUpdatable, ILogger {
         let damage = Math.trunc(MyMath.randomInRange(dmgMin, dmgMax));
 
         if (isCrit) {
-            LogMng.debug(`crit:`, {
-                critChance: critChance,
-                critFactor: critFactor,
-                dmg: damage
-            });
+            // LogMng.debug(`crit:`, {
+            //     critChance: critChance,
+            //     critFactor: critFactor,
+            //     dmg: damage
+            // });
         }
 
         return {

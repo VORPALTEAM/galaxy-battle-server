@@ -6,6 +6,7 @@ import { ILogger } from "src/interfaces/ILogger.js";
 import { SignService } from "../services/SignService.js";
 
 export class BattleServer implements ILogger {
+    protected _className = 'BattleServer';
     private _server: Server;
     private _clients: Map<string, Client>;
     private _matchmaker: Matchmaker;
@@ -19,15 +20,15 @@ export class BattleServer implements ILogger {
     }
 
     logDebug(aMsg: string, aData?: any): void {
-        LogMng.debug(`BattleServer: ${aMsg}`, aData);
+        LogMng.debug(`${this._className}: ${aMsg}`, aData);
     }
 
     logWarn(aMsg: string, aData?: any): void {
-        LogMng.warn(`BattleServer: ${aMsg}`, aData);
+        LogMng.warn(`${this._className}: ${aMsg}`, aData);
     }
 
     logError(aMsg: string, aData?: any): void {
-        LogMng.error(`BattleServer: ${aMsg}`, aData);
+        LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
     
     private initListeners() {

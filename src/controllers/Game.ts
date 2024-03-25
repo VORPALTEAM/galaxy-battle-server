@@ -12,7 +12,7 @@ import { FighterManager } from "../systems/FighterManager.js";
 import { MyMath } from '../utils/MyMath.js';
 import { Signal } from '../utils/events/Signal.js';
 import { Planet } from '../objects/Planet.js';
-import { StarManager } from '../systems/StarManager.js';
+import { StarController } from '../systems/StarController.js';
 import { Linkor } from '../objects/Linkor.js';
 import { LinkorManager } from '../systems/LinkorManager.js';
 import { AbilityManager } from '../systems/AbilityManager.js';
@@ -129,6 +129,7 @@ const SETTINGS = {
 }
 
 export class Game implements ILogger {
+    private _className = 'Game';
     private _inited = false;
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
@@ -136,7 +137,7 @@ export class Game implements ILogger {
     private _objectController: ObjectController;
     private _clients: Client[];
     private _field: Field;
-    private _starMng: StarManager;
+    private _starController: StarController;
     private _towerMng: TowerManager;
     private _fighterMng: FighterManager;
     private _linkorMng: LinkorManager;
@@ -158,20 +159,19 @@ export class Game implements ILogger {
     }
 
     logDebug(aMsg: string, aData?: any): void {
-        LogMng.debug(`Game: ${aMsg}`, aData);
+        LogMng.debug(`${this._className}: ${aMsg}`, aData);
     }
     logWarn(aMsg: string, aData?: any): void {
-        LogMng.warn(`Game: ${aMsg}`, aData);
+        LogMng.warn(`${this._className}: ${aMsg}`, aData);
     }
     logError(aMsg: string, aData?: any): void {
-        LogMng.error(`Game: ${aMsg}`, aData);
+        LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
     private initClientListeners() {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
             client.onDisconnect.add(this.onClientDisconnect, this);
-            // client.onLaser.add(this.onClientLaser, this);
             client.onSkillRequest.add(this.onSkillRequest, this);
             client.onExitGame.add(this.onClientExitGame, this);
             client.onDebugTest.add(this.onClientDebugTest, this);
@@ -182,7 +182,6 @@ export class Game implements ILogger {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
             client.onDisconnect.remove(this.onClientDisconnect, this);
-            // client.onLaser.add(this.onClientLaser, this);
             client.onSkillRequest.remove(this.onSkillRequest, this);
             client.onExitGame.remove(this.onClientExitGame, this);
             client.onDebugTest.remove(this.onClientDebugTest, this);
@@ -202,11 +201,6 @@ export class Game implements ILogger {
         }
         this.completeGame(winner);
     }
-
-    // private onClientLaser(aClient: Client) {
-    //     const dmg = this._expMng.getSkillDamage(aClient.walletId, 0);
-    //     this._abilsMng?.laserAttack(aClient, dmg);
-    // }
 
     private onSkillRequest(aClient: Client, aData: SkillRequest) {
         switch (aData.action) {
@@ -349,7 +343,7 @@ export class Game implements ILogger {
         // create field
         this._field = new Field(SETTINGS.field);
 
-        this._starMng = new StarManager(this._objectController.objects);
+        this._starController = new StarController(this._objectController);
         this._towerMng = new TowerManager({ field: this._field, objects: this._objectController.objects });
         this._fighterMng = new FighterManager(this._field, this._objectController.objects);
         this._linkorMng = new LinkorManager(this._field, this._objectController.objects);
@@ -398,7 +392,7 @@ export class Game implements ILogger {
             this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
             this.addObject(star);
             stars.push(star);
-            this._starMng.addStar(star);
+            this._starController.addStar(star);
 
         }
 
@@ -899,7 +893,7 @@ export class Game implements ILogger {
         this.stopLoop();
         this._loopInterval = null;
         this.onGameComplete.removeAll();
-        this._starMng.free();
+        this._starController.free();
         this._fighterMng.free();
         this._linkorMng.free();
         this._field.free();
