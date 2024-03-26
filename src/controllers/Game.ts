@@ -32,7 +32,7 @@ import { GameObjectFactory } from '../factory/GameObjectFactory.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
-    beginTimer: 4, // in sec
+    beginTimer: 2, // in sec
 
     field: {
         size: {
@@ -129,9 +129,11 @@ const SETTINGS = {
     
 }
 
+type GameState = 'none' | 'clientLoading' | 'init' | 'game' | 'final';
+
 export class Game implements ILogger {
     private _className = 'Game';
-    private _inited = false;
+    private _state: GameState = 'none';
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
 
@@ -139,6 +141,7 @@ export class Game implements ILogger {
     private _objectFactory: GameObjectFactory;
     private _objectController: ObjectController;
     private _clients: Client[];
+    private _sceneLoaded: boolean[];
     private _field: Field;
     private _starController: StarController;
     private _towerMng: TowerManager;
@@ -151,12 +154,13 @@ export class Game implements ILogger {
     onGameComplete = new Signal();
 
     constructor(aGameId: number, aClientA: Client, aClientB: Client) {
-        this._inited = false;
+        this._state = 'none';
         this._id = aGameId;
         this._objIdGen = new IdGenerator();
         this._objectFactory = new GameObjectFactory(this._objIdGen);
         this._objectController = new ObjectController(this);
         this._clients = [aClientA, aClientB];
+        this._sceneLoaded = [];
         this._expMng = new ExpManager();
         this.initClientListeners();
         this.startLoop();
@@ -278,6 +282,10 @@ export class Game implements ILogger {
         }
     }
 
+    private clientsLoaded(): boolean {
+        return this._sceneLoaded[0] && this._sceneLoaded[1];
+    }
+
     private async completeGame(aWinner: Client) {
         this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
 
@@ -360,7 +368,7 @@ export class Game implements ILogger {
         this.initStars();
         this.initTowers();
 
-        this._inited = true;
+        this._state = 'game';
 
     }
 
@@ -723,23 +731,10 @@ export class Game implements ILogger {
         this._objectController.addObject(obj);
     }
 
-    start() {
-
-        this.loadLaserSkins();
+    private initGame() {
 
         const cli1 = this._clients[0];
         const cli2 = this._clients[1];
-
-        PackSender.getInstance().gameStart([cli1], {
-            timer: SETTINGS.beginTimer,
-            playerWallet: cli1.displayName.length > 0 ? cli1.displayName : cli1.walletId,
-            enemyWallet: cli2.walletId
-        });
-        PackSender.getInstance().gameStart([cli2], {
-            timer: SETTINGS.beginTimer,
-            playerWallet: cli2.displayName.length > 0 ? cli2.displayName : cli2.walletId,
-            enemyWallet: cli1.walletId
-        });
 
         PackSender.getInstance().fieldInit([cli1], {
             fieldParams: SETTINGS.field,
@@ -753,6 +748,41 @@ export class Game implements ILogger {
         setTimeout(() => {
             this.init();
         }, SETTINGS.beginTimer * 1000);
+
+        this._state = 'init';
+    }
+
+    start() {
+
+        this.loadLaserSkins();
+
+        const cli1 = this._clients[0];
+        const cli2 = this._clients[1];
+
+        for (let i = 0; i < this._clients.length; i++) {
+            const cli = this._clients[i];
+            if (cli.isBot) {
+                this._sceneLoaded[i] = true;
+            }
+            else {
+                cli.onSceneLoaded.addOnce(() => {
+                    this._sceneLoaded[i] = true;
+                }, this);
+            }
+        }
+
+        PackSender.getInstance().gameStart([cli1], {
+            timer: SETTINGS.beginTimer,
+            playerWallet: cli1.displayName.length > 0 ? cli1.displayName : cli1.walletId,
+            enemyWallet: cli2.walletId
+        });
+        PackSender.getInstance().gameStart([cli2], {
+            timer: SETTINGS.beginTimer,
+            playerWallet: cli2.displayName.length > 0 ? cli2.displayName : cli2.walletId,
+            enemyWallet: cli1.walletId
+        });
+
+        this._state = 'clientLoading';
 
     }
 
@@ -828,7 +858,14 @@ export class Game implements ILogger {
      */
     update(dt: number) {
 
-        if (!this._inited) return;
+        switch (this._state) {
+            case 'clientLoading':
+                if (this.clientsLoaded()) this.initGame();
+                return;
+            case 'none':
+            case 'init':
+                return;
+        }
 
         let updateData: ObjectUpdateData[] = [];
         let destroyList: number[] = [];
@@ -896,11 +933,11 @@ export class Game implements ILogger {
         this.stopLoop();
         this._loopInterval = null;
         this.onGameComplete.removeAll();
-        this._starController.free();
-        this._fighterMng.free();
-        this._linkorMng.free();
-        this._field.free();
-        this._objectController.free();
+        this._starController?.free();
+        this._fighterMng?.free();
+        this._linkorMng?.free();
+        this._field?.free();
+        this._objectController?.free();
         this._objectController = null;
         this._clients = [];
     }

@@ -28,6 +28,10 @@ export class Client implements ILogger {
     onSignRecv = new Signal();
     onStartSearchGame = new Signal();
     onStopSearchGame = new Signal();
+    /**
+     * Battle Scene loaded on client
+     */
+    onSceneLoaded = new Signal();
     onSkillRequest = new Signal();
     onExitGame = new Signal();
     onDisconnect = new Signal();
@@ -82,10 +86,10 @@ export class Client implements ILogger {
             this.onStopSearchGame.dispatch(this);
         });
 
-        // this._socket.on(PackTitle.planetLaser, () => {
-        //     // laser click event
-        //     this.onLaser.dispatch(this);
-        // });
+        this._socket.on(PackTitle.battleSceneLoaded, () => {
+            this.logDebug(`game scene loaded...`);
+            this.onSceneLoaded.dispatch(this);
+        });
 
         this._socket.on(PackTitle.skill, (aData: SkillRequest) => {
             this.onSkillRequest.dispatch(this, aData);
