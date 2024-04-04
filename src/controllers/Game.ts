@@ -378,6 +378,7 @@ export class Game implements ILogger {
         const starParams = SETTINGS.starParams;
         const starsData = SETTINGS.stars;
         let stars: Star[] = [];
+
         for (let i = 0; i < starsData.length; i++) {
             const starData = starsData[i];
 
