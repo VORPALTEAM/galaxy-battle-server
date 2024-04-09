@@ -26,6 +26,7 @@ export enum PackTitle {
     objectCreate = 'objectCreate',
     objectUpdate = 'objectUpdate',
     objectDestroy = 'objectDestroy',
+    rocket = 'rocket',
     rotate = 'rotate',
     jump = 'jump',
     attack = 'attack',

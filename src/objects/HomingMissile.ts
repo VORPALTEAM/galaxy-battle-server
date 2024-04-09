@@ -67,17 +67,6 @@ export class HomingMissile extends GameObject {
         return dir;
     }
 
-    private rotationToQuaternion() {
-        let v = new THREE.Vector3(1, 0, 0);
-        let rotAx = new THREE.Vector3(0, 1, 0);
-        // v.applyAxisAngle(rotAx, this._rotation);
-        // this._mesh.rotation.y
-    }
-
-    private quartToRotation() {
-
-    }
-
     private updateDirection(dt: number, withLog = false) {
 
         if (this._target && this._target.hp > 0 && this._target.position) {
