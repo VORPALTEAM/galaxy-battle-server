@@ -89,7 +89,11 @@ export class Matchmaker implements ILogger {
     private onGameComplete(aGame: Game) {
         this.logDebug(`onGameComplete -> delete the game id = (${aGame.id})`);
         this._games.delete(aGame.id);
-        aGame.free();
+        try {
+            aGame.free();
+        } catch (error) {
+            
+        }
     }
 
     addClient(aClient: Client) {
