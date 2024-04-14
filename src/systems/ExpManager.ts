@@ -68,7 +68,7 @@ const CONFIG = {
                 { min: 80, max: 120 }
             ]
         },
-        { name: 'slow', isActive: true, startFromLevel: 2, cd: [5000, 10000, 15000, 20000], speedFactor: [.75, .6, .45, .25] },
+        { name: 'slow', isActive: true, startFromLevel: 2, cd: [30000, 25000, 20000, 15000], speedFactor: [.75, .6, .45, .25] },
         { name: 'ulta', isActive: false, startFromLevel: 6, cd: [60000] },
     ],
 
