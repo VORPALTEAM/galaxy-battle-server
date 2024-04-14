@@ -236,6 +236,16 @@ export class Game implements ILogger {
                         if (planet) {
                             this.logDebug(`onSkillRequest: Sniper Activate...`);
                             planet.activateSniperSkill(slowFactor, slowTime);
+                            PackSender.getInstance().sniper(this._clients, {
+                                action: 'start',
+                                planetId: planet.id
+                            });
+                            setTimeout(() => {
+                                PackSender.getInstance().sniper(this._clients, {
+                                    action: 'end',
+                                    planetId: planet.id
+                                }); 
+                            }, slowTime * 1000);
                         }
                         else {
                             this.logWarn(`onSkillRequest: Sniper: No Planet Detected!`);

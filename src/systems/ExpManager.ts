@@ -51,7 +51,7 @@ const CONFIG = {
 
     skills: [
         {
-            name: 'laser', isActive: true, startFromLevel: 1, cd: 3000, damage: [
+            name: 'laser', isActive: true, startFromLevel: 1, cd: [3000], damage: [
                 { min: 30, max: 50 },
                 { min: 35, max: 55 },
                 { min: 40, max: 60 },
@@ -61,15 +61,15 @@ const CONFIG = {
             critFactor: 1.75
         },
         {
-            name: 'rocket', isActive: true, startFromLevel: 2, cd: 10000, damage: [
+            name: 'rocket', isActive: true, startFromLevel: 2, cd: [10000], damage: [
                 { min: 45, max: 65 },
                 { min: 50, max: 75 },
                 { min: 60, max: 90 },
                 { min: 80, max: 120 }
             ]
         },
-        { name: 'slow', isActive: true, startFromLevel: 2, cd: 30000, speedFactor: [.75, .6, .45, .25] },
-        { name: 'ulta', isActive: false, startFromLevel: 6, cd: 60000 },
+        { name: 'slow', isActive: true, startFromLevel: 2, cd: [5000, 10000, 15000, 20000], speedFactor: [.75, .6, .45, .25] },
+        { name: 'ulta', isActive: false, startFromLevel: 6, cd: [60000] },
     ],
 
 }
@@ -131,7 +131,10 @@ class ExpRecord {
     }
 
     getSkillCooldownDur(aSkillId: number): number {
-        return CONFIG.skills[aSkillId].cd;
+        let level = this._skillLevels[aSkillId];
+        let cds = CONFIG.skills[aSkillId].cd;
+        let cd = cds[level - 1] ? cds[level - 1] : cds[0];
+        return cd;
     }
 
     skillLevelUp(aSkillId: number) {
