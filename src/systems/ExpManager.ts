@@ -51,7 +51,8 @@ const CONFIG = {
 
     skills: [
         {
-            name: 'laser', isActive: true, startFromLevel: 1, cd: [3000], damage: [
+            name: 'laser',
+            isActive: true, startFromLevel: 1, cd: [3000], damage: [
                 { min: 30, max: 50 },
                 { min: 35, max: 55 },
                 { min: 40, max: 60 },
@@ -61,15 +62,24 @@ const CONFIG = {
             critFactor: 1.75
         },
         {
-            name: 'rocket', isActive: true, startFromLevel: 2, cd: [10000], damage: [
+            name: 'rocket',
+            isActive: true, startFromLevel: 2, cd: [10000], damage: [
                 { min: 45, max: 65 },
                 { min: 50, max: 75 },
                 { min: 60, max: 90 },
                 { min: 80, max: 120 }
             ]
         },
-        { name: 'slow', isActive: true, startFromLevel: 2, cd: [30000, 25000, 20000, 15000], speedFactor: [.75, .6, .45, .25] },
-        { name: 'ulta', isActive: false, startFromLevel: 6, cd: [60000] },
+        {
+            name: 'slow',
+            isActive: true, startFromLevel: 2,
+            cd: [30000, 25000, 20000, 15000],
+            speedFactor: [.50, .45, .35, .20],
+            duration: [3, 3.5, 4, 5]
+        },
+        {
+            name: 'ulta', isActive: false, startFromLevel: 6, cd: [60000]
+        },
     ],
 
 }
@@ -185,6 +195,17 @@ class ExpRecord {
         }
         else {
             return 1;
+        }
+    }
+
+    getSniperDuration(): number {
+        const aSkillId = 2;
+        const level = this._skillLevels[aSkillId];
+        if (CONFIG.skills[aSkillId].duration) {
+            return CONFIG.skills[aSkillId].duration[level - 1];
+        }
+        else {
+            return 3;
         }
     }
 
@@ -305,6 +326,11 @@ export class ExpManager implements ILogger {
     getSniperSpeedFactor(aClientId: string): number {
         let exp = this.getExpRecord(aClientId);
         return exp.getSniperSpeedFactor();
+    }
+
+    getSniperDuration(aClientId: string): number {
+        let exp = this.getExpRecord(aClientId);
+        return exp.getSniperDuration();
     }
 
 }

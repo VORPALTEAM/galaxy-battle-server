@@ -231,7 +231,7 @@ export class Game implements ILogger {
 
                     case 2: {
                         let slowFactor = this._expMng.getSniperSpeedFactor(aClient.walletId);
-                        let slowTime = 5;
+                        let slowTime = this._expMng.getSniperDuration(aClient.walletId);
                         let planet = this._objectController.getPlayerPlanet(aClient.walletId);
                         if (planet) {
                             this.logDebug(`onSkillRequest: Sniper Activate...`);
