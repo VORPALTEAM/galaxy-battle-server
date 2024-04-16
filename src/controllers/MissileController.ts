@@ -10,6 +10,7 @@ import { MyMath } from "../utils/MyMath.js";
 import { Game } from "./Game.js";
 import { Star } from '../objects/Star.js';
 import { MissileCollisionSystem } from '../systems/MissileCollisionSystem.js';
+import { PackSender } from 'src/services/PackSender.js';
 
 export class MissileController implements ILogger {
     protected _className = 'MissileController';
@@ -18,14 +19,16 @@ export class MissileController implements ILogger {
     protected _objects: Map<number, GameObject>;
     protected _missiles: Map<number, HomingMissile>;
     protected _collisionSystem: MissileCollisionSystem;
+    protected _clients: Client[];
 
-    constructor(aGame: Game, aObjIdGen: IdGenerator, aObjects: Map<number, GameObject>) {
+    constructor(aGame: Game, aObjIdGen: IdGenerator, aObjects: Map<number, GameObject>, aClients: Client[]) {
         this._game = aGame;
         this._objIdGen = aObjIdGen;
         this._objects = aObjects;
         this._missiles = new Map();
         this._collisionSystem = new MissileCollisionSystem(this._objects, this._missiles);
         this._collisionSystem.onCollisionSignal.add(this.onMissileCollided, this);
+        this._clients = aClients;
     }
 
     free() {
@@ -173,6 +176,11 @@ export class MissileController implements ILogger {
         let dmg = aMissile.getAttackDamage({ noCrit: true, noMiss: true });
         let objects = this.getObjectsInAtkRadius(aMissile);
         objects.map(obj => obj.damage(dmg));
+        // send explosion pack
+        PackSender.getInstance().explosion(this._clients, {
+            type: 'rocket',
+            pos: aMissile.position
+        });
     }
 
     deleteMissile(aId: number) {
