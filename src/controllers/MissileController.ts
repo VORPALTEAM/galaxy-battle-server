@@ -10,7 +10,7 @@ import { MyMath } from "../utils/MyMath.js";
 import { Game } from "./Game.js";
 import { Star } from '../objects/Star.js';
 import { MissileCollisionSystem } from '../systems/MissileCollisionSystem.js';
-import { PackSender } from 'src/services/PackSender.js';
+import { PackSender } from '../services/PackSender.js';
 
 export class MissileController implements ILogger {
     protected _className = 'MissileController';
