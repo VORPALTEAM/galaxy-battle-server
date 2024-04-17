@@ -4,6 +4,7 @@ import * as ABIs from "./config/ABI/index.js";
 import * as contracts from "./config/contracts.js"
 import { networkParams } from '../network.js';
 import { LogMng } from '../../utils/LogMng.js';
+import { CreateBoxWeb2 } from '../functions.js';
 
 const web3 = new Web3(networkParams.rpcUrl)
 const tokenContracts = {
@@ -128,7 +129,7 @@ export async function getUserWinContractBalance(_user: string) {
     return Number(balance);
 }
 
-export async function RecordWinnerWithChoose(address: string, _unfix: boolean = true) {
+export async function RecordWinnerWithChoose(address: string, _unfix: boolean = true, _tgLogin = "", _boxLevel = 1) {
 
     const privateKey = process.env.ADMIN_PRIVATE_KEY
     const publicKey = process.env.ADMIN_ADDRESS
@@ -157,6 +158,7 @@ export async function RecordWinnerWithChoose(address: string, _unfix: boolean = 
 
             const signedTx = await web3.eth.accounts.signTransaction(txnData, privateKey);
             const txReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+            if (_unfix) await CreateBoxWeb2(address, _tgLogin, _boxLevel);
             resolve(winId);
 
         } catch (e) {
