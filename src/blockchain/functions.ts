@@ -80,7 +80,7 @@ export function GetSignedAuthMessage() {
   return signature;
 }
 
-export async function CreateBox(owner: string, login = "", level = 1) {
+export async function CreateBoxWeb2 (owner: string, login = "", level = 1) {
     return new Promise((resolve, reject) => {
         fetch(fastServerUrl.concat('/api/boxes/create'), {
             method: 'post',
@@ -97,7 +97,7 @@ export async function CreateBox(owner: string, login = "", level = 1) {
     })
 }
 
-export async function GiveResources(owner: string, login = "", resource: string, amount: number) {
+export async function GiveResourcesWeb2 (owner: string, login = "", resource: string, amount: number) {
     return new Promise((resolve, reject) => {
         fetch(fastServerUrl.concat('/api/boxes/assets/give'), {
             method: 'post',
