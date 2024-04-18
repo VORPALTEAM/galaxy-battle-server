@@ -25,4 +25,4 @@ export const journal = "0xE3E4192acBeba757e96E3caDFB4155CD734B187B";
 export const admin = "0x4ff986A4a4E2341b8a7EDcb0624e66d801105038";
 export const decimals = 18;
 
-export const fastServerUrl = "https://staging-api.vorpal.finance/"
+export const fastServerUrl = "https://staging-api.vorpal.finance"
