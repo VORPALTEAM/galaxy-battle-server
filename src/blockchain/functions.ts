@@ -91,7 +91,7 @@ export async function CreateBoxWeb2 (owner: string, login = "", level = 1) {
             body: JSON.stringify({
               signature: GetSignedAuthMessage(), 
               ownerAddress: owner, 
-              ownerLogin: login,
+              ownerLogin: login || owner,
               level: level
             })
           }).then(res => res.json()).then(res => resolve(res))
