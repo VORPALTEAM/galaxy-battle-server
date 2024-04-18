@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import Web3 from 'web3';
+import fetch from 'node-fetch';
 import * as ABIs from "./config/ABI/index.js";
 import * as contracts from "./config/contracts.js"
 import { networkParams } from '../network.js';
