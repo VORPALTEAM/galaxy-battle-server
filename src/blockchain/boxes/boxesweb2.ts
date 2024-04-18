@@ -1,4 +1,5 @@
-import { fastServerUrl } from "../network";
+import fetch from 'node-fetch';
+import { fastServerUrl } from "../network.js";
 
 export type web2assets = {
     laser1: number;

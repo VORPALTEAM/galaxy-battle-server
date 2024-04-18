@@ -1,6 +1,7 @@
 import Web3 from "web3";
-import { ERC20ABI, JournalABI } from "./ABI";
-import { admin, decimals, fastServerUrl, journal, networkParams, token } from "./network";
+import fetch from 'node-fetch';
+import { ERC20ABI, JournalABI } from "./ABI.js";
+import { admin, decimals, fastServerUrl, journal, networkParams, token } from "./network.js";
 
 const web3 = new Web3(networkParams.rpcUrl);
 const journalContract = new web3.eth.Contract(JournalABI, journal);
