@@ -5,7 +5,7 @@ import * as ABIs from "./config/ABI/index.js";
 import * as contracts from "./config/contracts.js"
 import { networkParams } from '../network.js';
 import { LogMng } from '../../utils/LogMng.js';
-import { CreateBoxWeb2 } from '../functions.js';
+import { CreateBoxWeb2, GiveResourcesWeb2 } from '../functions.js';
 
 const web3 = new Web3(networkParams.rpcUrl)
 const tokenContracts = {
@@ -159,14 +159,18 @@ export async function RecordWinnerWithChoose(address: string, _unfix: boolean = 
 
             const signedTx = await web3.eth.accounts.signTransaction(txnData, privateKey);
             const txReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-            if (_unfix) await CreateBoxWeb2(address, _tgLogin, _boxLevel);
             resolve(winId);
 
         } catch (e) {
-            reject(`Txn failed: ${e.message}`)
-            return;
+            // reject(`Txn failed: ${e.message}`)
+            // return;
         }
-
+        if (_unfix){ 
+            await CreateBoxWeb2(address, _tgLogin, _boxLevel);
+        } else {
+            await GiveResourcesWeb2(address, _tgLogin, "token", Math.round(Math.random() * 1000))
+        }
+        // const resources = await GiveResourcesWeb2(address, _tgLogin, "token", Math.round(Math.random() * 1000))
         resolve(gasPrice)
     });
 

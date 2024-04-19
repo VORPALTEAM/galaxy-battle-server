@@ -108,7 +108,7 @@ export async function GiveResourcesWeb2 (owner: string, login = "", resource: st
             body: JSON.stringify({
               signature: GetSignedAuthMessage(), 
               ownerAddress: owner, 
-              ownerLogin: login,
+              ownerLogin: login || owner,
               resource: resource,
               amount: amount
             })
