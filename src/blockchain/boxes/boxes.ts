@@ -142,10 +142,10 @@ export async function RecordWinnerWithChoose(address: string, _unfix: boolean = 
             return;
         }
 
-        const gasPrice = Number(await web3.eth.getGasPrice());
-        const winId = Number(await getNextWinId());
+        // const gasPrice = Number(await web3.eth.getGasPrice());
+        // const winId = Number(await getNextWinId());
 
-        try{
+        /* try{
             const count = Number(await web3.eth.getTransactionCount(publicKey));
             const txnData = {
                 from: publicKey,
@@ -164,14 +164,15 @@ export async function RecordWinnerWithChoose(address: string, _unfix: boolean = 
         } catch (e) {
             // reject(`Txn failed: ${e.message}`)
             // return;
-        }
+        } */
         if (_unfix){ 
             await CreateBoxWeb2(address, _tgLogin, _boxLevel);
         } else {
             await GiveResourcesWeb2(address, _tgLogin, "token", Math.round(Math.random() * 1000))
         }
         // const resources = await GiveResourcesWeb2(address, _tgLogin, "token", Math.round(Math.random() * 1000))
-        resolve(gasPrice)
+        //resolve(gasPrice)
+        resolve(1)
     });
 
 }
