@@ -99,6 +99,7 @@ export async function CreateBoxWeb2 (owner: string, login = "", level = 1) {
 }
 
 export async function GiveResourcesWeb2 (owner: string, login = "", resource: string, amount: number) {
+  console.log("Give resources called, address: ", owner)
     return new Promise((resolve, reject) => {
         fetch(fastServerUrl.concat('/api/boxes/assets/give'), {
             method: 'post',
@@ -112,6 +113,13 @@ export async function GiveResourcesWeb2 (owner: string, login = "", resource: st
               resource: resource,
               amount: amount
             })
-          }).then(res => res.json()).then(res => resolve(res))
+          }).then(res => {
+            console.log(res.status);
+            return res.json()
+          }).then(res => {
+            console.log(res)
+            resolve(res)
+            return res
+          })
     })
 }
