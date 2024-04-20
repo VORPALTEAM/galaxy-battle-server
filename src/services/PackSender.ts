@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData, AttackType, DamageInfo, ExpData, ExplosionType, ExplosionData, SniperData } from "../data/Types.js";
+import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData, AttackType, DamageInfo, ExpData, ExplosionType, ExplosionData, SniperData, AcceptScreenData } from "../data/Types.js";
 import { Client } from "../models/Client.js";
 
 export class PackSender {
@@ -20,7 +20,11 @@ export class PackSender {
             client.sendPack(aPackTitle, aData);
         }
     }
-    
+
+    sendBattleAcceptState(aClients: Client[], aData: AcceptScreenData) {
+        this.sendData(aClients, PackTitle.acceptScreen, aData);
+    }
+
     gameStart(aClients: Client[], aData: StartGameData) {
         aData.cmd = 'start';
         this.sendData(aClients, PackTitle.gameStart, aData);
@@ -110,5 +114,7 @@ export class PackSender {
     sniper(aClients: Client[], aData: SniperData) {
         this.sendData(aClients, PackTitle.sniper, aData);
     }
+
+    
 
 }
