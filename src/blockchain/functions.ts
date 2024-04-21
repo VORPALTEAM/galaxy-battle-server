@@ -83,7 +83,7 @@ export function GetSignedAuthMessage() {
 
 export async function CreateBoxWeb2 (owner: string, login = "", level = 1) {
     return new Promise((resolve, reject) => {
-        fetch(fastServerUrl.concat('/api/boxes/create'), {
+        fetch(fastServerUrl.concat('api/boxes/create'), {
             method: 'post',
             headers: {
               "Content-Type": "application/json"
@@ -100,7 +100,7 @@ export async function CreateBoxWeb2 (owner: string, login = "", level = 1) {
 
 export async function GiveResourcesWeb2 (owner: string, login = "", resource: string, amount: number) {
     return new Promise((resolve, reject) => {
-        fetch(fastServerUrl.concat('/api/boxes/assets/give'), {
+        fetch(fastServerUrl.concat('api/boxes/assets/give'), {
             method: 'post',
             headers: {
               "Content-Type": "application/json"
