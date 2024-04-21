@@ -1,9 +1,9 @@
-import { Signal } from "src/utils/events/Signal.js";
+import { Signal } from "../utils/events/Signal.js";
 import { Client } from "./Client.js";
-import { AcceptScreenData, PackTitle } from "src/data/Types.js";
-import { PackSender } from "src/services/PackSender.js";
-import { ILogger } from "src/interfaces/ILogger.js";
-import { LogMng } from "src/utils/LogMng.js";
+import { AcceptScreenData, PackTitle } from "../data/Types.js";
+import { PackSender } from "../services/PackSender.js";
+import { ILogger } from "../interfaces/ILogger.js";
+import { LogMng } from "../utils/LogMng.js";
 
 export class ClientPair implements ILogger {
     private _id: number;
