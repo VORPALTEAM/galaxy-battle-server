@@ -168,7 +168,7 @@ export async function RecordWinnerWithChoose(address: string, _unfix: boolean = 
         if (_unfix){ 
             await CreateBoxWeb2(address, _tgLogin, _boxLevel);
         } else {
-            console.log("Giving resources chosen");
+            // console.log("Giving resources chosen");
             await GiveResourcesWeb2(address, _tgLogin, "token", Math.round(Math.random() * 1000))
         }
         // const resources = await GiveResourcesWeb2(address, _tgLogin, "token", Math.round(Math.random() * 1000))
