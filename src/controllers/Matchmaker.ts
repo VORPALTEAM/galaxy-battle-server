@@ -78,11 +78,20 @@ export class Matchmaker implements ILogger {
         this.logDebug('pair creation...');
         let pair = new ClientPair(this.getNewPairId(), aClientA, aClientB);
         this._pairs.set(pair.id, pair);
-        pair.onAllReady.add(this.onPairReady, this);
         pair.onBreak.add(this.onPairBreak, this);
-        // pair.onGameComplete.addOnce(this.onGameComplete, this);
-        // pair.start();
-        // this._games.set(game.id, game);
+        pair.onAllReady.add(this.onPairReady, this);
+    }
+
+    private onPairBreak(aPair: ClientPair) {
+        this.logDebug(`onPairBreak...`);
+        const pId = aPair.id;
+        let pair = this._pairs.get(pId);
+        let clients = pair.clients;
+        clients.forEach((client) => {
+            this.removeClient(client);
+        });
+        this._pairs.delete(pId);
+        pair.free();
     }
 
     private onPairReady(aPair: ClientPair) {
@@ -94,18 +103,6 @@ export class Matchmaker implements ILogger {
             clients.push(client);
         });
         this.createGame(clients[0], clients[1]);
-        this._pairs.delete(pId);
-        pair.free();
-    }
-
-    private onPairBreak(aPair: ClientPair) {
-        this.logDebug(`onPairBreak...`);
-        const pId = aPair.id;
-        let pair = this._pairs.get(pId);
-        let clients = pair.clients;
-        clients.forEach((client) => {
-            this.removeClient(client);
-        });
         this._pairs.delete(pId);
         pair.free();
     }
