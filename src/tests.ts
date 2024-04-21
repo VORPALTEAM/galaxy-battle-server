@@ -1,7 +1,7 @@
 import { getUserAvailableLaserLevelsWeb2 } from "./blockchain/boxes/boxesweb2.js"
 
 
-console.log("Tesinng...")
+console.log("Tesing...")
 
 const _user = "0xWalletToTests".toLowerCase()
 
