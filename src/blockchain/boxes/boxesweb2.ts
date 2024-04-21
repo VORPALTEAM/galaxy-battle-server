@@ -118,13 +118,13 @@ export async function getUserLaserListWeb2(_user: string) {
     const data = await GetGameAssetsWeb2(_user);
     const levels: number[] = [];
     if (data.laser1 > 0) {
-        levels.push(1)
+        levels.push(0)
     }
     if (data.laser2 > 0) {
-        levels.push(2)
+        levels.push(1)
     }
     if (data.laser3 > 0) {
-        levels.push(3)
+        levels.push(2)
     }
     return levels;
 }
