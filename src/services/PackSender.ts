@@ -22,7 +22,7 @@ export class PackSender {
     }
 
     sendBattleAcceptState(aClients: Client[], aData: AcceptScreenData) {
-        this.sendData(aClients, PackTitle.acceptScreen, aData);
+        this.sendData(aClients, PackTitle.battleConfirmation, aData);
     }
 
     gameStart(aClients: Client[], aData: StartGameData) {

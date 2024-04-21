@@ -120,7 +120,7 @@ export class Client implements ILogger {
             
         });
 
-        this._socket.on(PackTitle.acceptScreen, (aData: AcceptScreenData) => {
+        this._socket.on(PackTitle.battleConfirmation, (aData: AcceptScreenData) => {
             this.logDebug(`onSocket initScreen: ${aData}`);
             this.onAcceptScreenPack.dispatch(this, aData);
         });
@@ -301,7 +301,7 @@ export class Client implements ILogger {
         let data: AcceptScreenData = {
             action: 'start'
         }
-        this.sendPack(PackTitle.acceptScreen, data);
+        this.sendPack(PackTitle.battleConfirmation, data);
     }
 
 }
