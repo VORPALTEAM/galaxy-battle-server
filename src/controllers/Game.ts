@@ -22,14 +22,14 @@ import { LinkorFactory } from '../factory/LinkorFactory.js';
 import { Tower } from '../objects/Tower.js';
 import { TowerManager } from '../systems/TowerManager.js';
 import { ExpManager } from '../systems/ExpManager.js';
-import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { WINSTREAKS } from '../database/DB.js';
 import { IdGenerator } from '../utils/game/IdGenerator.js';
 import { MissileController } from './MissileController.js';
 import { HomingMissile } from '../objects/HomingMissile.js';
 import { ObjectController } from './ObjectController.js';
 import { GameObjectFactory } from '../factory/GameObjectFactory.js';
-import { getUserAvailableLaserLevelsWeb2 } from 'src/blockchain/boxes/boxesweb2.js';
+import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
+import { getUserAvailableLaserLevelsWeb2 } from '../blockchain/boxes/boxesweb2.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
