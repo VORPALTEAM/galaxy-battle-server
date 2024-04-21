@@ -5,8 +5,8 @@ import { LogMng } from "../utils/LogMng.js";
 import { SignService } from "../services/SignService.js";
 import { Config } from "../data/Config.js";
 import { BotClient } from "../models/BotClient.js";
-import { ClientPair } from "src/models/ClientPair.js";
-import { IdGenerator } from "src/utils/game/IdGenerator.js";
+import { ClientPair } from "../models/ClientPair.js";
+import { IdGenerator } from "../utils/game/IdGenerator.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
