@@ -1,13 +1,12 @@
 import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { ClaimRewardData, DebugTestData, PackTitle, PlanetLaserSkin, RewardType, SkillRequest } from "../data/Types.js";
+import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLaserSkin, RewardType, SkillRequest } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 import { WINSTREAKS } from "src/database/DB.js";
 
 export class Client implements ILogger {
-
     protected _className: string;
     protected _socket: Socket;
     protected _connectionId: string;
@@ -36,6 +35,8 @@ export class Client implements ILogger {
     onExitGame = new Signal();
     onDisconnect = new Signal();
     onDebugTest = new Signal();
+
+    onAcceptScreenPack = new Signal();
 
 
     constructor(aSocket: Socket) {
@@ -117,6 +118,11 @@ export class Client implements ILogger {
                 this.signRequest();
             }
             
+        });
+
+        this._socket.on(PackTitle.battleConfirmation, (aData: AcceptScreenData) => {
+            this.logDebug(`onSocket initScreen: ${aData}`);
+            this.onAcceptScreenPack.dispatch(this, aData);
         });
 
         this._socket.on('disconnect', () => {
@@ -289,6 +295,13 @@ export class Client implements ILogger {
             reasone: aReasone
         }
         this.sendPack(PackTitle.claimReward, data);
+    }
+
+    sentAcceptScreenStart() {
+        let data: AcceptScreenData = {
+            action: 'start'
+        }
+        this.sendPack(PackTitle.battleConfirmation, data);
     }
 
 }

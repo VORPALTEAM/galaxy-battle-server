@@ -1,5 +1,5 @@
 import { Client } from "./Client.js";
-import { PackTitle } from "src/data/Types.js";
+import { AcceptScreenData, PackTitle } from "src/data/Types.js";
 
 export enum ClientState {
     idle = 'idle',
@@ -50,6 +50,13 @@ export class BotClient extends Client {
 
     sendPack(aPackTitle: PackTitle, aData: any) {
         // skip this operation
+    }
+
+    sentAcceptScreenStart() {
+        let data: AcceptScreenData = {
+            action: 'accept'
+        }
+        this.onAcceptScreenPack.dispatch(this, data);
     }
 
 }

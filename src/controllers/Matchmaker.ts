@@ -1,31 +1,31 @@
-import { Client } from "../models/Client";
+import { Client } from "../models/Client.js";
 import { Game } from "./Game.js";
-import { ILogger } from "../interfaces/ILogger";
+import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { SignService } from "../services/SignService.js";
 import { Config } from "../data/Config.js";
 import { BotClient } from "../models/BotClient.js";
+import { ClientPair } from "../models/ClientPair.js";
+import { IdGenerator } from "../utils/game/IdGenerator.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
-class ClientPair {
 
-    constructor(aClientA: Client, aClientB: Client) {
-        
-    }
-
-}
 
 export class Matchmaker implements ILogger {
     private _loopInterval: NodeJS.Timeout;
     private _clients: Map<string, Client>;
-    private _pairs: ClientPair[];
+    private _pairs: Map<number, ClientPair>;
     private _games: Map<number, Game>;
-    private _gameIdCounter = 0;
+    // private _gameIdCounter = 0;
+    private _gameIdGen: IdGenerator;
+    private _pairIdGen: IdGenerator;
 
     constructor() {
+        this._gameIdGen = new IdGenerator();
+        this._pairIdGen = new IdGenerator();
         this._clients = new Map();
-        this._pairs = [];
+        this._pairs = new Map();
         this._games = new Map();
         this.startLoop();
 
@@ -46,13 +46,17 @@ export class Matchmaker implements ILogger {
         LogMng.error(`Matchmaker: ${aMsg}`, aData);
     }
 
-    private generateNewGameId(): number {
-        return this._gameIdCounter++;
+    private getNewPairId(): number {
+        return this._pairIdGen.nextId();
+    }
+
+    private getNewGameId(): number {
+        return this._gameIdGen.nextId();
     }
 
     private tests() {
         this.logDebug('game test...');
-        let game = new Game(this.generateNewGameId(), null, null);
+        let game = new Game(this.getNewGameId(), null, null);
         game.tests();
         this._games.set(game.id, game);
     }
@@ -72,15 +76,40 @@ export class Matchmaker implements ILogger {
 
     private createPair(aClientA: Client, aClientB: Client) {
         this.logDebug('pair creation...');
-        let pair = new ClientPair(aClientA, aClientB);
-        // pair.onGameComplete.addOnce(this.onGameComplete, this);
-        // pair.start();
-        // this._games.set(game.id, game);
+        let pair = new ClientPair(this.getNewPairId(), aClientA, aClientB);
+        this._pairs.set(pair.id, pair);
+        pair.onBreak.add(this.onPairBreak, this);
+        pair.onAllReady.add(this.onPairReady, this);
+    }
+
+    private onPairBreak(aPair: ClientPair) {
+        this.logDebug(`onPairBreak...`);
+        const pId = aPair.id;
+        let pair = this._pairs.get(pId);
+        let clients = pair.clients;
+        clients.forEach((client) => {
+            this.removeClient(client);
+        });
+        this._pairs.delete(pId);
+        pair.free();
+    }
+
+    private onPairReady(aPair: ClientPair) {
+        this.logDebug(`onPairReady...`);
+        const pId = aPair.id;
+        let pair = this._pairs.get(pId);
+        let clients: Client[] = [];
+        pair.clients.forEach((client) => {
+            clients.push(client);
+        });
+        this.createGame(clients[0], clients[1]);
+        this._pairs.delete(pId);
+        pair.free();
     }
 
     private createGame(aClientA: Client, aClientB: Client) {
         this.logDebug('game creation...');
-        let game = new Game(this.generateNewGameId(), aClientA, aClientB);
+        let game = new Game(this.getNewGameId(), aClientA, aClientB);
         game.onGameComplete.addOnce(this.onGameComplete, this);
         game.start();
         this._games.set(game.id, game);
@@ -146,7 +175,8 @@ export class Matchmaker implements ILogger {
             let client = this._clients.get(id);
             let bot = new BotClient();
             this.removeClient(client);
-            this.createGame(bot, client);
+            // this.createGame(bot, client);
+            this.createPair(bot, client);
         }
 
         while (readyClientIds.length >= 2) {
@@ -157,8 +187,8 @@ export class Matchmaker implements ILogger {
             let client2 = this._clients.get(id2);
             this.removeClient(client1);
             this.removeClient(client2);
-            this.createGame(client1, client2);
-            // this.createPair(client1, client2);
+            // this.createGame(client1, client2);
+            this.createPair(client1, client2);
         }
 
     }

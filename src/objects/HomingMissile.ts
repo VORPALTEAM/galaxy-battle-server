@@ -41,6 +41,7 @@ export class HomingMissile extends GameObject {
 
     constructor(aParams: HomingMissileParams) {
         super(aParams);
+        this._className = 'HomingMissile';
         this._params = aParams;
         this._lookDir = aParams.lookDir;
         this.lookByDir(this._lookDir);
