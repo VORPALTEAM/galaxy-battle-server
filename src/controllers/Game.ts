@@ -29,6 +29,7 @@ import { MissileController } from './MissileController.js';
 import { HomingMissile } from '../objects/HomingMissile.js';
 import { ObjectController } from './ObjectController.js';
 import { GameObjectFactory } from '../factory/GameObjectFactory.js';
+import { getUserAvailableLaserLevelsWeb2 } from 'src/blockchain/boxes/boxesweb2.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -714,7 +715,7 @@ export class Game implements ILogger {
         let laserSkin: PlanetLaserSkin = 'blue';
 
         if (aClient.isSigned && !aClient.isBot) {
-            lasers = await getUserAvailableLaserLevels(aClient.walletId);
+            lasers = await getUserAvailableLaserLevelsWeb2(aClient.walletId);
             lasers = lasers.map(n => Number(n));
             this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
             if (lasers?.length > 0) {
