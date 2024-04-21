@@ -12,13 +12,21 @@ export type FieldParams = {
     }
 }
 
+type ObjectCellData = {
+    cx: number,
+    cy: number,
+    cell: FieldCell
+}
+
 export class Field implements ILogger {
     private _params: FieldParams;
-    private _field: Map<string, any>;
+    private _field: Map<string, FieldCell>;
+    private _objectCells: Map<number, ObjectCellData>;
 
     constructor(aParams: FieldParams) {
         this._params = aParams;
-        this.createField();
+        this.initField();
+        this._objectCells = new Map();
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -41,7 +49,7 @@ export class Field implements ILogger {
         this._field.set(key, cell);
     }
 
-    private createField() {
+    private initField() {
         this._field = new Map();
         for (let x = 0; x < this._params.size.cols; x++) {
             for (let y = 0; y < this._params.size.rows; y++) {
@@ -232,23 +240,53 @@ export class Field implements ILogger {
         return cell.isTaken;
     }
 
-    takeCell(cx: number, cy: number) {
-        let cell = this.getCell(cx, cy);
-        if (cell) {
-            cell.isTaken = true;
+    // takeCell(cx: number, cy: number) {
+    //     let cell = this.getCell(cx, cy);
+    //     if (cell) {
+    //         cell.isTaken = true;
+    //     }
+    //     else {
+    //         this.logWarn(`takeCell !cell for (${cx}, ${cy})`);
+    //     }
+    // }
+
+    // takeOffCell(aCellPos: { x: number, y: number }) {
+    //     let cell = this.getCell(aCellPos.x, aCellPos.y);
+    //     if (cell) {
+    //         cell.isTaken = false;
+    //     }
+    //     else {
+    //         this.logWarn(`takeOffCell !cell for (${aCellPos.x}, ${aCellPos.y})`);
+    //     }
+    // }
+
+    takeCellByObject(aObjectId: number, pos: { x: number, y: number }) {
+        let oldCell = this._objectCells.get(aObjectId);
+        if (oldCell && oldCell.cell) {
+            oldCell.cell.isTaken = false;
+        }
+        let newCell = this.getCell(pos.x, pos.y);
+        if (newCell) {
+            newCell.isTaken = true;
+            this._objectCells.set(aObjectId, {
+                cx: pos.x,
+                cy: pos.y,
+                cell: newCell
+            });
         }
         else {
-            this.logWarn(`takeCell !cell for (${cx}, ${cy})`);
+            this.logWarn(`takeCellByObject !cell for (${pos.x}, ${pos.y})`);
         }
     }
 
-    takeOffCell(aCellPos: { x: number, y: number }) {
-        let cell = this.getCell(aCellPos.x, aCellPos.y);
-        if (cell) {
-            cell.isTaken = false;
+    takeOffCellByObject(aObjectId: number) {
+        let cell = this._objectCells.get(aObjectId);
+        this._objectCells.delete(aObjectId);
+        if (cell && cell.cell) {
+            cell.cell.isTaken = false;
         }
         else {
-            this.logWarn(`takeOffCell !cell for (${aCellPos.x}, ${aCellPos.y})`);
+            this.logWarn(`takeOffCellByObject !cell for objId=${aObjectId}`);
         }
     }
 

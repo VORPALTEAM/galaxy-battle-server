@@ -168,8 +168,10 @@ export class FighterManager implements ILogger {
 
                 let nextPos = this._field.cellPosToGlobalVec3(nextCell);
                 aFighter.jumpTo(nextPos);
-                this._field.takeOffCell(fighterCellPos);
-                this._field.takeCell(nextCell.x, nextCell.y);
+                // this._field.takeOffCell(fighterCellPos);
+                this._field.takeOffCellByObject(aFighter.id);
+                // this._field.takeCell(nextCell.x, nextCell.y);
+                this._field.takeCellByObject(aFighter.id, nextCell);
 
             } break;
             

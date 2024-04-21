@@ -410,7 +410,8 @@ export class Game implements ILogger {
             
             star.onDamage.add(this.onObjectDamage, this);
 
-            this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
+            // this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
+            this._field.takeCellByObject(star.id, starData.cellPos);
             this.addObject(star);
             stars.push(star);
 
@@ -468,7 +469,8 @@ export class Game implements ILogger {
             tower.onAttack.add(this.onShipAttack, this);
             tower.onDamage.add(this.onObjectDamage, this);
 
-            this._field.takeCell(towerData.cellPos.x, towerData.cellPos.y);
+            // this._field.takeCell(towerData.cellPos.x, towerData.cellPos.y);
+            this._field.takeCellByObject(tower.id, towerData.cellPos);
             this.addObject(tower);
 
             // this._towerMng.addStar(tower);
@@ -495,6 +497,7 @@ export class Game implements ILogger {
         cellPos.y += aCellDeltaPos.y;
 
         if (this._field.isCellTaken(cellPos)) {
+            this.logDebug(`onStarFighterSpawn: cell taken:`, cellPos);
             let neighbors = this._field.getNeighbors(cellPos, true);
             if (neighbors.length <= 0) {
                 // explosion current object on the cell
@@ -542,7 +545,8 @@ export class Game implements ILogger {
         fighter.onRayStart.add(this.onShipRayStart, this);
         fighter.onDamage.add(this.onObjectDamage, this);
 
-        this._field.takeCell(cellPos.x, cellPos.y);
+        // this._field.takeCell(cellPos.x, cellPos.y);
+        this._field.takeCellByObject(fighter.id, cellPos);
 
         this.addObject(fighter);
         this._fighterMng.addShip(fighter);
@@ -556,6 +560,24 @@ export class Game implements ILogger {
         let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
+
+        if (this._field.isCellTaken(cellPos)) {
+            this.logDebug(`onStarLinkorSpawn: cell taken:`, cellPos);
+            let neighbors = this._field.getNeighbors(cellPos, true);
+            if (neighbors.length <= 0) {
+                // explosion current object on the cell
+                let obj = this._objectController.getObjectOnCell(this._field, cellPos);
+                if (obj) {
+                    obj.damage({
+                        damage: obj.hp * 2
+                    });
+                }
+                return;
+            }
+            else {
+                cellPos = neighbors[0];
+            }
+        }
 
         let linkor = new Linkor({
             owner: aStar.owner,
@@ -589,8 +611,9 @@ export class Game implements ILogger {
         linkor.onRayStop.add(this.onShipRayStop, this);
         linkor.onDamage.add(this.onObjectDamage, this);
 
-        this._field.takeCell(cellPos.x, cellPos.y);
-        
+        // this._field.takeCell(cellPos.x, cellPos.y);
+        this._field.takeCellByObject(linkor.id, cellPos);
+
         this.addObject(linkor);
         this._linkorMng.addLinkor(linkor);
     }
@@ -911,7 +934,8 @@ export class Game implements ILogger {
                 this._fighterMng.deleteShip(obj.id);
                 this._linkorMng.deleteShip(obj.id);
                 // free the field cell
-                this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
+                // this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
+                this._field.takeOffCellByObject(obj.id);
                 obj.free();
                 return;
 

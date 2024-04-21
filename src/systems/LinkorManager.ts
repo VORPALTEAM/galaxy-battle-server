@@ -188,8 +188,10 @@ export class LinkorManager implements ILogger {
 
                 let nextPos = this._field.cellPosToGlobalVec3(nextCell);
                 aShip.jumpTo(nextPos);
-                this._field.takeOffCell(fighterCellPos);
-                this._field.takeCell(nextCell.x, nextCell.y);
+                // this._field.takeOffCell(fighterCellPos);
+                this._field.takeOffCellByObject(aShip.id);
+                // this._field.takeCell(nextCell.x, nextCell.y);
+                this._field.takeCellByObject(aShip.id, nextCell);
 
             } break;
 
