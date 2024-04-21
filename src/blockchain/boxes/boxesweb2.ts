@@ -131,6 +131,6 @@ export async function getUserLaserListWeb2(_user: string) {
 
 export async function getUserAvailableLaserLevelsWeb2(_user: string) {
     const list: number[] = [];
-    const lasers = await getUserLaserListWeb2(_user);
+    const lasers = await getUserLaserListWeb2(_user.toLowerCase());
     return lasers
 }
