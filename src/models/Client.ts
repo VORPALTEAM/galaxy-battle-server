@@ -1,10 +1,11 @@
 import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLaserSkin, RewardType, SkillRequest } from "../data/Types.js";
+import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLaserSkin, RewardType, SkillRequest, SearchGameData, ChallengeInfo } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
-import { WINSTREAKS } from "src/database/DB.js";
+import { WINSTREAKS } from "../database/DB.js";
+import { MyMath } from "src/utils/MyMath.js";
 
 export class Client implements ILogger {
     protected _className: string;
@@ -23,9 +24,14 @@ export class Client implements ILogger {
     private _isWithBot = false;
     protected _isBot = false;
     protected _isFreeConnection = false;
+    private _isChallengeMode = false;
+    private _challengeNumber = -1;
+    private _isChallengeCreator = false;
     
     onSignRecv = new Signal();
     onStartSearchGame = new Signal();
+    // onCreateChallengeGame = new Signal();
+    // onConnectChallengeGame = new Signal();
     onStopSearchGame = new Signal();
     /**
      * Battle Scene loaded on client
@@ -63,11 +69,9 @@ export class Client implements ILogger {
 
     protected initListeners() {
 
-        this._socket.on(PackTitle.startSearchGame, (aData?: {
-            isFreeConnect?: boolean
-            withBot?: boolean
-        }) => {
+        this._socket.on(PackTitle.startSearchGame, (aData?: SearchGameData) => {
             this._isWithBot = aData?.withBot;
+            this._isChallengeMode = aData?.isChallenge;
             this._isFreeConnection = aData?.isFreeConnect;
             if (this._isFreeConnection) {
                 this._walletId = '0x0';
@@ -78,7 +82,25 @@ export class Client implements ILogger {
             else {
                 this.logDebug(`search game request...`);
             }
-            // this.onStartSearchGame(client);
+
+            if (this._isChallengeMode) {
+                switch (aData.challengeCmd) {
+                    case 'create':
+                        this.logDebug(`challenge create game request...`);
+                        // this.onCreateChallengeGame.dispatch(this);
+                        this._isChallengeCreator = true;
+                        this._challengeNumber = MyMath.randomIntInRange(1, Number.MAX_SAFE_INTEGER);
+                        // send code to client
+                        this.sendChallengeNumber(this._challengeNumber);
+                        break;
+                    case 'connect':
+                        this.logDebug(`challenge connect game request...`);
+                        this._challengeNumber = aData.challengeNumber;
+                        // this.onConnectChallengeGame.dispatch(this);
+                        break;
+                }
+            }
+
             this.onStartSearchGame.dispatch(this);
         });
 
@@ -203,6 +225,18 @@ export class Client implements ILogger {
         return this._isDisconnected;
     }
 
+    get isChallengeMode() {
+        return this._isChallengeMode;
+    }
+
+    get challengeNumber() {
+        return this._challengeNumber;
+    }
+
+    get isChallengeCreator() {
+        return this._isChallengeCreator;
+    }
+
     get isWithBot() {
         return this._isWithBot;
     }
@@ -297,11 +331,26 @@ export class Client implements ILogger {
         this.sendPack(PackTitle.claimReward, data);
     }
 
-    sentAcceptScreenStart() {
+    sendAcceptScreenStart() {
         let data: AcceptScreenData = {
             action: 'start'
         }
         this.sendPack(PackTitle.battleConfirmation, data);
+    }
+
+    sendChallengeNumber(aNum: number) {
+        let data: ChallengeInfo = {
+            cmd: 'number',
+            challengeNumber: aNum
+        }
+        this.sendPack(PackTitle.challengeInfo, data);
+    }
+
+    sendChallengeNotFound() {
+        let data: ChallengeInfo = {
+            cmd: 'notFound'
+        }
+        this.sendPack(PackTitle.challengeInfo, data);
     }
 
 }

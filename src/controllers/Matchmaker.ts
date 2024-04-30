@@ -21,12 +21,16 @@ export class Matchmaker implements ILogger {
     private _gameIdGen: IdGenerator;
     private _pairIdGen: IdGenerator;
 
+    private _challenges: Map<number, Client[]>;
+
+
     constructor() {
         this._gameIdGen = new IdGenerator();
         this._pairIdGen = new IdGenerator();
         this._clients = new Map();
         this._pairs = new Map();
         this._games = new Map();
+        this._challenges = new Map();
         this.startLoop();
 
         // tests
@@ -125,15 +129,56 @@ export class Matchmaker implements ILogger {
         }
     }
 
-    addClient(aClient: Client) {
-        this._clients.set(aClient.connectionId, aClient);
+    private addChallengeClient(aClient: Client) {
+        this.logDebug(`addChallengeClient...`);
 
-        // send game searching started
-        aClient.sendStartGameSearch();
+        const id = aClient.challengeNumber;
+        let ch = this._challenges.get(id);
+        if (!ch) {
+            if (!aClient.isChallengeCreator) {
+                // message challenge not found
+                aClient.sendChallengeNotFound();
+                return;
+            }
+            else {
+                // create challenge
+                this._challenges.set(id, [aClient]);
+            }
+        }
+        else {
+            ch.push(aClient);
+
+            // check challenge clients
+            
+            if (ch.length >= 2) {
+                let client1 = ch[0];
+                let client2 = ch[1];
+                this.removeClient(client2);
+                this.removeClient(client1);
+                this.createPair(client1, client2);
+            }
+
+        }
+    }
+
+    addClient(aClient: Client) {
+
+        if (aClient.isChallengeMode) {
+            this.addChallengeClient(aClient);
+        }
+        else {
+            this.logDebug(`addClient...`);
+
+            this._clients.set(aClient.connectionId, aClient);
+
+            // send game searching started
+            aClient.sendStartGameSearch();
         
-        // check sign of this client
-        if (!aClient.isFreeConnection && !aClient.isSigned && !aClient.isSignPending) {
-            SignService.getInstance().sendRequest(aClient);
+            // check sign of this client
+            if (!aClient.isFreeConnection && !aClient.isSigned && !aClient.isSignPending) {
+                SignService.getInstance().sendRequest(aClient);
+            }
+            
         }
 
     }
@@ -141,6 +186,25 @@ export class Matchmaker implements ILogger {
     removeClient(aClient: Client) {
         aClient.sendStopGameSearch();
         this._clients.delete(aClient.connectionId);
+        // check challenges
+        if (aClient.isChallengeMode) {
+            const id = aClient.challengeNumber;
+            if (aClient.isChallengeCreator) {
+                // remove challenge record
+                this._challenges.delete(id);
+                return;
+            }
+            else {
+                let ch = this._challenges.get(id);
+                for (let i = ch.length - 1; i >= 0; i--) {
+                    let cli = ch[i];
+                    if (cli.connectionId == aClient.connectionId) {
+                        ch.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     onClientDisconnected(aClient: Client) {

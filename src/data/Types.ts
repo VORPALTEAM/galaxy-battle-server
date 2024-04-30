@@ -17,6 +17,7 @@ export enum PackTitle {
     startSearchGame = 'startSearchGame', // request
     stopSearchGame = 'stopSearchGame', // request
     gameSearching = 'gameSearching', // status, update, info
+    challengeInfo = 'challengeInfo',
     battleConfirmation = 'battleConfirmation',
     battleSceneLoaded = 'battleSceneLoaded',
     gameStart = 'gameStart',
@@ -50,6 +51,19 @@ export enum PackTitle {
 export type ObjectType = 'Star' | 'Planet' | 'Tower' | 'FighterShip' | 'BattleShip' | 'HomingMissile';
 export type AttackType = 'laser' | 'ray';
 export type RaceType = 'Humans' | 'Waters' | 'Insects' | 'Lizards';
+
+export type SearchGameData = {
+    isFreeConnect?: boolean,
+    isChallenge?: boolean,
+    withBot?: boolean,
+    challengeCmd?: 'create' | 'connect',
+    challengeNumber?: number,
+}
+
+export type ChallengeInfo = {
+    cmd: 'number' | 'notFound',
+    challengeNumber?: number
+}
 
 export type AcceptScreenAction = 'start' | 'accept' | 'update' | 'cancel' | 'closeClick';
 export type AcceptScreenData = {

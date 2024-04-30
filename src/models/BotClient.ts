@@ -52,7 +52,7 @@ export class BotClient extends Client {
         // skip this operation
     }
 
-    sentAcceptScreenStart() {
+    sendAcceptScreenStart() {
         let data: AcceptScreenData = {
             action: 'accept'
         }

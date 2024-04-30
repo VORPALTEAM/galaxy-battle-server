@@ -35,7 +35,7 @@ export class ClientPair implements ILogger {
     private addClient(aClient: Client) {
         this._clients.set(aClient.connectionId, aClient);
         aClient.onAcceptScreenPack.add(this.onAcceptScreenPack, this);
-        aClient.sentAcceptScreenStart();
+        aClient.sendAcceptScreenStart();
     }
 
     private onAcceptScreenPack(aClient: Client, aData: AcceptScreenData) {
