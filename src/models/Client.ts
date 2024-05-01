@@ -5,7 +5,7 @@ import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLase
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 import { WINSTREAKS } from "../database/DB.js";
-import { MyMath } from "src/utils/MyMath.js";
+import { MyMath } from "../utils/MyMath.js";
 
 export class Client implements ILogger {
     protected _className: string;
