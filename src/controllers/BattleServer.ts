@@ -2,7 +2,7 @@ import { Server, Socket } from "socket.io";
 import { Client } from "../models/Client.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Matchmaker } from "./Matchmaker.js";
-import { ILogger } from "src/interfaces/ILogger.js";
+import { ILogger } from "../interfaces/ILogger.js";
 import { SignService } from "../services/SignService.js";
 
 export class BattleServer implements ILogger {

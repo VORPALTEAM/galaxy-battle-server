@@ -1,4 +1,4 @@
-import { IdGenerator } from "src/utils/game/IdGenerator";
+import { IdGenerator } from "../utils/game/IdGenerator";
 
 export class GameObjectFactory {
     protected _objIdGen: IdGenerator;
