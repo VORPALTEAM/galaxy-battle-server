@@ -165,6 +165,8 @@ export class Matchmaker implements ILogger {
 
         if (aClient.isChallengeMode) {
             this.addChallengeClient(aClient);
+            // send game searching started
+            aClient.sendStartGameSearch();
         }
         else {
             this.logDebug(`addClient...`);
