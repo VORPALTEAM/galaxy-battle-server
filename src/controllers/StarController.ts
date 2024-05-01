@@ -1,8 +1,8 @@
-import { Game } from "src/controllers/Game.js";
+import { Game } from "../controllers/Game.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { Star } from "../objects/Star.js";
 import { LogMng } from "../utils/LogMng.js";
-import { ObjectController } from "src/controllers/ObjectController.js";
+import { ObjectController } from "../controllers/ObjectController.js";
 
 export class StarController implements ILogger {
     protected _className = 'StarManager';

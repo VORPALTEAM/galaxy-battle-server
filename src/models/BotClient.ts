@@ -1,5 +1,5 @@
 import { Client } from "./Client.js";
-import { AcceptScreenData, PackTitle } from "src/data/Types.js";
+import { AcceptScreenData, PackTitle } from "../data/Types.js";
 
 export enum ClientState {
     idle = 'idle',

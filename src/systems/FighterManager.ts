@@ -5,7 +5,7 @@ import { Field } from "../objects/Field.js";
 import { Fighter } from "../objects/Fighter.js";
 import { GameObject } from "../objects/GameObject.js";
 import { SpaceShip } from "../objects/SpaceShip.js";
-import { AttackType } from "src/data/Types.js";
+import { AttackType } from "../data/Types.js";
 
 export class FighterManager implements ILogger {
     protected _className = 'FighterManager';
