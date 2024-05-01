@@ -1,16 +1,8 @@
 import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import {
-  ClaimRewardData,
-  DebugTestData,
-  AcceptScreenData,
-  PackTitle,
-  PlanetLaserSkin,
-  RewardType,
-  SkillRequest,
-  SearchGameData,
-  ChallengeInfo,
+import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLaserSkin,
+    RewardType, SkillRequest, SearchGameData, ChallengeInfo,
 } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
@@ -18,357 +10,357 @@ import { WINSTREAKS } from "../database/DB.js";
 import { MyMath } from "../utils/MyMath.js";
 
 export class Client implements ILogger {
-  protected _className: string;
-  protected _socket: Socket;
-  protected _connectionId: string;
-  protected _walletId: string;
-  protected _displayName: string;
+    protected _className: string;
+    protected _socket: Socket;
+    protected _connectionId: string;
+    protected _walletId: string;
+    protected _displayName: string;
 
-  // data
-  private _laserSkin: PlanetLaserSkin;
+    // data
+    private _laserSkin: PlanetLaserSkin;
 
-  // flags
-  protected _isSigned = false;
-  protected _isSignPending = false;
-  protected _isDisconnected = false;
-  private _isWithBot = false;
-  protected _isBot = false;
-  protected _isFreeConnection = false;
-  private _isChallengeMode = false;
-  private _challengeNumber = -1;
-  private _isChallengeCreator = false;
+    // flags
+    protected _isSigned = false;
+    protected _isSignPending = false;
+    protected _isDisconnected = false;
+    private _isWithBot = false;
+    protected _isBot = false;
+    protected _isFreeConnection = false;
+    private _isChallengeMode = false;
+    private _challengeNumber = -1;
+    private _isChallengeCreator = false;
 
-  onSignRecv = new Signal();
-  onStartSearchGame = new Signal();
-  // onCreateChallengeGame = new Signal();
-  // onConnectChallengeGame = new Signal();
-  onStopSearchGame = new Signal();
-  /**
-   * Battle Scene loaded on client
-   */
-  onSceneLoaded = new Signal();
-  onSkillRequest = new Signal();
-  onExitGame = new Signal();
-  onDisconnect = new Signal();
-  onDebugTest = new Signal();
+    onSignRecv = new Signal();
+    onStartSearchGame = new Signal();
+    // onCreateChallengeGame = new Signal();
+    // onConnectChallengeGame = new Signal();
+    onStopSearchGame = new Signal();
+    /**
+     * Battle Scene loaded on client
+     */
+    onSceneLoaded = new Signal();
+    onSkillRequest = new Signal();
+    onExitGame = new Signal();
+    onDisconnect = new Signal();
+    onDebugTest = new Signal();
 
-  onAcceptScreenPack = new Signal();
+    onAcceptScreenPack = new Signal();
 
-  constructor(aSocket: Socket) {
-    this._className = "Client";
-    this._socket = aSocket;
-    this._laserSkin = "blue";
-    this.setIdBySocket();
-    this.initListeners();
-  }
-
-  logDebug(aMsg: string, aData?: any): void {
-    LogMng.debug(`${this._className}: ${aMsg}`, aData);
-  }
-  logWarn(aMsg: string, aData?: any): void {
-    LogMng.warn(`${this._className}: ${aMsg}`, aData);
-  }
-  logError(aMsg: string, aData?: any): void {
-    LogMng.error(`${this._className}: ${aMsg}`, aData);
-  }
-
-  protected setIdBySocket() {
-    this._connectionId = this._socket.id;
-  }
-
-  protected initListeners() {
-    this._socket.on(PackTitle.startSearchGame, (aData?: SearchGameData) => {
-      this._isWithBot = aData?.withBot;
-      this._isChallengeMode = aData?.isChallenge;
-      this._isFreeConnection = aData?.isFreeConnect;
-      if (this._isFreeConnection) {
-        this._walletId = "0x0";
-      }
-      if (this._isWithBot) {
-        this.logDebug(`search game with bot request...`);
-      } else {
-        this.logDebug(`search game request...`);
-      }
-
-      if (this._isChallengeMode) {
-        switch (aData.challengeCmd) {
-          case "create":
-            this.logDebug(`challenge create game request...`);
-            // this.onCreateChallengeGame.dispatch(this);
-            this._isChallengeCreator = true;
-            this._challengeNumber = MyMath.randomIntInRange(
-              1,
-              Number.MAX_SAFE_INTEGER
-            );
-            // send code to client
-            this.sendChallengeNumber(this._challengeNumber);
-            break;
-          case "connect":
-            this.logDebug(`challenge connect game request...`);
-            this._challengeNumber = aData.challengeNumber;
-            // this.onConnectChallengeGame.dispatch(this);
-            break;
-        }
-      }
-
-      this.onStartSearchGame.dispatch(this);
-    });
-
-    this._socket.on(PackTitle.stopSearchGame, () => {
-      this.logDebug(`stop game searching request...`);
-      this.onStopSearchGame.dispatch(this);
-    });
-
-    this._socket.on(PackTitle.battleSceneLoaded, () => {
-      this.logDebug(`game scene loaded...`);
-      this.onSceneLoaded.dispatch(this);
-    });
-
-    this._socket.on(PackTitle.skill, (aData: SkillRequest) => {
-      this.onSkillRequest.dispatch(this, aData);
-    });
-
-    this._socket.on(PackTitle.exitGame, () => {
-      // client click exit
-      this.onExitGame.dispatch(this);
-    });
-
-    this._socket.on(PackTitle.debugTest, (aData: DebugTestData) => {
-      this.onDebugTest.dispatch(this, aData);
-    });
-
-    this._socket.on(PackTitle.claimReward, (aData: ClaimRewardData) => {
-      this.logDebug(`onSocket claimReward: ${aData}`);
-
-      if (this._isSigned) {
-        this.handleClaimRewardRequest(aData);
-      } else {
-        this.onSignRecv.addOnce(() => {
-          this.handleClaimRewardRequest(aData);
-        }, this);
-        this.signRequest();
-      }
-    });
-
-    this._socket.on(PackTitle.battleConfirmation, (aData: AcceptScreenData) => {
-      this.logDebug(`onSocket initScreen: ${aData}`);
-      this.onAcceptScreenPack.dispatch(this, aData);
-    });
-
-    this._socket.on("disconnect", () => {
-      // this.onDisconnect(clientId);
-      this._isDisconnected = true;
-      this.onDisconnect.dispatch(this);
-    });
-  }
-
-  private handleClaimRewardRequest(aData: ClaimRewardData) {
-    switch (aData.type) {
-      case "reward":
-        // client claim reward click
-        this.logDebug(
-          `Claim Reward: RecordWinnerWithChoose call with (${this._walletId}, false)`
-        );
-        RecordWinnerWithChoose(this._walletId, false).then(
-          () => {
-            // resolve
-            this.logDebug(`RecordWinnerWithChoose resolved`);
-            this.sendClaimRewardAccept();
-          },
-          (aReasone: any) => {
-            // rejected
-            this.logDebug(`RecordWinnerWithChoose rejected`);
-            this.logError(`RecordWinnerWithChoose: ${aReasone}`);
-            this.sendClaimRewardReject(aData.type, aReasone);
-          }
-        );
-        break;
-
-      case "box":
-        // client claim reward click
-        this.logDebug(
-          `Open Box: RecordWinnerWithChoose call with (${this._walletId}, true)`
-        );
-        RecordWinnerWithChoose(this._walletId, true).then(
-          () => {
-            // resolve
-            this.logDebug(`RecordWinnerWithChoose resolved`);
-            this.sendClaimBoxAccept();
-          },
-          (aReasone: any) => {
-            // rejected
-            this.logDebug(`RecordWinnerWithChoose rejected`);
-            this.logError(`RecordWinnerWithChoose: ${aReasone}`);
-            this.sendClaimRewardReject(aData.type, aReasone);
-          }
-        );
-        break;
-
-      default:
-        this.logWarn(
-          `handleClaimRewardRequest: unknown aData.type = ${aData.type}`
-        );
-        break;
+    constructor(aSocket: Socket) {
+        this._className = "Client";
+        this._socket = aSocket;
+        this._laserSkin = "blue";
+        this.setIdBySocket();
+        this.initListeners();
     }
-  }
 
-  get socket(): Socket {
-    return this._socket;
-  }
+    logDebug(aMsg: string, aData?: any): void {
+        LogMng.debug(`${this._className}: ${aMsg}`, aData);
+    }
+    logWarn(aMsg: string, aData?: any): void {
+        LogMng.warn(`${this._className}: ${aMsg}`, aData);
+    }
+    logError(aMsg: string, aData?: any): void {
+        LogMng.error(`${this._className}: ${aMsg}`, aData);
+    }
 
-  get connectionId(): string {
-    return this._connectionId;
-  }
+    protected setIdBySocket() {
+        this._connectionId = this._socket.id;
+    }
 
-  get isSigned() {
-    return this._isSigned;
-  }
+    protected initListeners() {
+        this._socket.on(PackTitle.startSearchGame, (aData?: SearchGameData) => {
+            this._isWithBot = aData?.withBot;
+            this._isChallengeMode = aData?.isChallenge;
+            this._isFreeConnection = aData?.isFreeConnect;
+            if (this._isFreeConnection) {
+                this._walletId = "0x0";
+            }
+            if (this._isWithBot) {
+                this.logDebug(`search game with bot request...`);
+            } else {
+                this.logDebug(`search game request...`);
+            }
 
-  get isSignPending() {
-    return this._isSignPending;
-  }
+            if (this._isChallengeMode) {
+                switch (aData.challengeCmd) {
+                    case "create":
+                        this.logDebug(`challenge create game request...`);
+                        // this.onCreateChallengeGame.dispatch(this);
+                        this._isChallengeCreator = true;
+                        this._challengeNumber = MyMath.randomIntInRange(
+                            1,
+                            Number.MAX_SAFE_INTEGER
+                        );
+                        // send code to client
+                        this.sendChallengeNumber(this._challengeNumber);
+                        break;
+                    case "connect":
+                        this.logDebug(`challenge connect game request...`);
+                        this._challengeNumber = aData.challengeNumber;
+                        // this.onConnectChallengeGame.dispatch(this);
+                        break;
+                }
+            }
 
-  set isSignPending(value) {
-    this._isSignPending = value;
-  }
+            this.onStartSearchGame.dispatch(this);
+        });
 
-  get walletId(): string {
-    return this._walletId;
-  }
+        this._socket.on(PackTitle.stopSearchGame, () => {
+            this.logDebug(`stop game searching request...`);
+            this.onStopSearchGame.dispatch(this);
+        });
 
-  get displayName(): string {
-    return this._displayName;
-  }
+        this._socket.on(PackTitle.battleSceneLoaded, () => {
+            this.logDebug(`game scene loaded...`);
+            this.onSceneLoaded.dispatch(this);
+        });
 
-  get isDisconnected() {
-    return this._isDisconnected;
-  }
+        this._socket.on(PackTitle.skill, (aData: SkillRequest) => {
+            this.onSkillRequest.dispatch(this, aData);
+        });
 
-  get isChallengeMode() {
-    return this._isChallengeMode;
-  }
+        this._socket.on(PackTitle.exitGame, () => {
+            // client click exit
+            this.onExitGame.dispatch(this);
+        });
 
-  get challengeNumber() {
-    return this._challengeNumber;
-  }
+        this._socket.on(PackTitle.debugTest, (aData: DebugTestData) => {
+            this.onDebugTest.dispatch(this, aData);
+        });
 
-  get isChallengeCreator() {
-    return this._isChallengeCreator;
-  }
+        this._socket.on(PackTitle.claimReward, (aData: ClaimRewardData) => {
+            this.logDebug(`onSocket claimReward: ${aData}`);
 
-  get isWithBot() {
-    return this._isWithBot;
-  }
+            if (this._isSigned) {
+                this.handleClaimRewardRequest(aData);
+            } else {
+                this.onSignRecv.addOnce(() => {
+                    this.handleClaimRewardRequest(aData);
+                }, this);
+                this.signRequest();
+            }
+        });
 
-  get isFreeConnection() {
-    return this._isFreeConnection;
-  }
+        this._socket.on(PackTitle.battleConfirmation, (aData: AcceptScreenData) => {
+            this.logDebug(`onSocket initScreen: ${aData}`);
+            this.onAcceptScreenPack.dispatch(this, aData);
+        });
 
-  get isBot() {
-    return this._isBot;
-  }
+        this._socket.on("disconnect", () => {
+            // this.onDisconnect(clientId);
+            this._isDisconnected = true;
+            this.onDisconnect.dispatch(this);
+        });
+    }
 
-  get laserSkin(): PlanetLaserSkin {
-    return this._laserSkin;
-  }
-  set laserSkin(value: PlanetLaserSkin) {
-    this._laserSkin = value;
-  }
+    private handleClaimRewardRequest(aData: ClaimRewardData) {
+        switch (aData.type) {
+            case "reward":
+                // client claim reward click
+                this.logDebug(
+                    `Claim Reward: RecordWinnerWithChoose call with (${this._walletId}, false)`
+                );
+                RecordWinnerWithChoose(this._walletId, false).then(
+                    () => {
+                        // resolve
+                        this.logDebug(`RecordWinnerWithChoose resolved`);
+                        this.sendClaimRewardAccept();
+                    },
+                    (aReasone: any) => {
+                        // rejected
+                        this.logDebug(`RecordWinnerWithChoose rejected`);
+                        this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                        this.sendClaimRewardReject(aData.type, aReasone);
+                    }
+                );
+                break;
 
-  sign(aPublicKey: string, aDisplayName = "") {
-    this._walletId = aPublicKey;
-    this._displayName = aDisplayName;
-    this._isSigned = true;
-    this.logDebug(`signed...`);
-  }
+            case "box":
+                // client claim reward click
+                this.logDebug(
+                    `Open Box: RecordWinnerWithChoose call with (${this._walletId}, true)`
+                );
+                RecordWinnerWithChoose(this._walletId, true).then(
+                    () => {
+                        // resolve
+                        this.logDebug(`RecordWinnerWithChoose resolved`);
+                        this.sendClaimBoxAccept();
+                    },
+                    (aReasone: any) => {
+                        // rejected
+                        this.logDebug(`RecordWinnerWithChoose rejected`);
+                        this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                        this.sendClaimRewardReject(aData.type, aReasone);
+                    }
+                );
+                break;
 
-  sendPack(aPackTitle: PackTitle, aData: any) {
-    if (this._isDisconnected) return;
-    this._socket.emit(aPackTitle, aData);
-  }
+            default:
+                this.logWarn(
+                    `handleClaimRewardRequest: unknown aData.type = ${aData.type}`
+                );
+                break;
+        }
+    }
 
-  async signRequest() {
-    this.sendPack(PackTitle.sign, {
-      cmd: "request",
-    });
-  }
+    get socket(): Socket {
+        return this._socket;
+    }
 
-  signSuccess(aWalletId: string) {
-    this.sendPack(PackTitle.sign, {
-      cmd: "success",
-      walletId: aWalletId,
-    });
-    this.onSignRecv.dispatch({
-      status: "success",
-    });
-  }
+    get connectionId(): string {
+        return this._connectionId;
+    }
 
-  signReject(aMsg?: string) {
-    this.sendPack(PackTitle.sign, {
-      cmd: "reject",
-      message: aMsg,
-    });
-    this.onSignRecv.dispatch({
-      status: "reject",
-    });
-  }
+    get isSigned() {
+        return this._isSigned;
+    }
 
-  sendStartGameSearch() {
-    this.sendPack(PackTitle.gameSearching, {
-      cmd: "start",
-    });
-  }
+    get isSignPending() {
+        return this._isSignPending;
+    }
 
-  sendStopGameSearch() {
-    this.sendPack(PackTitle.gameSearching, {
-      cmd: "stop",
-    });
-  }
+    set isSignPending(value) {
+        this._isSignPending = value;
+    }
 
-  sendClaimRewardAccept() {
-    let data: ClaimRewardData = {
-      type: "reward",
-      action: "accept",
-    };
-    this.sendPack(PackTitle.claimReward, data);
-  }
+    get walletId(): string {
+        return this._walletId;
+    }
 
-  sendClaimBoxAccept() {
-    let data: ClaimRewardData = {
-      type: "box",
-      action: "accept",
-    };
-    this.sendPack(PackTitle.claimReward, data);
-  }
+    get displayName(): string {
+        return this._displayName;
+    }
 
-  sendClaimRewardReject(aRewardType: RewardType, aReasone: any) {
-    let data: ClaimRewardData = {
-      type: aRewardType,
-      action: "reject",
-      reasone: aReasone,
-    };
-    this.sendPack(PackTitle.claimReward, data);
-  }
+    get isDisconnected() {
+        return this._isDisconnected;
+    }
 
-  sendAcceptScreenStart() {
-    let data: AcceptScreenData = {
-      action: "start",
-    };
-    this.sendPack(PackTitle.battleConfirmation, data);
-  }
+    get isChallengeMode() {
+        return this._isChallengeMode;
+    }
 
-  sendChallengeNumber(aNum: number) {
-    let data: ChallengeInfo = {
-      cmd: "number",
-      challengeNumber: aNum,
-    };
-    this.sendPack(PackTitle.challengeInfo, data);
-  }
+    get challengeNumber() {
+        return this._challengeNumber;
+    }
 
-  sendChallengeNotFound() {
-    let data: ChallengeInfo = {
-      cmd: "notFound",
-    };
-    this.sendPack(PackTitle.challengeInfo, data);
-  }
+    get isChallengeCreator() {
+        return this._isChallengeCreator;
+    }
+
+    get isWithBot() {
+        return this._isWithBot;
+    }
+
+    get isFreeConnection() {
+        return this._isFreeConnection;
+    }
+
+    get isBot() {
+        return this._isBot;
+    }
+
+    get laserSkin(): PlanetLaserSkin {
+        return this._laserSkin;
+    }
+    set laserSkin(value: PlanetLaserSkin) {
+        this._laserSkin = value;
+    }
+
+    sign(aPublicKey: string, aDisplayName = "") {
+        this._walletId = aPublicKey;
+        this._displayName = aDisplayName;
+        this._isSigned = true;
+        this.logDebug(`signed...`);
+    }
+
+    sendPack(aPackTitle: PackTitle, aData: any) {
+        if (this._isDisconnected) return;
+        this._socket.emit(aPackTitle, aData);
+    }
+
+    async signRequest() {
+        this.sendPack(PackTitle.sign, {
+            cmd: "request",
+        });
+    }
+
+    signSuccess(aWalletId: string) {
+        this.sendPack(PackTitle.sign, {
+            cmd: "success",
+            walletId: aWalletId,
+        });
+        this.onSignRecv.dispatch({
+            status: "success",
+        });
+    }
+
+    signReject(aMsg?: string) {
+        this.sendPack(PackTitle.sign, {
+            cmd: "reject",
+            message: aMsg,
+        });
+        this.onSignRecv.dispatch({
+            status: "reject",
+        });
+    }
+
+    sendStartGameSearch() {
+        this.sendPack(PackTitle.gameSearching, {
+            cmd: "start",
+        });
+    }
+
+    sendStopGameSearch() {
+        this.sendPack(PackTitle.gameSearching, {
+            cmd: "stop",
+        });
+    }
+
+    sendClaimRewardAccept() {
+        let data: ClaimRewardData = {
+            type: "reward",
+            action: "accept",
+        };
+        this.sendPack(PackTitle.claimReward, data);
+    }
+
+    sendClaimBoxAccept() {
+        let data: ClaimRewardData = {
+            type: "box",
+            action: "accept",
+        };
+        this.sendPack(PackTitle.claimReward, data);
+    }
+
+    sendClaimRewardReject(aRewardType: RewardType, aReasone: any) {
+        let data: ClaimRewardData = {
+            type: aRewardType,
+            action: "reject",
+            reasone: aReasone,
+        };
+        this.sendPack(PackTitle.claimReward, data);
+    }
+
+    sendAcceptScreenStart() {
+        let data: AcceptScreenData = {
+            action: "start",
+        };
+        this.sendPack(PackTitle.battleConfirmation, data);
+    }
+
+    sendChallengeNumber(aNum: number) {
+        let data: ChallengeInfo = {
+            cmd: "number",
+            challengeNumber: aNum,
+        };
+        this.sendPack(PackTitle.challengeInfo, data);
+    }
+
+    sendChallengeNotFound() {
+        let data: ChallengeInfo = {
+            cmd: "notFound",
+        };
+        this.sendPack(PackTitle.challengeInfo, data);
+    }
 }
