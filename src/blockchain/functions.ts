@@ -1,7 +1,9 @@
 import Web3 from "web3";
 import fetch from 'node-fetch';
+import crypto  from 'crypto';
 import { ERC20ABI, JournalABI } from "./ABI.js";
 import { admin, decimals, fastServerUrl, journal, networkParams, token } from "./network.js";
+import { TelegramAuthData } from "./types.js";
 
 const web3 = new Web3(networkParams.rpcUrl);
 const journalContract = new web3.eth.Contract(JournalABI, journal);
@@ -119,4 +121,40 @@ export async function GiveResourcesWeb2 (owner: string, login = "", resource: st
             return res
           })
     })
+}
+
+export function CheckTelegramAuth(auth_data: TelegramAuthData): {
+  success: Boolean;
+  error: string;
+} {
+  const { hash, ...restData } = auth_data;
+  const data_check_arr = Object.entries(restData).map(
+    ([key, value]) => `${key}=${value}`,
+  );
+  data_check_arr.sort();
+  const data_check_string = data_check_arr.join('\n');
+  const secret_key = crypto
+    .createHash('sha256')
+    .update(process.env.TELEGRAM_API_TOKEN)
+    .digest();
+  const hashResult = crypto
+    .createHmac('sha256', secret_key)
+    .update(data_check_string)
+    .digest('hex');
+  if (hashResult !== hash) {
+    return {
+      success: false,
+      error: 'Invalid hash',
+    };
+  }
+  if (Date.now() / 1000 - auth_data.auth_date > 86400) {
+    throw {
+      success: false,
+      error: 'Data is outdated',
+    };
+  }
+  return {
+    success: true,
+    error: '',
+  };
 }
