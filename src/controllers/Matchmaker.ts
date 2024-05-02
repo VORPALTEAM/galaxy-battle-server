@@ -186,11 +186,13 @@ export class Matchmaker implements ILogger {
             }
             else {
                 let ch = this._challenges.get(id);
-                for (let i = ch.length - 1; i >= 0; i--) {
-                    let cli = ch[i];
-                    if (cli.connectionId == aClient.connectionId) {
-                        ch.splice(i, 1);
-                        break;
+                if (ch && ch.length > 0) {
+                    for (let i = ch.length - 1; i >= 0; i--) {
+                        let cli = ch[i];
+                        if (cli.connectionId == aClient.connectionId) {
+                            ch.splice(i, 1);
+                            break;
+                        }
                     }
                 }
             }
