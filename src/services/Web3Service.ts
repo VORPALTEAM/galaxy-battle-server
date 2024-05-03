@@ -1,3 +1,5 @@
+import { CheckTelegramAuth } from "src/blockchain";
+import { TelegramAuthData } from "src/blockchain/types";
 import Web3 from "web3";
 
 export class Web3Service {
@@ -25,4 +27,12 @@ export class Web3Service {
         return publicKey;
     }
 
+    getTelegramLogin (authData: TelegramAuthData): string | undefined {
+        const checkData = CheckTelegramAuth( authData );
+        if (checkData.success) {
+            return `@${authData.username}`
+        }
+        return;
+    }
+ 
 }
