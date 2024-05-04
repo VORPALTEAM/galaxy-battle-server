@@ -12,7 +12,7 @@ export class SignService {
     private _clients: Map<string, Client>;
 
     private constructor() {
-        if (SignService._instance) throw new Error("Don't use SignMng.constructor(), it's SINGLETON, use getInstance() method");
+        if (SignService._instance) throw new Error("Don't use SignService.constructor(), it's SINGLETON, use getInstance() method");
         this._clients = new Map();
     }
 
