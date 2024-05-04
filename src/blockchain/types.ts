@@ -6,3 +6,9 @@ export interface TelegramAuthData {
   last_name: string;
   username: string;
 }
+
+export interface ComplexAutData {
+  authType: "telegram" | "web3";
+  signature?: string;
+  telegramData?: TelegramAuthData
+}

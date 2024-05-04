@@ -1,5 +1,5 @@
 import { CheckTelegramAuth } from "src/blockchain";
-import { TelegramAuthData } from "src/blockchain/types";
+import { ComplexAutData, TelegramAuthData } from "src/blockchain/types.js";
 import Web3 from "web3";
 
 export class Web3Service {
@@ -35,4 +35,16 @@ export class Web3Service {
         return;
     }
  
+    getLoginByComplexAuth(data: ComplexAutData): string | undefined {
+        switch(data.authType) {
+           case "telegram" :
+               if(!data.telegramData) return;
+              return this.getTelegramLogin(data.telegramData)
+           case "web3" :
+               if (!data.signature) return;
+               return this.getWalletId(data.signature);
+           default:
+               return;
+        }
+     }
 }

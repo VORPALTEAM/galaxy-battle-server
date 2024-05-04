@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import crypto  from 'crypto';
 import { ERC20ABI, JournalABI } from "./ABI.js";
 import { admin, decimals, fastServerUrl, journal, networkParams, token } from "./network.js";
-import { TelegramAuthData } from "./types.js";
+import { ComplexAutData, TelegramAuthData } from "./types.js";
 
 const web3 = new Web3(networkParams.rpcUrl);
 const journalContract = new web3.eth.Contract(JournalABI, journal);
