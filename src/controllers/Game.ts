@@ -34,7 +34,7 @@ import { ClientDataMng } from '../models/clientData/ClientDataMng.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
-    beginTimer: 2, // in sec
+    battlePrerollTimer: 2, // in sec
 
     field: {
         size: {
@@ -803,7 +803,7 @@ export class Game implements ILogger {
 
         setTimeout(() => {
             this.init();
-        }, SETTINGS.beginTimer * 1000);
+        }, SETTINGS.battlePrerollTimer * 1000);
 
         this._state = 'init';
     }
@@ -828,12 +828,12 @@ export class Game implements ILogger {
         }
 
         PackSender.getInstance().gameStart([cli1], {
-            timer: SETTINGS.beginTimer,
+            timer: SETTINGS.battlePrerollTimer,
             playerWallet: cli1.displayName.length > 0 ? cli1.displayName : cli1.walletId,
             enemyWallet: cli2.walletId
         });
         PackSender.getInstance().gameStart([cli2], {
-            timer: SETTINGS.beginTimer,
+            timer: SETTINGS.battlePrerollTimer,
             playerWallet: cli2.displayName.length > 0 ? cli2.displayName : cli2.walletId,
             enemyWallet: cli1.walletId
         });

@@ -66,8 +66,10 @@ export type ChallengeInfo = {
 }
 
 export type AcceptScreenAction = 'start' | 'accept' | 'update' | 'cancel' | 'closeClick';
+
 export type AcceptScreenData = {
     action: AcceptScreenAction,
+    timer?: number,
     state?: {
         current: number,
         max: number

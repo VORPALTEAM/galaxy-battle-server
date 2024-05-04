@@ -342,9 +342,10 @@ export class Client implements ILogger {
         this.sendPack(PackTitle.claimReward, data);
     }
 
-    sendAcceptScreenStart() {
+    sendAcceptScreenStart(aTimer: number) {
         let data: AcceptScreenData = {
             action: "start",
+            timer: aTimer
         };
         this.sendPack(PackTitle.battleConfirmation, data);
     }
