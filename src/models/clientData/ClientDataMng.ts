@@ -1,5 +1,5 @@
-import { Client } from "../Client";
-import { GameClientData } from "./GameClientData";
+import { Client } from "../Client.js";
+import { GameClientData } from "./GameClientData.js";
 
 export class ClientDataMng {
     private _data: Map<string, GameClientData>;
