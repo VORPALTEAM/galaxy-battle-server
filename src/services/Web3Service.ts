@@ -1,4 +1,4 @@
-import { CheckTelegramAuth } from "src/blockchain";
+import { CheckTelegramAuth } from "src/blockchain/index.js";
 import { ComplexAutData, TelegramAuthData } from "src/blockchain/types.js";
 import Web3 from "web3";
 
