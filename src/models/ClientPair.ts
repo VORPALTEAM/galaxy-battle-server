@@ -33,9 +33,10 @@ export class ClientPair implements ILogger {
     }
 
     private addClient(aClient: Client) {
+        const battleAcceptTimer = 15; // in sec
         this._clients.set(aClient.connectionId, aClient);
         aClient.onAcceptScreenPack.add(this.onAcceptScreenPack, this);
-        aClient.sendAcceptScreenStart();
+        aClient.sendAcceptScreenStart(battleAcceptTimer);
     }
 
     private onAcceptScreenPack(aClient: Client, aData: AcceptScreenData) {

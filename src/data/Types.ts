@@ -50,7 +50,7 @@ export enum PackTitle {
 
 export type ObjectType = 'Star' | 'Planet' | 'Tower' | 'FighterShip' | 'BattleShip' | 'HomingMissile';
 export type AttackType = 'laser' | 'ray';
-export type RaceType = 'Humans' | 'Waters' | 'Insects' | 'Lizards';
+export type ObjectRace = 'Humans' | 'Waters' | 'Insects' | 'Lizards';
 
 export type SearchGameData = {
     isFreeConnect?: boolean,
@@ -66,8 +66,10 @@ export type ChallengeInfo = {
 }
 
 export type AcceptScreenAction = 'start' | 'accept' | 'update' | 'cancel' | 'closeClick';
+
 export type AcceptScreenData = {
     action: AcceptScreenAction,
+    timer?: number,
     state?: {
         current: number,
         max: number
@@ -83,7 +85,10 @@ export type StartGameData = {
 
 export type FieldInitData = {
     fieldParams: any,
-    playerPosition: 'top' | 'bot'
+    playerWalletAddr: string,
+    playerPosition: 'top' | 'bot',
+    playerRace: ObjectRace,
+    enemyRace: ObjectRace,
 }
 
 export type GameCompleteData = {

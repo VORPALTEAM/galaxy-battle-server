@@ -135,50 +135,40 @@ export class Matchmaker implements ILogger {
         const id = aClient.challengeNumber;
         let ch = this._challenges.get(id);
         if (!ch) {
+            this.logDebug(`addChallengeClient: new challenge detected`);
             if (!aClient.isChallengeCreator) {
+                this.logDebug(`addChallengeClient: connect request to challenge num: ${aClient.challengeNumber}`);
                 // message challenge not found
                 aClient.sendChallengeNotFound();
                 return;
             }
             else {
+                this.logDebug(`addChallengeClient: new challenge creator detected`);
                 // create challenge
                 this._challenges.set(id, [aClient]);
             }
         }
         else {
             ch.push(aClient);
-
-            // check challenge clients
-            
-            if (ch.length >= 2) {
-                let client1 = ch[0];
-                let client2 = ch[1];
-                this.removeClient(client2);
-                this.removeClient(client1);
-                this.createPair(client1, client2);
-            }
-
         }
     }
 
     addClient(aClient: Client) {
+
+        // send game searching started
+        aClient.sendStartGameSearch();
 
         if (aClient.isChallengeMode) {
             this.addChallengeClient(aClient);
         }
         else {
             this.logDebug(`addClient...`);
-
             this._clients.set(aClient.connectionId, aClient);
+        }
 
-            // send game searching started
-            aClient.sendStartGameSearch();
-        
-            // check sign of this client
-            if (!aClient.isFreeConnection && !aClient.isSigned && !aClient.isSignPending) {
-                SignService.getInstance().sendRequest(aClient);
-            }
-            
+        // check sign of this client
+        if (!aClient.isFreeConnection && !aClient.isSigned && !aClient.isSignPending) {
+            SignService.getInstance().sendRequest(aClient);
         }
 
     }
@@ -196,11 +186,13 @@ export class Matchmaker implements ILogger {
             }
             else {
                 let ch = this._challenges.get(id);
-                for (let i = ch.length - 1; i >= 0; i--) {
-                    let cli = ch[i];
-                    if (cli.connectionId == aClient.connectionId) {
-                        ch.splice(i, 1);
-                        break;
+                if (ch && ch.length > 0) {
+                    for (let i = ch.length - 1; i >= 0; i--) {
+                        let cli = ch[i];
+                        if (cli.connectionId == aClient.connectionId) {
+                            ch.splice(i, 1);
+                            break;
+                        }
                     }
                 }
             }
@@ -254,6 +246,25 @@ export class Matchmaker implements ILogger {
             // this.createGame(client1, client2);
             this.createPair(client1, client2);
         }
+
+        // check challenge clients
+
+        this._challenges.forEach(ch => {
+
+            if (ch.length >= 2) {
+                const client1 = ch[0];
+                const client2 = ch[1];
+                if (
+                    (client1.isSigned || client1.isFreeConnection) &&
+                    (client2.isSigned || client2.isFreeConnection)
+                ) {
+                    this.removeClient(client2);
+                    this.removeClient(client1);
+                    this.createPair(client1, client2);
+                }
+            }
+            
+        });
 
     }
     

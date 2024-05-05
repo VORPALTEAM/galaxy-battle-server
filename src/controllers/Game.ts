@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData, ObjectRace } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -30,10 +30,11 @@ import { ObjectController } from './ObjectController.js';
 import { GameObjectFactory } from '../factory/GameObjectFactory.js';
 import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { getUserAvailableLaserLevelsWeb2 } from '../blockchain/boxes/boxesweb2.js';
+import { ClientDataMng } from '../models/clientData/ClientDataMng.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
-    beginTimer: 2, // in sec
+    battlePrerollTimer: 2, // in sec
 
     field: {
         size: {
@@ -138,6 +139,8 @@ export class Game implements ILogger {
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
 
+    private _clientDataMng: ClientDataMng;
+
     private _objIdGen: IdGenerator;
     private _objectFactory: GameObjectFactory;
     private _objectController: ObjectController;
@@ -161,6 +164,15 @@ export class Game implements ILogger {
         this._objectFactory = new GameObjectFactory(this._objIdGen);
         this._objectController = new ObjectController(this);
         this._clients = [aClientA, aClientB];
+
+        this._clientDataMng = new ClientDataMng();
+
+        // random races - temporary solution
+        const races: ObjectRace[] = ['Waters', 'Insects'];
+        MyMath.shuffleArray(races);
+        this._clientDataMng.addClient(aClientA).race = races[0];
+        this._clientDataMng.addClient(aClientB).race = races[1];
+
         this._sceneLoaded = [];
         this._expMng = new ExpManager();
         this.initClientListeners();
@@ -770,19 +782,28 @@ export class Game implements ILogger {
 
         const cli1 = this._clients[0];
         const cli2 = this._clients[1];
+        const cli1Data = this._clientDataMng.getClientData(cli1);
+        const cli2Data = this._clientDataMng.getClientData(cli2);
 
         PackSender.getInstance().fieldInit([cli1], {
             fieldParams: SETTINGS.field,
-            playerPosition: 'top'
+            playerWalletAddr: cli1.walletId,
+            playerPosition: 'top',
+            playerRace: cli1Data?.race,
+            enemyRace: cli2Data?.race,
+
         });
         PackSender.getInstance().fieldInit([cli2], {
             fieldParams: SETTINGS.field,
-            playerPosition: 'bot'
+            playerWalletAddr: cli2.walletId,
+            playerPosition: 'bot',
+            playerRace: cli2Data?.race,
+            enemyRace: cli1Data?.race
         });
 
         setTimeout(() => {
             this.init();
-        }, SETTINGS.beginTimer * 1000);
+        }, SETTINGS.battlePrerollTimer * 1000);
 
         this._state = 'init';
     }
@@ -807,12 +828,12 @@ export class Game implements ILogger {
         }
 
         PackSender.getInstance().gameStart([cli1], {
-            timer: SETTINGS.beginTimer,
+            timer: SETTINGS.battlePrerollTimer,
             playerWallet: cli1.displayName.length > 0 ? cli1.displayName : cli1.walletId,
             enemyWallet: cli2.walletId
         });
         PackSender.getInstance().gameStart([cli2], {
-            timer: SETTINGS.beginTimer,
+            timer: SETTINGS.battlePrerollTimer,
             playerWallet: cli2.displayName.length > 0 ? cli2.displayName : cli2.walletId,
             enemyWallet: cli1.walletId
         });
