@@ -812,6 +812,10 @@ export class Game implements ILogger {
 
         this.loadLaserSkins();
 
+        if (!this._clients) {
+            this.logError(`start(): this._clients == null`);
+        }
+
         const cli1 = this._clients[0];
         const cli2 = this._clients[1];
 
