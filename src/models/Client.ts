@@ -5,6 +5,7 @@ import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLase
     RewardType, SkillRequest, SearchGameData, ChallengeInfo,
     SignData,
     PlayerData,
+    EmotionData,
 } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
@@ -45,6 +46,7 @@ export class Client implements ILogger {
      */
     onSceneLoaded = new Signal();
     onSkillRequest = new Signal();
+    onEmotion = new Signal();
     onExitGame = new Signal();
     onDisconnect = new Signal();
     onDebugTest = new Signal();
@@ -124,6 +126,10 @@ export class Client implements ILogger {
 
         this._socket.on(PackTitle.skill, (aData: SkillRequest) => {
             this.onSkillRequest.dispatch(this, aData);
+        });
+
+        this._socket.on(PackTitle.emotion, (aData: EmotionData) => {
+            this.onEmotion.dispatch(this, aData);
         });
 
         this._socket.on(PackTitle.exitGame, () => {

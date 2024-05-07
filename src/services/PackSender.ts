@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData, AttackType, DamageInfo, ExpData, ExplosionType, ExplosionData, SniperData, AcceptScreenData } from "../data/Types.js";
+import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData, AttackType, DamageInfo, ExpData, ExplosionType, ExplosionData, SniperData, AcceptScreenData, EmotionData } from "../data/Types.js";
 import { Client } from "../models/Client.js";
 
 export class PackSender {
@@ -113,6 +113,10 @@ export class PackSender {
 
     sniper(aClients: Client[], aData: SniperData) {
         this.sendData(aClients, PackTitle.sniper, aData);
+    }
+
+    emotion(aClients: Client[], aData: EmotionData) {
+        this.sendData(aClients, PackTitle.emotion, aData);
     }
 
     
