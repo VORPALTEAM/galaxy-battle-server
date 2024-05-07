@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData, ObjectRace } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData, ObjectRace, EmotionData } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -138,9 +138,6 @@ export class Game implements ILogger {
     private _state: GameState = 'none';
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
-
-    // private _clientDataMng: ClientDataMng;
-
     private _objIdGen: IdGenerator;
     private _objectFactory: GameObjectFactory;
     private _objectController: ObjectController;
@@ -164,8 +161,6 @@ export class Game implements ILogger {
         this._objectFactory = new GameObjectFactory(this._objIdGen);
         this._objectController = new ObjectController(this);
         this._clients = [aClientA, aClientB];
-
-        // this._clientDataMng = new ClientDataMng();
 
         // random races - temporary solution
         const races: ObjectRace[] = ['Waters', 'Insects'];
@@ -196,6 +191,7 @@ export class Game implements ILogger {
             client.onDisconnect.add(this.onClientDisconnect, this);
             client.onSkillRequest.add(this.onSkillRequest, this);
             client.onExitGame.add(this.onClientExitGame, this);
+            client.onEmotion.add(this.onClientEmotion, this);
             client.onDebugTest.add(this.onClientDebugTest, this);
         }
     }
@@ -206,6 +202,7 @@ export class Game implements ILogger {
             client.onDisconnect.remove(this.onClientDisconnect, this);
             client.onSkillRequest.remove(this.onSkillRequest, this);
             client.onExitGame.remove(this.onClientExitGame, this);
+            client.onEmotion.remove(this.onClientEmotion, this);
             client.onDebugTest.remove(this.onClientDebugTest, this);
         }
     }
@@ -288,6 +285,11 @@ export class Game implements ILogger {
     private onClientExitGame(aClient: Client) {
         let aWinner = this._clients[0] == aClient ? this._clients[1] : this._clients[0];
         this.completeGame(aWinner);
+    }
+
+    private onClientEmotion(aClient: Client, aEmotionData: EmotionData) {
+        aEmotionData.owner = aClient.walletId;
+        PackSender.getInstance().emotion(this._clients, aEmotionData);
     }
 
     private onClientDebugTest(aClient: Client, aData: DebugTestData) {
