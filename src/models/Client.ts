@@ -3,6 +3,8 @@ import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLaserSkin,
     RewardType, SkillRequest, SearchGameData, ChallengeInfo,
+    SignData,
+    StartPlayerData,
 } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
@@ -14,8 +16,11 @@ export class Client implements ILogger {
     protected _socket: Socket;
     protected _connectionId: string;
     protected _walletId: string;
-    protected _displayName: string;
 
+    // player data
+    protected _displayName: string;
+    protected _starName: string;
+    
     // data
     private _laserSkin: PlanetLaserSkin;
 
@@ -138,7 +143,7 @@ export class Client implements ILogger {
                 this.onSignRecv.addOnce(() => {
                     this.handleClaimRewardRequest(aData);
                 }, this);
-                this.signRequest();
+                this.sendSignRequest();
             }
         });
 
@@ -232,6 +237,10 @@ export class Client implements ILogger {
         return this._displayName;
     }
 
+    protected get starName(): string {
+        return this._starName;
+    }
+
     get isDisconnected() {
         return this._isDisconnected;
     }
@@ -279,27 +288,30 @@ export class Client implements ILogger {
         this._socket.emit(aPackTitle, aData);
     }
 
-    async signRequest() {
-        this.sendPack(PackTitle.sign, {
-            cmd: "request",
-        });
+    async sendSignRequest() {
+        let data: SignData = {
+            fromServer: 'request'
+        }
+        this.sendPack(PackTitle.sign, data);
     }
 
-    signSuccess(aWalletId: string) {
-        this.sendPack(PackTitle.sign, {
-            cmd: "success",
-            walletId: aWalletId,
-        });
+    onSignSuccess(aWalletId: string) {
+        let data: SignData = {
+            fromServer: 'success',
+            walletId: aWalletId
+        }
+        this.sendPack(PackTitle.sign, data);
         this.onSignRecv.dispatch({
-            status: "success",
+            status: 'success'
         });
     }
 
-    signReject(aMsg?: string) {
-        this.sendPack(PackTitle.sign, {
-            cmd: "reject",
-            message: aMsg,
-        });
+    onSignReject(aMsg?: string) {
+        let data: SignData = {
+            fromServer: 'reject',
+            message: aMsg
+        }
+        this.sendPack(PackTitle.sign, data);
         this.onSignRecv.dispatch({
             status: "reject",
         });
@@ -350,6 +362,13 @@ export class Client implements ILogger {
         this.sendPack(PackTitle.battleConfirmation, data);
     }
 
+    sendAcceptScreenLoading() {
+        let data: AcceptScreenData = {
+            action: 'loading'
+        }
+        this.sendPack(PackTitle.battleConfirmation, data);
+    }
+
     sendChallengeNumber(aNum: number) {
         let data: ChallengeInfo = {
             cmd: "number",
@@ -364,4 +383,19 @@ export class Client implements ILogger {
         };
         this.sendPack(PackTitle.challengeInfo, data);
     }
+
+    setPlayerData(aData: {
+        starName?: string
+    }) {
+        if (aData.starName) this._starName = aData.starName;
+    }
+
+    getPlayerData(): StartPlayerData {
+        return {
+            name: this.displayName.length > 0 ? this.displayName : this.walletId,
+            isNick: this.displayName.length > 0,
+            starName: this.starName
+        }
+    }
+
 }

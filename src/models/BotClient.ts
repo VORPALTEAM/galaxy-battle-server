@@ -54,8 +54,17 @@ export class BotClient extends Client {
 
     sendAcceptScreenStart() {
         let data: AcceptScreenData = {
-            action: 'accept',
-            timer: 10
+            action: 'accept'
+        }
+        this.onAcceptScreenPack.dispatch(this, data);
+    }
+
+    sendAcceptScreenLoading() {
+        let data: AcceptScreenData = {
+            action: 'loading',
+            loadingData: {
+                starName: 'botStar'
+            }
         }
         this.onAcceptScreenPack.dispatch(this, data);
     }

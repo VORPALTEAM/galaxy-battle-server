@@ -831,15 +831,17 @@ export class Game implements ILogger {
             }
         }
 
+
+
         PackSender.getInstance().gameStart([cli1], {
-            timer: SETTINGS.battlePrerollTimer,
-            playerWallet: cli1.displayName.length > 0 ? cli1.displayName : cli1.walletId,
-            enemyWallet: cli2.walletId
+            prerollTimerSec: SETTINGS.battlePrerollTimer,
+            playerData: cli1.getPlayerData(),
+            enemyData: cli2.getPlayerData(),
         });
         PackSender.getInstance().gameStart([cli2], {
-            timer: SETTINGS.battlePrerollTimer,
-            playerWallet: cli2.displayName.length > 0 ? cli2.displayName : cli2.walletId,
-            enemyWallet: cli1.walletId
+            prerollTimerSec: SETTINGS.battlePrerollTimer,
+            playerData: cli2.getPlayerData(),
+            enemyData: cli1.getPlayerData()
         });
 
         this._state = 'clientLoading';

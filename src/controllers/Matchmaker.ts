@@ -10,8 +10,6 @@ import { IdGenerator } from "../utils/game/IdGenerator.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
-
-
 export class Matchmaker implements ILogger {
     private _loopInterval: NodeJS.Timeout;
     private _clients: Map<string, Client>;

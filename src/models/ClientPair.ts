@@ -1,21 +1,24 @@
 import { Signal } from "../utils/events/Signal.js";
 import { Client } from "./Client.js";
-import { AcceptScreenData, PackTitle } from "../data/Types.js";
+import { AcceptScreenData } from "../data/Types.js";
 import { PackSender } from "../services/PackSender.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
+import { MyMath } from "src/utils/MyMath.js";
 
 export class ClientPair implements ILogger {
     private _id: number;
     private _clients: Map<string, Client>;
     private _accepts: Map<string, boolean>;
+    private _loaded: Map<string, boolean>;
     onAllReady = new Signal();
     onBreak = new Signal();
-    
+
     constructor(aId: number, aClientA: Client, aClientB: Client) {
         this._id = aId;
         this._clients = new Map();
         this._accepts = new Map();
+        this._loaded = new Map();
         this.addClient(aClientA);
         this.addClient(aClientB);
     }
@@ -48,6 +51,8 @@ export class ClientPair implements ILogger {
         switch (aData.action) {
 
             case 'accept':
+                this.logDebug(`onAcceptScreenPack: accept recieved...`);
+
                 this._accepts.set(aClient.connectionId, true);
                 this._clients.forEach((client) => {
                     let isAccepted = this._accepts.get(client.connectionId) == true;
@@ -62,24 +67,43 @@ export class ClientPair implements ILogger {
                     }
                 });
 
+
                 if (this._accepts.size >= this._clients.size) {
-                    // all accepted
-                    this.onAllReady.dispatch(this);
+                    // send loading state
+                    this._clients.forEach((client) => {
+                        setTimeout(() => {
+                            client.sendAcceptScreenLoading();
+                        }, 1000);
+                    });
                 }
 
                 break;
-            
+
+            case 'loading':
+                this.logDebug(`onAcceptScreenPack: loading recieved...`);
+                this._loaded.set(aClient.connectionId, true);
+                aClient.setPlayerData({
+                    starName: aData.loadingData?.starName
+                });
+                if (this._loaded.size >= this._clients.size) {
+                    // all accepted
+                    this.onAllReady.dispatch(this);
+                }
+                break;
+
             case 'closeClick':
+                this.logDebug(`onAcceptScreenPack: closeClick recieved...`);
+
                 PackSender.getInstance().sendBattleAcceptState(clients, {
                     action: 'cancel'
                 });
                 this.onBreak.dispatch(this);
                 break;
-            
+
             default:
                 this.logWarn(`onInitScreenPack: unknown aData.action:`, aData);
                 break;
-            
+
         }
 
     }
@@ -100,10 +124,13 @@ export class ClientPair implements ILogger {
             this._clients.clear();
             this._clients = null;
             this._accepts.clear();
+            this._accepts = null;
+            this._loaded.clear();
+            this._loaded = null;
             this.onAllReady.removeAll();
             this.onBreak.removeAll();
         } catch (error) {
-            
+
         }
     }
 

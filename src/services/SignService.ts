@@ -1,7 +1,7 @@
 import { PackSender } from "./PackSender.js";
 import { Client } from "../models/Client.js";
 import { Web3Service } from "./Web3Service.js";
-import { PackTitle } from "../data/Types.js";
+import { PackTitle, SignData } from "../data/Types.js";
 
 /**
  * Sign Service for signing clients
@@ -21,28 +21,29 @@ export class SignService {
         return SignService._instance;
     }
 
-    private onSignRecv(aClient: Client, aSignature: string, aDisplayName = '') {
-        const walletId = Web3Service.getInstance().getWalletId(aSignature);
+    private onSignRecv(aClient: Client, aData: SignData) {
+        const displayName = aData.displayName || '';
+        const walletId = Web3Service.getInstance().getWalletId(aData.signature);
 
         // check the player in connections
         this._clients.forEach((client) => {
             if (client.walletId === walletId) {
-                aClient.signReject('Sign failed, client with this key is already online');
+                aClient.onSignReject('Sign failed, client with this key is already online');
                 return;
             }
         });
 
         // update client
-        aClient.sign(walletId, aDisplayName);
-        aClient.signSuccess(walletId);
+        aClient.sign(walletId, displayName);
+        aClient.onSignSuccess(walletId);
     }
 
     addClient(aClient: Client) {
         this._clients.set(aClient.connectionId, aClient);
         const socket = aClient.socket;
         // init listeners
-        socket.on(PackTitle.sign, (aSignature: string, aDisplayName = '') => {
-            this.onSignRecv(aClient, aSignature, aDisplayName);
+        socket.on(PackTitle.sign, (aData: SignData) => {
+            this.onSignRecv(aClient, aData);
         });
     }
 
@@ -51,7 +52,7 @@ export class SignService {
     }
 
     sendRequest(aClient: Client) {
-        aClient.signRequest();
+        aClient.sendSignRequest();
     }
 
 

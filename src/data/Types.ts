@@ -48,6 +48,15 @@ export enum PackTitle {
     
 }
 
+export type SignData = {
+    fromServer?: 'request' | 'reject' | 'success',
+    fromCli?: 'web3' | 'web2',
+    signature?: string,
+    displayName?: string,
+    walletId?: string,
+    message?: string
+}
+
 export type ObjectType = 'Star' | 'Planet' | 'Tower' | 'FighterShip' | 'BattleShip' | 'HomingMissile';
 export type AttackType = 'laser' | 'ray';
 export type ObjectRace = 'Humans' | 'Waters' | 'Insects' | 'Lizards';
@@ -65,7 +74,14 @@ export type ChallengeInfo = {
     challengeNumber?: number
 }
 
-export type AcceptScreenAction = 'start' | 'accept' | 'update' | 'cancel' | 'closeClick';
+export type AcceptScreenAction = 'start' | 'update' | 'accept' | 'connect' | 'loading' | 'cancel' | 'closeClick';
+
+/**
+ * Send to server after accept screen due loading screen
+ */
+export type PlayerLoadingData = {
+    starName: string
+}
 
 export type AcceptScreenData = {
     action: AcceptScreenAction,
@@ -73,14 +89,20 @@ export type AcceptScreenData = {
     state?: {
         current: number,
         max: number
-    }
+    },
+    loadingData?: PlayerLoadingData
 }
 
+export type StartPlayerData = {
+    name: string,
+    isNick: boolean,
+    starName: string
+}
 export type StartGameData = {
     cmd?: 'start',
-    timer: number,
-    playerWallet: string,
-    enemyWallet: string
+    prerollTimerSec: number,
+    playerData: StartPlayerData,
+    enemyData: StartPlayerData
 }
 
 export type FieldInitData = {
