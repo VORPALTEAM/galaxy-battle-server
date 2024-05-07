@@ -12,3 +12,21 @@ export interface ComplexAutData {
   signature?: string;
   telegramData?: TelegramAuthData
 }
+
+export interface DuelInfo {
+  duel_id: string;
+  login1: string;
+  login2?: string;
+  creation: number;
+  isfinished?: string;
+  isexpired?: string;
+  winner?: string;
+}
+
+export type DuelInfoResponce = {
+  data: DuelInfo | null
+}
+
+export type OpponentResponce = { 
+  opponent: string | null
+}
