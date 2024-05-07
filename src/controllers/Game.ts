@@ -139,7 +139,7 @@ export class Game implements ILogger {
     private _id: number; // game id
     private _loopInterval: NodeJS.Timeout;
 
-    private _clientDataMng: ClientDataMng;
+    // private _clientDataMng: ClientDataMng;
 
     private _objIdGen: IdGenerator;
     private _objectFactory: GameObjectFactory;
@@ -165,13 +165,14 @@ export class Game implements ILogger {
         this._objectController = new ObjectController(this);
         this._clients = [aClientA, aClientB];
 
-        this._clientDataMng = new ClientDataMng();
+        // this._clientDataMng = new ClientDataMng();
 
         // random races - temporary solution
         const races: ObjectRace[] = ['Waters', 'Insects'];
         MyMath.shuffleArray(races);
-        this._clientDataMng.addClient(aClientA).race = races[0];
-        this._clientDataMng.addClient(aClientB).race = races[1];
+        // this._clientDataMng.addClient(aClientA).race = races[0];
+        aClientA.gameData.race = races[0];
+        aClientB.gameData.race = races[1];
 
         this._sceneLoaded = [];
         this._expMng = new ExpManager();
@@ -782,8 +783,8 @@ export class Game implements ILogger {
 
         const cli1 = this._clients[0];
         const cli2 = this._clients[1];
-        const cli1Data = this._clientDataMng.getClientData(cli1);
-        const cli2Data = this._clientDataMng.getClientData(cli2);
+        const cli1Data = cli1.gameData;
+        const cli2Data = cli2.gameData;
 
         PackSender.getInstance().fieldInit([cli1], {
             fieldParams: SETTINGS.field,

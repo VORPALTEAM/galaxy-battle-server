@@ -4,12 +4,13 @@ import { LogMng } from "../utils/LogMng.js";
 import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLaserSkin,
     RewardType, SkillRequest, SearchGameData, ChallengeInfo,
     SignData,
-    StartPlayerData,
+    PlayerData,
 } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 import { WINSTREAKS } from "../database/DB.js";
 import { MyMath } from "../utils/MyMath.js";
+import { GameClientData } from "./clientData/GameClientData.js";
 
 export class Client implements ILogger {
     protected _className: string;
@@ -18,8 +19,7 @@ export class Client implements ILogger {
     protected _walletId: string;
 
     // player data
-    protected _displayName: string;
-    protected _starName: string;
+    private _gameData: GameClientData;
     
     // data
     private _laserSkin: PlanetLaserSkin;
@@ -55,6 +55,7 @@ export class Client implements ILogger {
         this._className = "Client";
         this._socket = aSocket;
         this._laserSkin = "blue";
+        this._gameData = new GameClientData();
         this.setIdBySocket();
         this.initListeners();
     }
@@ -233,12 +234,12 @@ export class Client implements ILogger {
         return this._walletId;
     }
 
-    get displayName(): string {
-        return this._displayName;
+    get gameData(): GameClientData {
+        return this._gameData;
     }
 
     protected get starName(): string {
-        return this._starName;
+        return this._gameData.starName;
     }
 
     get isDisconnected() {
@@ -278,7 +279,7 @@ export class Client implements ILogger {
 
     sign(aPublicKey: string, aDisplayName = "") {
         this._walletId = aPublicKey;
-        this._displayName = aDisplayName;
+        this._gameData.displayName = aDisplayName;
         this._isSigned = true;
         this.logDebug(`signed...`);
     }
@@ -387,14 +388,15 @@ export class Client implements ILogger {
     setPlayerData(aData: {
         starName?: string
     }) {
-        if (aData.starName) this._starName = aData.starName;
+        if (aData.starName) this._gameData.starName = aData.starName;
     }
 
-    getPlayerData(): StartPlayerData {
+    getPlayerData(): PlayerData {
         return {
-            name: this.displayName.length > 0 ? this.displayName : this.walletId,
-            isNick: this.displayName.length > 0,
-            starName: this.starName
+            name: this._gameData.displayName.length > 0 ? this._gameData.displayName : this.walletId,
+            isNick: this._gameData.displayName.length > 0,
+            starName: this.starName,
+            race: this._gameData.race
         }
     }
 

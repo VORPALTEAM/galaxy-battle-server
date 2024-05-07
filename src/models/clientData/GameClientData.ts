@@ -2,6 +2,8 @@ import { ObjectRace } from "../../data/Types";
 
 export class GameClientData {
     private _race: ObjectRace;
+    private _displayName: string;
+    private _starName: string;
     
     constructor() {}
 
@@ -12,5 +14,19 @@ export class GameClientData {
         this._race = value;
     }
 
+    public get displayName(): string {
+        return this._displayName;
+    }
+    public set displayName(value: string) {
+        this._displayName = value;
+    }
+
+    public get starName(): string {
+        return this._starName;
+    }
+    public set starName(value: string) {
+        this._starName = value;
+    }
+    
     
 }
