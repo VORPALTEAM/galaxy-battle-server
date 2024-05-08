@@ -10,5 +10,23 @@ export interface TelegramAuthData {
 export interface ComplexAutData {
   authType: "telegram" | "web3";
   signature?: string;
-  telegramData?: TelegramAuthData
+  telegramData?: TelegramAuthData;
 }
+
+export interface DuelInfo {
+  duel_id: string;
+  login1: string;
+  login2?: string;
+  creation: number;
+  isfinished?: string;
+  isexpired?: string;
+  winner?: string;
+}
+
+export type DuelInfoResponce = {
+  data: DuelInfo | null;
+};
+
+export type OpponentResponce = {
+  opponent: string | null;
+};
