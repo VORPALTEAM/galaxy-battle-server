@@ -38,6 +38,7 @@ export class DuelService implements ILogger {
         
         switch (aData.cmd) {
             case 'check':
+                this.logDebug(`onPackRecv(): check pack: call GetUserLastDuel() for userNick: ${aData.userNick}`);
                 GetUserLastDuel(aData.userNick).then((info: BC_DuelInfo) => {
                     this.logDebug(`GetUserLastDuel info: `, info);
                 }, (reason) => {
