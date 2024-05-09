@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLaserSkin,
-    RewardType, SkillRequest, SearchGameData, ChallengeInfo,
+    RewardType, SkillRequest, SearchGameData, DuelInfo,
     SignData,
     PlayerData,
     EmotionData,
@@ -377,18 +377,18 @@ export class Client implements ILogger {
     }
 
     sendChallengeNumber(aNum: number) {
-        let data: ChallengeInfo = {
+        let data: DuelInfo = {
             cmd: "number",
             challengeNumber: aNum,
         };
-        this.sendPack(PackTitle.challengeInfo, data);
+        this.sendPack(PackTitle.duel, data);
     }
 
     sendChallengeNotFound() {
-        let data: ChallengeInfo = {
+        let data: DuelInfo = {
             cmd: "notFound",
         };
-        this.sendPack(PackTitle.challengeInfo, data);
+        this.sendPack(PackTitle.duel, data);
     }
 
     setPlayerData(aData: {

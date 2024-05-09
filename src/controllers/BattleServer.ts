@@ -4,6 +4,7 @@ import { LogMng } from "../utils/LogMng.js";
 import { Matchmaker } from "./Matchmaker.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { SignService } from "../services/SignService.js";
+import { DuelService } from "src/services/DuelService.js";
 
 export class BattleServer implements ILogger {
     protected _className = 'BattleServer';
@@ -46,6 +47,7 @@ export class BattleServer implements ILogger {
 
         // add to SignService
         SignService.getInstance().addClient(client);
+        DuelService.getInstance().addClient(client);
 
         client.onStartSearchGame.add(this.onStartSearchGame, this);
         client.onStopSearchGame.add(this.onStopSearchGame, this);

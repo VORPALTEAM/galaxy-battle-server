@@ -48,6 +48,8 @@ export class SignService {
     }
 
     removeClient(aClientId: string) {
+        let client = this._clients.get(aClientId);
+        client.socket?.removeAllListeners(PackTitle.sign);
         this._clients.delete(aClientId);
     }
 

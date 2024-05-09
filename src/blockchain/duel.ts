@@ -12,7 +12,7 @@ import {
 } from "./network.js";
 import {
   ComplexAutData,
-  DuelInfo,
+  BC_DuelInfo,
   DuelInfoResponce,
   OpponentResponce,
   TelegramAuthData,
@@ -23,7 +23,7 @@ const web3 = new Web3(networkParams.rpcUrl);
 const journalContract = new web3.eth.Contract(JournalABI, journal);
 const tokenContract = new web3.eth.Contract(ERC20ABI, token);
 
-export async function GetDuelData(duelId: string): Promise<DuelInfo | null> {
+export async function GetDuelData(duelId: string): Promise<BC_DuelInfo | null> {
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`/api/dueldata/${duelId}`);
     fetch(url)
@@ -38,7 +38,7 @@ export async function GetDuelData(duelId: string): Promise<DuelInfo | null> {
   });
 }
 
-export async function GetUserLastDuel(login: string): Promise<DuelInfo | null> {
+export async function GetUserLastDuel(login: string): Promise<BC_DuelInfo | null> {
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`/api/dueldatabylogin/${login}`);
     fetch(url)

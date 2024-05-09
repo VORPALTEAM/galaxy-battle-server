@@ -17,7 +17,7 @@ export enum PackTitle {
     startSearchGame = 'startSearchGame', // request
     stopSearchGame = 'stopSearchGame', // request
     gameSearching = 'gameSearching', // status, update, info
-    challengeInfo = 'challengeInfo',
+    duel = 'duel',
     battleConfirmation = 'battleConfirmation',
     battleSceneLoaded = 'battleSceneLoaded',
     gameStart = 'gameStart',
@@ -71,8 +71,9 @@ export type SearchGameData = {
     challengeNumber?: number,
 }
 
-export type ChallengeInfo = {
-    cmd: 'number' | 'notFound',
+export type DuelInfo = {
+    cmd: 'check' | 'number' | 'notFound',
+    userNick?: string,
     challengeNumber?: number
 }
 

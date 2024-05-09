@@ -13,7 +13,7 @@ export interface ComplexAutData {
   telegramData?: TelegramAuthData;
 }
 
-export interface DuelInfo {
+export interface BC_DuelInfo {
   duel_id: string;
   login1: string;
   login2?: string;
@@ -24,7 +24,7 @@ export interface DuelInfo {
 }
 
 export type DuelInfoResponce = {
-  data: DuelInfo | null;
+  data: BC_DuelInfo | null;
 };
 
 export type OpponentResponce = {
