@@ -283,11 +283,12 @@ export class Client implements ILogger {
         this._laserSkin = value;
     }
 
-    sign(aPublicKey: string, aDisplayName = "") {
-        this._walletId = aPublicKey;
+    sign(aWalletId: string, aDisplayName = "") {
+        this.logDebug(`sign: walletId = ${aWalletId}; displayName = ${aDisplayName}`);
+        this._walletId = aWalletId;
         this._gameData.displayName = aDisplayName;
         this._isSigned = true;
-        this.logDebug(`signed...`);
+        // this.logDebug(`signed...`);
     }
 
     sendPack(aPackTitle: PackTitle, aData: any) {

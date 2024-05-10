@@ -202,34 +202,12 @@ export class Matchmaker implements ILogger {
             let clients = aData.clients;
             for (let i = 0; i < clients.length; i++) {
                 const cli = clients[i];
-                // if (cli.connectionId == aClient.connectionId) {
-                //     PackSender.getInstance().sendDuelStopped
-                // }
+                if (cli.connectionId == aClient.connectionId) {
+                    // PackSender.getInstance().sendDuelStopped
+                    this._duels.delete(key);
+                }
             }
-
-            // if (key == )
-            
         });
-        // if (aClient.isDuelMode) {
-            // const id = aClient.duelId;
-            // if (aClient.isDuelCreator) {
-            //     // remove challenge record
-            //     this._duels.delete(id);
-            //     return;
-            // }
-            // else {
-            //     let ch = this._duels.get(id);
-            //     if (ch && ch.length > 0) {
-            //         for (let i = ch.length - 1; i >= 0; i--) {
-            //             let cli = ch[i];
-            //             if (cli.connectionId == aClient.connectionId) {
-            //                 ch.splice(i, 1);
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // }
-        // }
 
     }
 

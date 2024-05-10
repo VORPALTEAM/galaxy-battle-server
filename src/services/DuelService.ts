@@ -36,12 +36,26 @@ export class DuelService implements ILogger {
         return DuelService._instance;
     }
 
+    // private getCurrentDuelForNick(aUserNick: string):  {
+        
+    // }
+
     private onPackRecv(aClient: Client, aData: DuelInfo) {
         
         switch (aData.cmd) {
             case 'check':
                 this.logDebug(`onPackRecv(): check pack: call GetUserLastDuel() for userNick: ${aData.userNick}`);
+
+                // this.getCurrentDuelForNick(aData.userNick)
+
                 GetUserLastDuel(aData.userNick).then((aInfo: BC_DuelInfo) => {
+                    
+                    if (!aInfo || !aInfo.duel_id) {
+                        this.logDebug(`duel not found...`);
+                        aClient.sendDuelNotFound();    
+                        return;
+                    }
+
                     this.logDebug(`GetUserLastDuel info: `, aInfo);
 
                     let enemyNick = '';
