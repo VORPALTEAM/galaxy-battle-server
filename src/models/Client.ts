@@ -32,9 +32,9 @@ export class Client implements ILogger {
     private _isWithBot = false;
     protected _isBot = false;
     protected _isFreeConnection = false;
-    private _isChallengeMode = false;
-    private _challengeNumber = -1;
-    private _isChallengeCreator = false;
+    // private _isDuelMode = false;
+    // private _duelId = -1;
+    private _isDuelCreator = false;
 
     onSignRecv = new Signal();
     onStartSearchGame = new Signal();
@@ -79,7 +79,7 @@ export class Client implements ILogger {
     protected initListeners() {
         this._socket.on(PackTitle.startSearchGame, (aData?: SearchGameData) => {
             this._isWithBot = aData?.withBot;
-            this._isChallengeMode = aData?.isChallenge;
+            // this._isDuelMode = aData?.isChallenge;
             this._isFreeConnection = aData?.isFreeConnect;
             if (this._isFreeConnection) {
                 this._walletId = "0x0";
@@ -90,26 +90,26 @@ export class Client implements ILogger {
                 this.logDebug(`search game request...`);
             }
 
-            if (this._isChallengeMode) {
-                switch (aData.challengeCmd) {
-                    case "create":
-                        this.logDebug(`challenge create game request...`);
-                        // this.onCreateChallengeGame.dispatch(this);
-                        this._isChallengeCreator = true;
-                        this._challengeNumber = MyMath.randomIntInRange(
-                            1,
-                            Number.MAX_SAFE_INTEGER
-                        );
-                        // send code to client
-                        this.sendChallengeNumber(this._challengeNumber);
-                        break;
-                    case "connect":
-                        this.logDebug(`challenge connect game request...`);
-                        this._challengeNumber = aData.challengeNumber;
-                        // this.onConnectChallengeGame.dispatch(this);
-                        break;
-                }
-            }
+            // if (this._isDuelMode) {
+            //     switch (aData.duelCmd) {
+            //         case "create":
+            //             this.logDebug(`challenge create game request...`);
+            //             // this.onCreateChallengeGame.dispatch(this);
+            //             // this._isDuelCreator = true;
+            //             // this._duelId = MyMath.randomIntInRange(
+            //             //     1,
+            //             //     Number.MAX_SAFE_INTEGER
+            //             // );
+            //             // send code to client
+            //             // this.sendDuelNumber(String(this._duelId));
+            //             break;
+            //         case "connect":
+            //             this.logDebug(`challenge connect game request...`);
+            //             // this._duelId = aData.duelNumber;
+            //             // this.onConnectChallengeGame.dispatch(this);
+            //             break;
+            //     }
+            // }
 
             this.onStartSearchGame.dispatch(this);
         });
@@ -252,16 +252,16 @@ export class Client implements ILogger {
         return this._isDisconnected;
     }
 
-    get isChallengeMode() {
-        return this._isChallengeMode;
-    }
+    // get isDuelMode() {
+    //     return this._isDuelMode;
+    // }
 
-    get challengeNumber() {
-        return this._challengeNumber;
-    }
+    // get duelId() {
+    //     return this._duelId;
+    // }
 
-    get isChallengeCreator() {
-        return this._isChallengeCreator;
+    get isDuelCreator() {
+        return this._isDuelCreator;
     }
 
     get isWithBot() {
@@ -376,17 +376,26 @@ export class Client implements ILogger {
         this.sendPack(PackTitle.battleConfirmation, data);
     }
 
-    sendChallengeNumber(aNum: number) {
+    // sendDuelNumber(aNum: number) {
+    //     let data: DuelInfo = {
+    //         cmd: 'number',
+    //         challengeNumber: aNum,
+    //     };
+    //     this.sendPack(PackTitle.duel, data);
+    // }
+
+    sendDuelFound(aNumber: string, aEnemyNick: string) {
         let data: DuelInfo = {
-            cmd: "number",
-            challengeNumber: aNum,
+            cmd: 'found',
+            duelId: aNumber,
+            enemyNick: aEnemyNick
         };
         this.sendPack(PackTitle.duel, data);
     }
 
-    sendChallengeNotFound() {
+    sendDuelNotFound() {
         let data: DuelInfo = {
-            cmd: "notFound",
+            cmd: 'notFound',
         };
         this.sendPack(PackTitle.duel, data);
     }
@@ -399,8 +408,8 @@ export class Client implements ILogger {
 
     getPlayerData(): PlayerData {
         return {
-            name: this._gameData.displayName.length > 0 ? this._gameData.displayName : this.walletId,
-            isNick: this._gameData.displayName.length > 0,
+            name: this._gameData.displayName?.length > 0 ? this._gameData.displayName : this.walletId,
+            isNick: this._gameData.displayName?.length > 0,
             starName: this.starName,
             race: this._gameData.race
         }

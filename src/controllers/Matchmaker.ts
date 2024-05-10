@@ -7,6 +7,8 @@ import { Config } from "../data/Config.js";
 import { BotClient } from "../models/BotClient.js";
 import { ClientPair } from "../models/ClientPair.js";
 import { IdGenerator } from "../utils/game/IdGenerator.js";
+import { BC_DuelInfo } from "src/blockchain/types.js";
+import { PackSender } from "src/services/PackSender.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
@@ -19,7 +21,7 @@ export class Matchmaker implements ILogger {
     private _gameIdGen: IdGenerator;
     private _pairIdGen: IdGenerator;
 
-    private _challenges: Map<number, Client[]>;
+    private _duels: Map<string, Client[]>;
 
 
     constructor() {
@@ -28,7 +30,7 @@ export class Matchmaker implements ILogger {
         this._clients = new Map();
         this._pairs = new Map();
         this._games = new Map();
-        this._challenges = new Map();
+        this._duels = new Map();
         this.startLoop();
 
         // tests
@@ -127,42 +129,18 @@ export class Matchmaker implements ILogger {
         }
     }
 
-    private addChallengeClient(aClient: Client) {
-        this.logDebug(`addChallengeClient...`);
-
-        const id = aClient.challengeNumber;
-        let ch = this._challenges.get(id);
-        if (!ch) {
-            this.logDebug(`addChallengeClient: new challenge detected`);
-            if (!aClient.isChallengeCreator) {
-                this.logDebug(`addChallengeClient: connect request to challenge num: ${aClient.challengeNumber}`);
-                // message challenge not found
-                aClient.sendChallengeNotFound();
-                return;
-            }
-            else {
-                this.logDebug(`addChallengeClient: new challenge creator detected`);
-                // create challenge
-                this._challenges.set(id, [aClient]);
-            }
-        }
-        else {
-            ch.push(aClient);
-        }
-    }
-
     addClient(aClient: Client) {
 
         // send game searching started
         aClient.sendStartGameSearch();
 
-        if (aClient.isChallengeMode) {
-            this.addChallengeClient(aClient);
-        }
-        else {
+        // if (aClient.isDuelMode) {
+            // this.addDuelClient(aClient);
+        // }
+        // else {
             this.logDebug(`addClient...`);
             this._clients.set(aClient.connectionId, aClient);
-        }
+        // }
 
         // check sign of this client
         if (!aClient.isFreeConnection && !aClient.isSigned && !aClient.isSignPending) {
@@ -171,30 +149,72 @@ export class Matchmaker implements ILogger {
 
     }
 
-    removeClient(aClient: Client) {
-        aClient.sendStopGameSearch();
-        this._clients.delete(aClient.connectionId);
-        // check challenges
-        if (aClient.isChallengeMode) {
-            const id = aClient.challengeNumber;
-            if (aClient.isChallengeCreator) {
-                // remove challenge record
-                this._challenges.delete(id);
+    addDuelClient(aClient: Client, aInfo: BC_DuelInfo) {
+        this.logDebug(`addDuelClient...`);
+        
+        aClient.sendStartGameSearch();
+
+        const id = aInfo.duel_id;
+        let ch = this._duels.get(id);
+        if (!ch) {
+            this.logDebug(`addDuelClient: new challenge detected`);
+            if (!aClient.isDuelCreator) {
+                this.logDebug(`addDuelClient: connect request to challenge num: ${id}`);
+                // message challenge not found
+                aClient.sendDuelNotFound();
                 return;
             }
             else {
-                let ch = this._challenges.get(id);
-                if (ch && ch.length > 0) {
-                    for (let i = ch.length - 1; i >= 0; i--) {
-                        let cli = ch[i];
-                        if (cli.connectionId == aClient.connectionId) {
-                            ch.splice(i, 1);
-                            break;
-                        }
-                    }
-                }
+                this.logDebug(`addDuelClient: new challenge creator detected`);
+                // create challenge
+                this._duels.set(id, [aClient]);
             }
         }
+        else {
+            ch.push(aClient);
+        }
+
+    }
+
+    removeClient(aClient: Client) {
+        aClient.sendStopGameSearch();
+        this._clients.delete(aClient.connectionId);
+
+        // TODO: check it and test
+        // check challenges
+        this._duels.forEach((clients, key: string) => {
+
+            for (let i = 0; i < clients.length; i++) {
+                const cli = clients[i];
+                // if (cli.connectionId == aClient.connectionId) {
+                //     PackSender.getInstance().sendDuelStopped
+                // }
+            }
+
+            // if (key == )
+            
+        });
+        // if (aClient.isDuelMode) {
+            // const id = aClient.duelId;
+            // if (aClient.isDuelCreator) {
+            //     // remove challenge record
+            //     this._duels.delete(id);
+            //     return;
+            // }
+            // else {
+            //     let ch = this._duels.get(id);
+            //     if (ch && ch.length > 0) {
+            //         for (let i = ch.length - 1; i >= 0; i--) {
+            //             let cli = ch[i];
+            //             if (cli.connectionId == aClient.connectionId) {
+            //                 ch.splice(i, 1);
+            //                 break;
+            //             }
+            //         }
+            //     }
+            // }
+        // }
+
     }
 
     onClientDisconnected(aClient: Client) {
@@ -247,7 +267,7 @@ export class Matchmaker implements ILogger {
 
         // check challenge clients
 
-        this._challenges.forEach(ch => {
+        this._duels.forEach(ch => {
 
             if (ch.length >= 2) {
                 const client1 = ch[0];

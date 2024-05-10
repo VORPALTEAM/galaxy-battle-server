@@ -4,6 +4,7 @@ import { GetUserLastDuel } from "src/blockchain/duel.js";
 import { BC_DuelInfo } from "src/blockchain/types.js";
 import { ILogger } from "src/interfaces/ILogger.js";
 import { LogMng } from "src/utils/LogMng.js";
+import { Signal } from "src/utils/events/Signal.js";
 
 /**
  * Duel Service for checking duels
@@ -13,6 +14,7 @@ export class DuelService implements ILogger {
     private static _instance: DuelService;
     private _className = 'DuelService';
     private _clients: Map<string, Client>;
+    onDuelFound = new Signal();
 
     private constructor() {
         if (DuelService._instance) throw new Error("Don't use SignService.constructor(), it's SINGLETON, use getInstance() method");
@@ -39,10 +41,19 @@ export class DuelService implements ILogger {
         switch (aData.cmd) {
             case 'check':
                 this.logDebug(`onPackRecv(): check pack: call GetUserLastDuel() for userNick: ${aData.userNick}`);
-                GetUserLastDuel(aData.userNick).then((info: BC_DuelInfo) => {
-                    this.logDebug(`GetUserLastDuel info: `, info);
+                GetUserLastDuel(aData.userNick).then((aInfo: BC_DuelInfo) => {
+                    this.logDebug(`GetUserLastDuel info: `, aInfo);
+
+                    let enemyNick = '';
+                    if (aClient.getPlayerData().name) {
+                        enemyNick = aClient.getPlayerData().name == aInfo.login1 ? aInfo.login2 : aInfo.login1;
+                    }
+                    
+                    aClient.sendDuelFound(aInfo.duel_id, enemyNick);
+                    this.onDuelFound.dispatch(aClient, aInfo);
                 }, (reason) => {
                     this.logDebug(`GetUserLastDuel Reject: `, reason);
+                    aClient.sendDuelNotFound();
                 })
                 break;
         
