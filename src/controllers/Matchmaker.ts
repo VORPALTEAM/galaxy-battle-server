@@ -7,8 +7,7 @@ import { Config } from "../data/Config.js";
 import { BotClient } from "../models/BotClient.js";
 import { ClientPair } from "../models/ClientPair.js";
 import { IdGenerator } from "../utils/game/IdGenerator.js";
-import { BC_DuelInfo } from "src/blockchain/types.js";
-import { PackSender } from "src/services/PackSender.js";
+import { BC_DuelInfo } from "../blockchain/types.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 

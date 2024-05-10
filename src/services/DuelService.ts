@@ -1,10 +1,10 @@
 import { Client } from "../models/Client.js";
 import { DuelInfo, PackTitle } from "../data/Types.js";
-import { GetUserLastDuel } from "src/blockchain/duel.js";
-import { BC_DuelInfo } from "src/blockchain/types.js";
-import { ILogger } from "src/interfaces/ILogger.js";
-import { LogMng } from "src/utils/LogMng.js";
-import { Signal } from "src/utils/events/Signal.js";
+import { GetUserLastDuel } from "../blockchain/duel.js";
+import { BC_DuelInfo } from "../blockchain/types.js";
+import { ILogger } from "../interfaces/ILogger.js";
+import { LogMng } from "../utils/LogMng.js";
+import { Signal } from "../utils/events/Signal.js";
 
 /**
  * Duel Service for checking duels

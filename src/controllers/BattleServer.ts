@@ -4,8 +4,8 @@ import { LogMng } from "../utils/LogMng.js";
 import { Matchmaker } from "./Matchmaker.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { SignService } from "../services/SignService.js";
-import { DuelService } from "src/services/DuelService.js";
-import { BC_DuelInfo } from "src/blockchain/types.js";
+import { DuelService } from "../services/DuelService.js";
+import { BC_DuelInfo } from "../blockchain/types.js";
 
 export class BattleServer implements ILogger {
     protected _className = 'BattleServer';
