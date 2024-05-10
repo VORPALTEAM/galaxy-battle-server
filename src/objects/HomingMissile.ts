@@ -94,16 +94,16 @@ export class HomingMissile extends GameObject {
             );
 
             if (withLog) {
-                this.logDebug(`missile data:`, {
-                    testAn1: MyMath.toDeg(MyMath.angleBetweenVectors({ x: 1, y: 0 }, { x: 0, y: 1 })),
-                    testAn2: MyMath.toDeg(MyMath.angleBetweenVectors({ x: 1, y: 0 }, { x: 0, y: -1 })),
-                    pos: pos,
-                    dir: dir,
-                    targetPos: targetPos,
-                    currAngleY: MyMath.toDeg(this._mesh.rotation.y),
-                    targetAngle: MyMath.toDeg(targetAngle),
-                    angleTo: MyMath.toDeg(angle)
-                });
+                // this.logDebug(`missile data:`, {
+                //     testAn1: MyMath.toDeg(MyMath.angleBetweenVectors({ x: 1, y: 0 }, { x: 0, y: 1 })),
+                //     testAn2: MyMath.toDeg(MyMath.angleBetweenVectors({ x: 1, y: 0 }, { x: 0, y: -1 })),
+                //     pos: pos,
+                //     dir: dir,
+                //     targetPos: targetPos,
+                //     currAngleY: MyMath.toDeg(this._mesh.rotation.y),
+                //     targetAngle: MyMath.toDeg(targetAngle),
+                //     angleTo: MyMath.toDeg(angle)
+                // });
             }
 
             const prevQuat = this._mesh.quaternion.clone();

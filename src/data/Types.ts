@@ -119,7 +119,7 @@ export type FieldInitData = {
 }
 
 export type GameCompleteData = {
-    status: 'win' | 'loss',
+    status: 'win' | 'loss' | 'duelEnemyDisconnected' | 'duelReward',
     showBoxClaim?: boolean,
     boxLevel?: number
 }
