@@ -68,7 +68,7 @@ export async function GetOpponent(login: string): Promise<string | null> {
   });
 }
 
-export async function FinishDuel(duelId: string, winner: string) {
+export async function FinishDuel(duelId: string, winner: string = "") {
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`api/finishduel`);
     fetch(url, {
@@ -90,3 +90,64 @@ export async function FinishDuel(duelId: string, winner: string) {
     });
   });
 }
+
+export function DuelPairRewardCondition (part1: string, part2: string): Promise<Boolean> {
+  return new Promise(async (resolve, reject) => {
+    const url = fastServerUrl.concat(`api/duelrewardcondition`);
+    fetch(url, {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        login1: part1,
+        login2: part2
+      }),
+    }).then((res) => {
+      if (res.status !== 200) {
+        reject(`Failed to execute, ${res.text()}`);
+      }
+      return res.json();
+    }).then((res: { reward: Boolean}) => {
+      resolve(res.reward);
+      return;
+    });
+  })
+}
+
+export async function GetOnlineCount (): Promise<number> {
+  const url = fastServerUrl.concat(`/api/onlinecount`);
+  return new Promise(async (resolve, reject) => {
+    fetch(url).then(res => {
+      if (res.status !== 200) reject("Invalid responce");
+      return res.json()
+    }).then((res: {count: number}) => {
+      resolve(res.count);
+      return;
+    })
+  })
+}
+
+export async function SetOnlineCount (count: Number): Promise<Boolean> {
+  const url = fastServerUrl.concat(`/api/updateonlinecount`);
+  return new Promise(async (resolve, reject) => {
+    fetch(url, {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        signature: GetSignedAuthMessage(),
+        count
+      }),
+    }).then((res) => {
+      if (res.status !== 200) {
+        reject(`Failed to execute, ${res.text()}`);
+      }
+      resolve(true);
+      return res.json();
+    });
+  })
+
+}
+
