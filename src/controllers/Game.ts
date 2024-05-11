@@ -333,13 +333,18 @@ export class Game implements ILogger {
 
         this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
 
+        let isPlayWithBot = false;
+
         // clear winstreak for other clients
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
             if (client.connectionId != aWinner.connectionId) {
                 WINSTREAKS[client.walletId] = 0;
             }
+            if (client.isBot) isPlayWithBot = true;
         }
+
+        this.logDebug(`completeGame: isPlayWithBot: (${isPlayWithBot})`);
 
         let isWinStreak = false;
         if (!aWinner.isBot && aWinner.isSigned) {
@@ -357,8 +362,9 @@ export class Game implements ILogger {
                 if (client.connectionId == aWinner.connectionId) {
                     data = {
                         status: 'win',
-                        showBoxClaim: isWinStreak,
-                        boxLevel: 1
+                        showBoxClaim: isPlayWithBot ? false : isWinStreak,
+                        boxLevel: isPlayWithBot ? null : 1,
+                        hideClaimBtn: isPlayWithBot
                     };
                 }
                 else {
