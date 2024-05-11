@@ -54,7 +54,7 @@ export type SignData = {
     fromServer?: 'request' | 'reject' | 'success',
     fromCli?: 'web3' | 'web2',
     signature?: string,
-    displayName?: string,
+    tgNick?: string,
     walletId?: string,
     message?: string
 }
