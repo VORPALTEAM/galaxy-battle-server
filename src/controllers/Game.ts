@@ -32,7 +32,7 @@ import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { getUserAvailableLaserLevelsWeb2 } from '../blockchain/boxes/boxesweb2.js';
 import { ClientDataMng } from '../models/clientData/ClientDataMng.js';
 import { BC_DuelInfo } from '../blockchain/types.js';
-import { DuelPairRewardCondition } from '../blockchain/duel.js';
+import { DuelPairRewardCondition, FinishDuel } from '../blockchain/duel.js';
 import { CreateBoxWeb2 } from '../blockchain/functions.js';
 
 const SETTINGS = {
@@ -355,7 +355,14 @@ export class Game implements ILogger {
             isWinStreak = ws + 1 >= 3;
         }
 
+        if (this.isDuel()) {
+            if (!aDisconnect) {
+                FinishDuel(this._duelData.duel_id);
+            }
+        }
+
         for (let i = 0; i < this._clients.length; i++) {
+
             const client = this._clients[i];
             let data: GameCompleteData;
             if (aWinner) {
@@ -401,6 +408,7 @@ export class Game implements ILogger {
 
             PackSender.getInstance().gameComplete(client, data);
         }
+
         this.onGameComplete.dispatch(this);
     }
 
