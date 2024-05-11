@@ -75,8 +75,9 @@ export class DuelService implements ILogger {
             
             case 'cancel': {
                 let userNick = aData.userNick.toLowerCase();
-                this.logDebug(`onPackRecv(): check pack: call GetUserLastDuel() for userNick: ${userNick}`);
+                this.logDebug(`onPackRecv(): cancel: call GetUserLastDuel() for userNick: ${userNick}`);
                 GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
+                    this.logDebug(`onPackRecv(): cancel: call FinishDuel for duel: ${aInfo}`);
                     FinishDuel(aInfo.duel_id);
                 }, (reason) => {
                     this.logDebug(`GetUserLastDuel Reject: `, reason);

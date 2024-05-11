@@ -356,9 +356,7 @@ export class Game implements ILogger {
         }
 
         if (this.isDuel()) {
-            if (!aDisconnect) {
-                FinishDuel(this._duelData.duel_id);
-            }
+            FinishDuel(this._duelData.duel_id);
         }
 
         for (let i = 0; i < this._clients.length; i++) {
