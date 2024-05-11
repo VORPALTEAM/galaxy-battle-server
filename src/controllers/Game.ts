@@ -31,9 +31,9 @@ import { GameObjectFactory } from '../factory/GameObjectFactory.js';
 import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { getUserAvailableLaserLevelsWeb2 } from '../blockchain/boxes/boxesweb2.js';
 import { ClientDataMng } from '../models/clientData/ClientDataMng.js';
-import { BC_DuelInfo } from 'src/blockchain/types.js';
-import { DuelPairRewardCondition } from 'src/blockchain/duel.js';
-import { CreateBoxWeb2 } from 'src/blockchain/functions.js';
+import { BC_DuelInfo } from '../blockchain/types.js';
+import { DuelPairRewardCondition } from '../blockchain/duel.js';
+import { CreateBoxWeb2 } from '../blockchain/functions.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec

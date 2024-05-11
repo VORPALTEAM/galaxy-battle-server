@@ -4,8 +4,8 @@ import { AcceptScreenData } from "../data/Types.js";
 import { PackSender } from "../services/PackSender.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { MyMath } from "src/utils/MyMath.js";
-import { BC_DuelInfo } from "src/blockchain/types.js";
+import { MyMath } from "../utils/MyMath.js";
+import { BC_DuelInfo } from "../blockchain/types.js";
 
 export class ClientPair implements ILogger {
     private _id: number;

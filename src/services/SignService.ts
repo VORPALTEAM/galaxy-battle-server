@@ -2,7 +2,7 @@ import { PackSender } from "./PackSender.js";
 import { Client } from "../models/Client.js";
 import { Web3Service } from "./Web3Service.js";
 import { PackTitle, SignData } from "../data/Types.js";
-import { LogMng } from "src/utils/LogMng.js";
+import { LogMng } from "../utils/LogMng.js";
 
 /**
  * Sign Service for signing clients

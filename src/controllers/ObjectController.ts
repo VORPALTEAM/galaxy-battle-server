@@ -4,7 +4,7 @@ import { LogMng } from "../utils/LogMng.js";
 import { GameObject } from "../objects/GameObject.js";
 import { Planet } from "../objects/Planet.js";
 import { Game } from "./Game.js";
-import { Field } from 'src/objects/Field.js';
+import { Field } from '../objects/Field.js';
 
 export class ObjectController implements ILogger {
     protected _className = 'ObjectController';
