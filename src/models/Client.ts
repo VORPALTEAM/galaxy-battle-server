@@ -52,6 +52,7 @@ export class Client implements ILogger {
     onDebugTest = new Signal();
 
     onAcceptScreenPack = new Signal();
+    onDuelPack = new Signal();
 
     constructor(aSocket: Socket) {
         this._className = "Client";
@@ -155,8 +156,13 @@ export class Client implements ILogger {
         });
 
         this._socket.on(PackTitle.battleConfirmation, (aData: AcceptScreenData) => {
-            this.logDebug(`onSocket initScreen: ${aData}`);
+            this.logDebug(`onSocket battleConfirmation: ${aData}`);
             this.onAcceptScreenPack.dispatch(this, aData);
+        });
+
+        this._socket.on(PackTitle.duel, (aData: DuelInfo) => {
+            this.logDebug(`onSocket duel: ${aData}`);
+            this.onDuelPack.dispatch(this, aData);
         });
 
         this._socket.on("disconnect", () => {
@@ -397,6 +403,13 @@ export class Client implements ILogger {
     sendDuelNotFound() {
         let data: DuelInfo = {
             cmd: 'notFound',
+        };
+        this.sendPack(PackTitle.duel, data);
+    }
+
+    sendDuelCancel() {
+        let data: DuelInfo = {
+            cmd: 'cancel',
         };
         this.sendPack(PackTitle.duel, data);
     }

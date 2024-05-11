@@ -384,7 +384,12 @@ export class Game implements ILogger {
                     //     // clear winstreak for other clients
                     //     await CreateBoxWeb2(client.walletId, client.gameData.displayName, 1);
                     // }
-                    if (isReward) data.status = 'duelReward';
+                    if (isReward) {
+                        data.status = 'duelReward';
+                        data.boxLevel = 1;
+                        data.showBoxClaim = true;
+                        data.hideClaimBtn = true;
+                    }
                 }
             }
 

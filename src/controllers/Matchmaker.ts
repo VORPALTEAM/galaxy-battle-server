@@ -9,6 +9,7 @@ import { ClientPair } from "../models/ClientPair.js";
 import { IdGenerator } from "../utils/game/IdGenerator.js";
 import { BC_DuelInfo } from "../blockchain/types.js";
 import { MyMath } from "src/utils/MyMath.js";
+import { DuelInfo } from "src/data/Types.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
