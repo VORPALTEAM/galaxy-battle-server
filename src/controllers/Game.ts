@@ -546,7 +546,7 @@ export class Game implements ILogger {
         return null;
     }
 
-    private onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+    onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.fighters;
         const shipFactoryParams = new FighterFactory().getShipParams(level);
@@ -611,7 +611,7 @@ export class Game implements ILogger {
         this._fighterMng.addShip(fighter);
     }
 
-    private onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+    onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
         const level = 1;
         const shipParams = SETTINGS.battleShips;
         const shipFactoryParams = new LinkorFactory().getShipParams(level);
