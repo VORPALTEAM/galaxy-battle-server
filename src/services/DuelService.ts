@@ -52,7 +52,13 @@ export class DuelService implements ILogger {
 
                 GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
                     
-                    if (!aInfo || !aInfo.duel_id) {
+                    const limitMins = 15;
+                    const limitSec = limitMins * 60;
+                    const duelDateSec = aInfo.creation;
+                    const dateSec = Date.now() / 1000;
+                    if (!aInfo || !aInfo.duel_id || aInfo.isexpired || aInfo.isfinished
+                        || ((dateSec - duelDateSec >= limitSec))
+                    ) {
                         this.logDebug(`duel not found...`);
                         aClient.sendDuelNotFound();    
                         return;

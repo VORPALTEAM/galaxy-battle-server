@@ -168,12 +168,14 @@ export class Client implements ILogger {
     }
 
     private handleClaimRewardRequest(aData: ClaimRewardData) {
+        
+        let key = this._walletId;
+        if (this._gameData.tgNick?.length > 0) {
+            key = this._gameData.tgNick;
+        }
+
         switch (aData.type) {
             case "reward":
-                let key = this._walletId;
-                if (this._gameData.tgNick?.length > 0) {
-                    key = this._gameData.tgNick;
-                }
                 // client claim reward click
                 this.logDebug(
                     `Claim Reward: RecordWinnerWithChoose call with (${key}, false)`
