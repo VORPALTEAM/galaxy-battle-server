@@ -355,10 +355,6 @@ export class Game implements ILogger {
             isWinStreak = ws + 1 >= 3;
         }
 
-        if (this.isDuel()) {
-            FinishDuel(this._duelData.duel_id);
-        }
-
         for (let i = 0; i < this._clients.length; i++) {
 
             const client = this._clients[i];
@@ -402,6 +398,10 @@ export class Game implements ILogger {
                         data.hideClaimBtn = true;
                     }
                 }
+            }
+
+            if (this.isDuel()) {
+                FinishDuel(this._duelData.duel_id);
             }
 
             PackSender.getInstance().gameComplete(client, data);
