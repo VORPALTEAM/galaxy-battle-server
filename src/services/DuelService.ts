@@ -63,6 +63,12 @@ export class DuelService implements ILogger {
                         const dateSec = Date.now() / 1000;
                         const dtTimeSec = dateSec - duelDateSec;
                         isCreationCorrect = dtTimeSec < limitSec;
+                        if (!isCreationCorrect) {
+                            this.logDebug(`duel creation time is too old:`, {
+                                dtTimeSec: dtTimeSec,
+                                limitSec: limitSec
+                            });
+                        }
                     }
 
                     if (!aInfo || !aInfo.duel_id || aInfo.isexpired || aInfo.isfinished || !isCreationCorrect) {
