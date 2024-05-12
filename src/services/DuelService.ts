@@ -48,23 +48,28 @@ export class DuelService implements ILogger {
 
                 let userNick = aData.userNick.toLowerCase();
 
-                this.logDebug(`onPackRecv(): check pack: call GetUserLastDuel() for userNick: ${userNick}`);
+                this.logDebug(`'check' pack: call GetUserLastDuel() for userNick: ${userNick}`);
 
                 GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
                     
-                    const limitMins = 15;
-                    const limitSec = limitMins * 60;
-                    const duelDateSec = aInfo.creation;
-                    const dateSec = Date.now() / 1000;
-                    if (!aInfo || !aInfo.duel_id || aInfo.isexpired || aInfo.isfinished
-                        || ((dateSec - duelDateSec >= limitSec))
-                    ) {
+                    this.logDebug(`GetUserLastDuel info: `, aInfo);
+
+                    let isCreationCorrect = true;
+                    if (aInfo?.creation) {
+                        // check creation time
+                        const limitMins = 15;
+                        const limitSec = limitMins * 60;
+                        const duelDateSec = aInfo.creation || 0;
+                        const dateSec = Date.now() / 1000;
+                        const dtTimeSec = dateSec - duelDateSec;
+                        isCreationCorrect = dtTimeSec < limitSec;
+                    }
+
+                    if (!aInfo || !aInfo.duel_id || aInfo.isexpired || aInfo.isfinished || !isCreationCorrect) {
                         this.logDebug(`duel not found...`);
                         aClient.sendDuelNotFound();    
                         return;
                     }
-
-                    this.logDebug(`GetUserLastDuel info: `, aInfo);
 
                     let enemyNick = '';
                     if (aClient.getPlayerData().name) {
