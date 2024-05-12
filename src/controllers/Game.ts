@@ -387,7 +387,8 @@ export class Game implements ILogger {
                     //     await CreateBoxWeb2(client.walletId, client.gameData.displayName, 1);
                     // }
                     if (isReward) {
-                        data.status = 'duelReward';
+                        // data.status = 'duelReward';
+                        data.status = isWinner ? 'win' : 'loss';
                         data.boxLevel = 1;
                         data.showBoxClaim = true;
                         data.hideClaimBtn = true;
