@@ -50,13 +50,22 @@ export enum PackTitle {
     
 }
 
+export type TGAuthData = {
+    auth_date: number;
+    first_name: string;
+    hash: string;
+    id: number;
+    last_name: string;
+    username: string;
+}
+
 export type SignData = {
     fromServer?: 'request' | 'reject' | 'success',
     fromCli?: 'web3' | 'web2',
     signature?: string,
-    displayName?: string,
+    message?: string,
     walletId?: string,
-    message?: string
+    tgAuthData?: TGAuthData
 }
 
 export type ObjectType = 'Star' | 'Planet' | 'Tower' | 'FighterShip' | 'BattleShip' | 'HomingMissile';
@@ -72,7 +81,7 @@ export type SearchGameData = {
 }
 
 export type DuelInfo = {
-    cmd: 'check' | 'found' | 'notFound',
+    cmd: 'check' | 'found' | 'notFound' | 'cancel',
     userNick?: string,
     enemyNick?: string,
     duelId?: string
@@ -119,7 +128,8 @@ export type FieldInitData = {
 }
 
 export type GameCompleteData = {
-    status: 'win' | 'loss',
+    status: 'win' | 'loss' | 'duelEnemyDisconnected' | 'duelReward',
+    hideClaimBtn?: boolean,
     showBoxClaim?: boolean,
     boxLevel?: number
 }

@@ -6,11 +6,10 @@ import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLase
     SignData,
     PlayerData,
     EmotionData,
+    TGAuthData,
 } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
-import { WINSTREAKS } from "../database/DB.js";
-import { MyMath } from "../utils/MyMath.js";
 import { GameClientData } from "./clientData/GameClientData.js";
 
 export class Client implements ILogger {
@@ -32,14 +31,10 @@ export class Client implements ILogger {
     private _isWithBot = false;
     protected _isBot = false;
     protected _isFreeConnection = false;
-    // private _isDuelMode = false;
-    // private _duelId = -1;
     private _isDuelCreator = false;
 
     onSignRecv = new Signal();
     onStartSearchGame = new Signal();
-    // onCreateChallengeGame = new Signal();
-    // onConnectChallengeGame = new Signal();
     onStopSearchGame = new Signal();
     /**
      * Battle Scene loaded on client
@@ -52,6 +47,7 @@ export class Client implements ILogger {
     onDebugTest = new Signal();
 
     onAcceptScreenPack = new Signal();
+    onDuelPack = new Signal();
 
     constructor(aSocket: Socket) {
         this._className = "Client";
@@ -155,8 +151,13 @@ export class Client implements ILogger {
         });
 
         this._socket.on(PackTitle.battleConfirmation, (aData: AcceptScreenData) => {
-            this.logDebug(`onSocket initScreen: ${aData}`);
+            this.logDebug(`onSocket battleConfirmation: ${aData}`);
             this.onAcceptScreenPack.dispatch(this, aData);
+        });
+
+        this._socket.on(PackTitle.duel, (aData: DuelInfo) => {
+            this.logDebug(`onSocket duel: ${aData}`);
+            this.onDuelPack.dispatch(this, aData);
         });
 
         this._socket.on("disconnect", () => {
@@ -169,11 +170,15 @@ export class Client implements ILogger {
     private handleClaimRewardRequest(aData: ClaimRewardData) {
         switch (aData.type) {
             case "reward":
+                let key = this._walletId;
+                if (this._gameData.tgNick?.length > 0) {
+                    key = this._gameData.tgNick;
+                }
                 // client claim reward click
                 this.logDebug(
-                    `Claim Reward: RecordWinnerWithChoose call with (${this._walletId}, false)`
+                    `Claim Reward: RecordWinnerWithChoose call with (${key}, false)`
                 );
-                RecordWinnerWithChoose(this._walletId, false).then(
+                RecordWinnerWithChoose(key, false).then(
                     () => {
                         // resolve
                         this.logDebug(`RecordWinnerWithChoose resolved`);
@@ -191,9 +196,9 @@ export class Client implements ILogger {
             case "box":
                 // client claim reward click
                 this.logDebug(
-                    `Open Box: RecordWinnerWithChoose call with (${this._walletId}, true)`
+                    `Open Box: RecordWinnerWithChoose call with (${key}, true)`
                 );
-                RecordWinnerWithChoose(this._walletId, true).then(
+                RecordWinnerWithChoose(key, true).then(
                     () => {
                         // resolve
                         this.logDebug(`RecordWinnerWithChoose resolved`);
@@ -283,11 +288,12 @@ export class Client implements ILogger {
         this._laserSkin = value;
     }
 
-    sign(aPublicKey: string, aDisplayName = "") {
-        this._walletId = aPublicKey;
-        this._gameData.displayName = aDisplayName;
+    sign(aWalletId: string, aTgData?: TGAuthData) {
+        this.logDebug(`sign: walletId = ${aWalletId}; tgData:`, aTgData);
+        this._walletId = aWalletId;
+        this._gameData.tgAuthData = aTgData;
         this._isSigned = true;
-        this.logDebug(`signed...`);
+        // this.logDebug(`signed...`);
     }
 
     sendPack(aPackTitle: PackTitle, aData: any) {
@@ -400,6 +406,13 @@ export class Client implements ILogger {
         this.sendPack(PackTitle.duel, data);
     }
 
+    sendDuelCancel() {
+        let data: DuelInfo = {
+            cmd: 'cancel',
+        };
+        this.sendPack(PackTitle.duel, data);
+    }
+
     setPlayerData(aData: {
         starName?: string
     }) {
@@ -408,8 +421,8 @@ export class Client implements ILogger {
 
     getPlayerData(): PlayerData {
         return {
-            name: this._gameData.displayName?.length > 0 ? this._gameData.displayName : this.walletId,
-            isNick: this._gameData.displayName?.length > 0,
+            name: this._gameData.tgNick?.length > 0 ? this._gameData.tgNick : this.walletId,
+            isNick: this._gameData.tgNick?.length > 0,
             starName: this.starName,
             race: this._gameData.race
         }

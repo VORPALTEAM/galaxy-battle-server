@@ -4,18 +4,21 @@ import { AcceptScreenData } from "../data/Types.js";
 import { PackSender } from "../services/PackSender.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
-import { MyMath } from "src/utils/MyMath.js";
+import { MyMath } from "../utils/MyMath.js";
+import { BC_DuelInfo } from "../blockchain/types.js";
 
 export class ClientPair implements ILogger {
     private _id: number;
     private _clients: Map<string, Client>;
     private _accepts: Map<string, boolean>;
     private _loaded: Map<string, boolean>;
+    private _duelInfo: BC_DuelInfo;
     onAllReady = new Signal();
     onBreak = new Signal();
 
-    constructor(aId: number, aClientA: Client, aClientB: Client) {
+    constructor(aId: number, aClientA: Client, aClientB: Client, aDuelInfo: BC_DuelInfo) {
         this._id = aId;
+        this._duelInfo = aDuelInfo;
         this._clients = new Map();
         this._accepts = new Map();
         this._loaded = new Map();
@@ -87,7 +90,7 @@ export class ClientPair implements ILogger {
                 });
                 if (this._loaded.size >= this._clients.size) {
                     // all accepted
-                    this.onAllReady.dispatch(this);
+                    this.onAllReady.dispatch(this, this._duelInfo);
                 }
                 break;
 

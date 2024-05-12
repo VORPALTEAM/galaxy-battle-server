@@ -8,22 +8,25 @@ import { BotClient } from "../models/BotClient.js";
 import { ClientPair } from "../models/ClientPair.js";
 import { IdGenerator } from "../utils/game/IdGenerator.js";
 import { BC_DuelInfo } from "../blockchain/types.js";
+import { MyMath } from "../utils/MyMath.js";
 
 const TICK_RATE = 1000 / 1; // 1000 / t - it's t ticks per sec
 
 export class Matchmaker implements ILogger {
-    private _loopInterval: NodeJS.Timeout;
-    private _clients: Map<string, Client>;
-    private _pairs: Map<number, ClientPair>;
-    private _games: Map<number, Game>;
-    // private _gameIdCounter = 0;
-    private _gameIdGen: IdGenerator;
-    private _pairIdGen: IdGenerator;
-
-    private _duels: Map<string, Client[]>;
-
+    protected _className: string;
+    protected _loopInterval: NodeJS.Timeout;
+    protected _clients: Map<string, Client>;
+    protected _pairs: Map<number, ClientPair>;
+    protected _games: Map<number, Game>;
+    protected _gameIdGen: IdGenerator;
+    protected _pairIdGen: IdGenerator;
+    protected _duels: Map<string, {
+        clients: Client[],
+        info: BC_DuelInfo
+    }>;
 
     constructor() {
+        this._className = 'Matchmaker';
         this._gameIdGen = new IdGenerator();
         this._pairIdGen = new IdGenerator();
         this._clients = new Map();
@@ -38,15 +41,15 @@ export class Matchmaker implements ILogger {
     }
 
     logDebug(aMsg: string, aData?: any): void {
-        LogMng.debug(`Matchmaker: ${aMsg}`, aData);
+        LogMng.debug(`${this._className}: ${aMsg}`, aData);
     }
 
     logWarn(aMsg: string, aData?: any): void {
-        LogMng.warn(`Matchmaker: ${aMsg}`, aData);
+        LogMng.warn(`${this._className}: ${aMsg}`, aData);
     }
 
     logError(aMsg: string, aData?: any): void {
-        LogMng.error(`Matchmaker: ${aMsg}`, aData);
+        LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
     private getNewPairId(): number {
@@ -59,7 +62,12 @@ export class Matchmaker implements ILogger {
 
     private tests() {
         this.logDebug('game test...');
-        let game = new Game(this.getNewGameId(), null, null);
+        let game = new Game({
+            gameId: this.getNewGameId(),
+            clientA: null,
+            clientB: null,
+            duelData: null
+        });
         game.tests();
         this._games.set(game.id, game);
     }
@@ -77,9 +85,9 @@ export class Matchmaker implements ILogger {
         }
     }
 
-    private createPair(aClientA: Client, aClientB: Client) {
+    private createPair(aClientA: Client, aClientB: Client, aDuelInfo?: BC_DuelInfo) {
         this.logDebug('pair creation...');
-        let pair = new ClientPair(this.getNewPairId(), aClientA, aClientB);
+        let pair = new ClientPair(this.getNewPairId(), aClientA, aClientB, aDuelInfo);
         this._pairs.set(pair.id, pair);
         pair.onBreak.add(this.onPairBreak, this);
         pair.onAllReady.add(this.onPairReady, this);
@@ -97,7 +105,7 @@ export class Matchmaker implements ILogger {
         pair.free();
     }
 
-    private onPairReady(aPair: ClientPair) {
+    private onPairReady(aPair: ClientPair, aDuelInfo: BC_DuelInfo) {
         this.logDebug(`onPairReady...`);
         const pId = aPair.id;
         let pair = this._pairs.get(pId);
@@ -105,14 +113,19 @@ export class Matchmaker implements ILogger {
         pair.clients.forEach((client) => {
             clients.push(client);
         });
-        this.createGame(clients[0], clients[1]);
+        this.createGame(clients[0], clients[1], aDuelInfo);
         this._pairs.delete(pId);
         pair.free();
     }
 
-    private createGame(aClientA: Client, aClientB: Client) {
+    private createGame(aClientA: Client, aClientB: Client, aDuelInfo: BC_DuelInfo) {
         this.logDebug('game creation...');
-        let game = new Game(this.getNewGameId(), aClientA, aClientB);
+        let game = new Game({
+            gameId: this.getNewGameId(),
+            clientA: aClientA,
+            clientB: aClientB,
+            duelData: aDuelInfo
+        });
         game.onGameComplete.addOnce(this.onGameComplete, this);
         game.start();
         this._games.set(game.id, game);
@@ -126,6 +139,10 @@ export class Matchmaker implements ILogger {
         } catch (error) {
             
         }
+    }
+
+    private removeDuel(aDuelId: string) {
+        this._duels.delete(aDuelId);
     }
 
     addClient(aClient: Client) {
@@ -149,28 +166,28 @@ export class Matchmaker implements ILogger {
     }
 
     addDuelClient(aClient: Client, aInfo: BC_DuelInfo) {
+
         this.logDebug(`addDuelClient...`);
-        
+
         aClient.sendStartGameSearch();
 
-        const id = aInfo.duel_id;
-        let ch = this._duels.get(id);
-        if (!ch) {
-            this.logDebug(`addDuelClient: new challenge detected`);
-            if (!aClient.isDuelCreator) {
-                this.logDebug(`addDuelClient: connect request to challenge num: ${id}`);
-                // message challenge not found
-                aClient.sendDuelNotFound();
-                return;
-            }
-            else {
-                this.logDebug(`addDuelClient: new challenge creator detected`);
-                // create challenge
-                this._duels.set(id, [aClient]);
-            }
+        const id = String(aInfo.creation) || String(MyMath.randomIntInRange(0, Number.MAX_SAFE_INTEGER));
+        let duelRecord = this._duels.get(id);
+        if (duelRecord) {
+            duelRecord.clients.push(aClient);
         }
         else {
-            ch.push(aClient);
+            this.logDebug(`addDuelClient: new challenge detected`);
+            // create duel
+            this._duels.set(id, {
+                clients: [aClient],
+                info: aInfo
+            });
+        }
+
+        // check sign of this client
+        if (!aClient.isFreeConnection && !aClient.isSigned && !aClient.isSignPending) {
+            SignService.getInstance().sendRequest(aClient);
         }
 
     }
@@ -181,38 +198,16 @@ export class Matchmaker implements ILogger {
 
         // TODO: check it and test
         // check challenges
-        this._duels.forEach((clients, key: string) => {
-
+        this._duels.forEach((aData, key: string) => {
+            let clients = aData.clients;
             for (let i = 0; i < clients.length; i++) {
                 const cli = clients[i];
-                // if (cli.connectionId == aClient.connectionId) {
-                //     PackSender.getInstance().sendDuelStopped
-                // }
+                if (cli.connectionId == aClient.connectionId) {
+                    // PackSender.getInstance().sendDuelStopped
+                    this._duels.delete(key);
+                }
             }
-
-            // if (key == )
-            
         });
-        // if (aClient.isDuelMode) {
-            // const id = aClient.duelId;
-            // if (aClient.isDuelCreator) {
-            //     // remove challenge record
-            //     this._duels.delete(id);
-            //     return;
-            // }
-            // else {
-            //     let ch = this._duels.get(id);
-            //     if (ch && ch.length > 0) {
-            //         for (let i = ch.length - 1; i >= 0; i--) {
-            //             let cli = ch[i];
-            //             if (cli.connectionId == aClient.connectionId) {
-            //                 ch.splice(i, 1);
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // }
-        // }
 
     }
 
@@ -266,18 +261,18 @@ export class Matchmaker implements ILogger {
 
         // check challenge clients
 
-        this._duels.forEach(ch => {
-
-            if (ch.length >= 2) {
-                const client1 = ch[0];
-                const client2 = ch[1];
+        this._duels.forEach((data, key) => {
+            let clients = data.clients;
+            if (clients.length >= 2) {
+                const client1 = clients[0];
+                const client2 = clients[1];
                 if (
-                    (client1.isSigned || client1.isFreeConnection) &&
+                    (client1.isSigned || client1.isFreeConnection) && 
                     (client2.isSigned || client2.isFreeConnection)
                 ) {
-                    this.removeClient(client2);
-                    this.removeClient(client1);
-                    this.createPair(client1, client2);
+                // if (client1 && client2) {
+                    this.removeDuel(key);
+                    this.createPair(client1, client2, data.info);
                 }
             }
             

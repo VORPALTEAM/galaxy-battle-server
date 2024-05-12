@@ -1,6 +1,6 @@
 import { Client } from "../models/Client.js";
 import { DuelInfo, PackTitle } from "../data/Types.js";
-import { GetUserLastDuel } from "../blockchain/duel.js";
+import { FinishDuel, GetUserLastDuel } from "../blockchain/duel.js";
 import { BC_DuelInfo } from "../blockchain/types.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
@@ -15,6 +15,7 @@ export class DuelService implements ILogger {
     private _className = 'DuelService';
     private _clients: Map<string, Client>;
     onDuelFound = new Signal();
+    onDuelCancel = new Signal();
 
     private constructor() {
         if (DuelService._instance) throw new Error("Don't use SignService.constructor(), it's SINGLETON, use getInstance() method");
@@ -36,12 +37,27 @@ export class DuelService implements ILogger {
         return DuelService._instance;
     }
 
+    // private getCurrentDuelForNick(aUserNick: string):  {
+        
+    // }
+
     private onPackRecv(aClient: Client, aData: DuelInfo) {
         
         switch (aData.cmd) {
             case 'check':
-                this.logDebug(`onPackRecv(): check pack: call GetUserLastDuel() for userNick: ${aData.userNick}`);
-                GetUserLastDuel(aData.userNick).then((aInfo: BC_DuelInfo) => {
+
+                let userNick = aData.userNick.toLowerCase();
+
+                this.logDebug(`onPackRecv(): check pack: call GetUserLastDuel() for userNick: ${userNick}`);
+
+                GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
+                    
+                    if (!aInfo || !aInfo.duel_id) {
+                        this.logDebug(`duel not found...`);
+                        aClient.sendDuelNotFound();    
+                        return;
+                    }
+
                     this.logDebug(`GetUserLastDuel info: `, aInfo);
 
                     let enemyNick = '';
@@ -56,15 +72,28 @@ export class DuelService implements ILogger {
                     aClient.sendDuelNotFound();
                 })
                 break;
+            
+            case 'cancel': {
+                let userNick = aData.userNick.toLowerCase();
+                this.logDebug(`onPackRecv(): cancel: call GetUserLastDuel() for userNick: ${userNick}`);
+                GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
+                    this.logDebug(`onPackRecv(): cancel: call FinishDuel for duel: ${aInfo}`);
+                    FinishDuel(aInfo.duel_id);
+                }, (reason) => {
+                    this.logDebug(`GetUserLastDuel Reject: `, reason);
+                })
+                aClient.sendDuelCancel();
+                this.onDuelCancel.dispatch(aClient);
+            } break;
         
             default:
                 break;
         }
 
         // check the player in connections
-        this._clients.forEach((client) => {
+        // this._clients.forEach((client) => {
             
-        });
+        // });
 
         // update client
         // aClient.sign(walletId, displayName);

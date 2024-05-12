@@ -8,7 +8,7 @@ import { Signal } from "../utils/events/Signal.js";
 import { Client } from "../models/Client.js";
 import { Planet } from "../objects/Planet.js";
 import { PlanetLaserData } from "../data/Types.js";
-import { HomingMissile } from 'src/objects/HomingMissile.js';
+import { HomingMissile } from '../objects/HomingMissile.js';
 
 export class AbilityManager implements ILogger {
     protected _className = 'AbilityManager';

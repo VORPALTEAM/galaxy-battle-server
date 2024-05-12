@@ -31,6 +31,9 @@ import { GameObjectFactory } from '../factory/GameObjectFactory.js';
 import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { getUserAvailableLaserLevelsWeb2 } from '../blockchain/boxes/boxesweb2.js';
 import { ClientDataMng } from '../models/clientData/ClientDataMng.js';
+import { BC_DuelInfo } from '../blockchain/types.js';
+import { DuelPairRewardCondition, FinishDuel } from '../blockchain/duel.js';
+import { CreateBoxWeb2 } from '../blockchain/functions.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -137,6 +140,7 @@ export class Game implements ILogger {
     private _className = 'Game';
     private _state: GameState = 'none';
     private _id: number; // game id
+    private _duelData: BC_DuelInfo;
     private _loopInterval: NodeJS.Timeout;
     private _objIdGen: IdGenerator;
     private _objectFactory: GameObjectFactory;
@@ -154,20 +158,33 @@ export class Game implements ILogger {
     // events
     onGameComplete = new Signal();
 
-    constructor(aGameId: number, aClientA: Client, aClientB: Client) {
+    constructor(aParams: {
+        gameId: number,
+        clientA: Client,
+        clientB: Client,
+        duelData: BC_DuelInfo
+    }) {
+
+        this.logDebug(`Game creation:`, {
+            client1_ConnId: aParams.clientA.connectionId,
+            client2_ConnId: aParams.clientB.connectionId,
+            duelInfo: aParams.duelData
+        });
+        
         this._state = 'none';
-        this._id = aGameId;
+        this._id = aParams.gameId;
+        this._duelData = aParams.duelData;
         this._objIdGen = new IdGenerator();
         this._objectFactory = new GameObjectFactory(this._objIdGen);
         this._objectController = new ObjectController(this);
-        this._clients = [aClientA, aClientB];
+        this._clients = [aParams.clientA, aParams.clientB];
 
         // random races - temporary solution
         const races: ObjectRace[] = ['Waters', 'Insects'];
         MyMath.shuffleArray(races);
         // this._clientDataMng.addClient(aClientA).race = races[0];
-        aClientA.gameData.race = races[0];
-        aClientB.gameData.race = races[1];
+        aParams.clientA.gameData.race = races[0];
+        aParams.clientB.gameData.race = races[1];
 
         this._sceneLoaded = [];
         this._expMng = new ExpManager();
@@ -218,7 +235,7 @@ export class Game implements ILogger {
                 break;
             }
         }
-        this.completeGame(winner);
+        this.completeGame(winner, true);
     }
 
     private onSkillRequest(aClient: Client, aData: SkillRequest) {
@@ -312,8 +329,11 @@ export class Game implements ILogger {
         return this._sceneLoaded[0] && this._sceneLoaded[1];
     }
 
-    private async completeGame(aWinner: Client) {
+    private async completeGame(aWinner: Client, aDisconnect?: boolean) {
+
         this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
+
+        let isPlayWithBot = false;
 
         // clear winstreak for other clients
         for (let i = 0; i < this._clients.length; i++) {
@@ -321,7 +341,10 @@ export class Game implements ILogger {
             if (client.connectionId != aWinner.connectionId) {
                 WINSTREAKS[client.walletId] = 0;
             }
+            if (client.isBot) isPlayWithBot = true;
         }
+
+        this.logDebug(`completeGame: isPlayWithBot: (${isPlayWithBot})`);
 
         let isWinStreak = false;
         if (!aWinner.isBot && aWinner.isSigned) {
@@ -332,15 +355,21 @@ export class Game implements ILogger {
             isWinStreak = ws + 1 >= 3;
         }
 
+        if (this.isDuel()) {
+            FinishDuel(this._duelData.duel_id);
+        }
+
         for (let i = 0; i < this._clients.length; i++) {
+
             const client = this._clients[i];
             let data: GameCompleteData;
             if (aWinner) {
                 if (client.connectionId == aWinner.connectionId) {
                     data = {
                         status: 'win',
-                        showBoxClaim: isWinStreak,
-                        boxLevel: 1
+                        showBoxClaim: isPlayWithBot ? false : isWinStreak,
+                        boxLevel: isPlayWithBot ? null : 1,
+                        hideClaimBtn: isPlayWithBot
                     };
                 }
                 else {
@@ -354,9 +383,35 @@ export class Game implements ILogger {
                     status: 'loss'
                 };
             }
+
+            if (this.isDuel()) {
+                if (aDisconnect) {
+                    data.status = 'duelEnemyDisconnected';
+                }
+                else {
+                    // 2 boxes
+                    let isReward = await DuelPairRewardCondition(this._duelData.login1, this._duelData.login2);
+                    // if (isReward) {
+                    //     // clear winstreak for other clients
+                    //     await CreateBoxWeb2(client.walletId, client.gameData.displayName, 1);
+                    // }
+                    if (isReward) {
+                        data.status = 'duelReward';
+                        data.boxLevel = 1;
+                        data.showBoxClaim = true;
+                        data.hideClaimBtn = true;
+                    }
+                }
+            }
+
             PackSender.getInstance().gameComplete(client, data);
         }
+
         this.onGameComplete.dispatch(this);
+    }
+
+    isDuel(): boolean {
+        return this._duelData != null;
     }
     
     private generateObjectId(): number {

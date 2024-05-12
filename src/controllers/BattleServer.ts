@@ -51,6 +51,7 @@ export class BattleServer implements ILogger {
 
         DuelService.getInstance().addClient(client);
         DuelService.getInstance().onDuelFound.add(this.onDuelFound, this);
+        DuelService.getInstance().onDuelCancel.add(this.onDuelCancel, this);
 
         client.onStartSearchGame.add(this.onStartSearchGame, this);
         client.onStopSearchGame.add(this.onStopSearchGame, this);
@@ -65,6 +66,10 @@ export class BattleServer implements ILogger {
 
     onDuelFound(aClient: Client, aInfo: BC_DuelInfo) {
         this._matchmaker.addDuelClient(aClient, aInfo);
+    }
+
+    onDuelCancel(aClient: Client) {
+        this._matchmaker.removeClient(aClient);
     }
 
     private onStopSearchGame(aClient: Client) {
