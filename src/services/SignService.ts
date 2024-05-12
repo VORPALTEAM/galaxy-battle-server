@@ -23,7 +23,7 @@ export class SignService {
     }
 
     private onSignRecv(aClient: Client, aData: SignData) {
-        const tgNick = aData.tgNick || '';
+        // const tgNick = aData.tgNick || '';
         let walletId: string;
         try {
             walletId = Web3Service.getInstance().getWalletId(aData.signature);
@@ -40,7 +40,7 @@ export class SignService {
         // });
 
         // update client
-        aClient.sign(walletId, tgNick);
+        aClient.sign(walletId, aData.tgAuthData);
         aClient.onSignSuccess(walletId);
     }
 

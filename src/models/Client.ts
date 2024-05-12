@@ -6,6 +6,7 @@ import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLase
     SignData,
     PlayerData,
     EmotionData,
+    TGAuthData,
 } from "../data/Types.js";
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
@@ -287,10 +288,10 @@ export class Client implements ILogger {
         this._laserSkin = value;
     }
 
-    sign(aWalletId: string, aTgNick = '') {
-        this.logDebug(`sign: walletId = ${aWalletId}; tgNick = ${aTgNick}`);
+    sign(aWalletId: string, aTgData?: TGAuthData) {
+        this.logDebug(`sign: walletId = ${aWalletId}; tgData:`, aTgData);
         this._walletId = aWalletId;
-        this._gameData.tgNick = aTgNick;
+        this._gameData.tgAuthData = aTgData;
         this._isSigned = true;
         // this.logDebug(`signed...`);
     }

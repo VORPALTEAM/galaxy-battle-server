@@ -1,32 +1,35 @@
-import { ObjectRace } from "../../data/Types";
+import { ObjectRace, TGAuthData } from "../../data/Types";
 
 export class GameClientData {
     private _race: ObjectRace;
-    private _tgNick: string;
     private _starName: string;
+    private _tgAuthData: TGAuthData;
     
     constructor() {}
 
-    public get race(): ObjectRace {
+    get race(): ObjectRace {
         return this._race;
     }
-    public set race(value: ObjectRace) {
+    set race(value: ObjectRace) {
         this._race = value;
     }
 
-    public get tgNick(): string {
-        return this._tgNick;
-    }
-    public set tgNick(value: string) {
-        this._tgNick = value;
-    }
-
-    public get starName(): string {
+    get starName(): string {
         return this._starName;
     }
-    public set starName(value: string) {
+    set starName(value: string) {
         this._starName = value;
     }
     
-    
+    get tgAuthData(): TGAuthData {
+        return this._tgAuthData;
+    }
+    set tgAuthData(value: TGAuthData) {
+        this._tgAuthData = value;
+    }
+
+    get tgNick(): string {
+        return this._tgAuthData?.username || '';
+    }
+
 }
