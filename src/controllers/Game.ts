@@ -403,6 +403,7 @@ export class Game implements ILogger {
             }
 
             if (this.isDuel()) {
+                this.logDebug(`CALL FinishDuel`);
                 FinishDuel(this._duelData.duel_id);
             }
 
