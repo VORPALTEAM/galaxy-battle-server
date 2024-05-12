@@ -358,21 +358,16 @@ export class Game implements ILogger {
         for (let i = 0; i < this._clients.length; i++) {
 
             const client = this._clients[i];
+            const isWinner = aWinner && client.connectionId == aWinner.connectionId;
             let data: GameCompleteData;
-            if (aWinner) {
-                if (client.connectionId == aWinner.connectionId) {
-                    data = {
-                        status: 'win',
-                        showBoxClaim: isPlayWithBot ? false : isWinStreak,
-                        boxLevel: isPlayWithBot ? null : 1,
-                        hideClaimBtn: isPlayWithBot
-                    };
-                }
-                else {
-                    data = {
-                        status: 'loss'
-                    };
-                }
+
+            if (isWinner) {
+                data = {
+                    status: 'win',
+                    showBoxClaim: isPlayWithBot ? false : isWinStreak,
+                    boxLevel: isPlayWithBot ? null : 1,
+                    hideClaimBtn: isPlayWithBot
+                };
             }
             else {
                 data = {
@@ -395,6 +390,12 @@ export class Game implements ILogger {
                         data.status = 'duelReward';
                         data.boxLevel = 1;
                         data.showBoxClaim = true;
+                        data.hideClaimBtn = true;
+                    }
+                    else {
+                        data.status = isWinner ? 'win' : 'loss';
+                        data.boxLevel = null;
+                        data.showBoxClaim = false;
                         data.hideClaimBtn = true;
                     }
                 }
