@@ -128,7 +128,14 @@ export function CheckTelegramAuth(auth_data: TelegramAuthData): {
   error: string;
 } {
   const { hash, ...restData } = auth_data;
-  const data_check_arr = Object.entries(restData).map(
+  const processing_data = {
+    id: auth_data.id,
+    first_name: auth_data.first_name,
+    last_name: auth_data.last_name,
+    username: auth_data.username,
+    auth_date: auth_data.auth_date
+  }
+  const data_check_arr = Object.entries(processing_data).map(
     ([key, value]) => `${key}=${value}`,
   );
   data_check_arr.sort();
