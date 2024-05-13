@@ -537,7 +537,7 @@ export class Game implements ILogger {
                     radius: towerParams.attackRadius,
                     damage: [towerParams.minDmg, towerParams.maxDmg],
                 },
-                attackPeriod: 1
+                attackPeriod: 2
             });
 
             tower.onAttack.add(this.onShipAttack, this);
