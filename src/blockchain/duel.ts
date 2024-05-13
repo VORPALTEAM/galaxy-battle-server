@@ -91,7 +91,7 @@ export async function FinishDuel(duelId: string, winner: string = "") {
   });
 }
 
-export function DuelPairRewardCondition (part1: string, part2: string): Promise<Boolean> {
+export function DuelPairRewardCondition (part1: string, part2: string): Promise<boolean> {
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`api/duelrewardcondition`);
     fetch(url, {
@@ -108,7 +108,7 @@ export function DuelPairRewardCondition (part1: string, part2: string): Promise<
         reject(`Failed to execute, ${res.text()}`);
       }
       return res.json();
-    }).then((res: { reward: Boolean}) => {
+    }).then((res: { reward: boolean}) => {
       resolve(res.reward);
       return;
     });

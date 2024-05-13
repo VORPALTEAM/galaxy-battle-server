@@ -28,12 +28,9 @@ import { MissileController } from './MissileController.js';
 import { HomingMissile } from '../objects/HomingMissile.js';
 import { ObjectController } from './ObjectController.js';
 import { GameObjectFactory } from '../factory/GameObjectFactory.js';
-import { getUserAvailableLaserLevels } from '../blockchain/boxes/boxes.js';
 import { getUserAvailableLaserLevelsWeb2 } from '../blockchain/boxes/boxesweb2.js';
-import { ClientDataMng } from '../models/clientData/ClientDataMng.js';
 import { BC_DuelInfo } from '../blockchain/types.js';
 import { DuelPairRewardCondition, FinishDuel } from '../blockchain/duel.js';
-import { CreateBoxWeb2 } from '../blockchain/functions.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -131,7 +128,7 @@ const SETTINGS = {
         prepareJumpTime: 0.5,
         jumpTime: 1
     },
-    
+
 }
 
 type GameState = 'none' | 'clientLoading' | 'init' | 'game' | 'final';
@@ -170,7 +167,7 @@ export class Game implements ILogger {
             client2_ConnId: aParams.clientB.connectionId,
             duelInfo: aParams.duelData
         });
-        
+
         this._state = 'none';
         this._id = aParams.gameId;
         this._duelData = aParams.duelData;
@@ -272,7 +269,7 @@ export class Game implements ILogger {
                                 PackSender.getInstance().sniper(this._clients, {
                                     action: 'end',
                                     planetId: planet.id
-                                }); 
+                                });
                             }, slowTime * 1000);
                         }
                         else {
@@ -286,16 +283,16 @@ export class Game implements ILogger {
                         break;
                 }
                 break;
-            
+
             case 'levelUp':
                 let expData = this._expMng.upSkillLevel(aClient.walletId, aData.skillId);
                 PackSender.getInstance().exp(aClient, expData);
                 break;
-            
+
             default:
                 this.logError(`onSkillRequest: unknown skill action: ${aData}`);
                 break;
-            
+
         }
     }
 
@@ -355,6 +352,19 @@ export class Game implements ILogger {
             isWinStreak = ws + 1 >= 3;
         }
 
+        let isDuelRewarded = false;
+        let duelRewardError: {
+            message: string
+        };
+
+        try {
+            isDuelRewarded = await DuelPairRewardCondition(this._duelData.login1, this._duelData.login2);
+        } catch (error) {
+            duelRewardError = {
+                message: error
+            }
+        }
+
         for (let i = 0; i < this._clients.length; i++) {
 
             const client = this._clients[i];
@@ -381,12 +391,7 @@ export class Game implements ILogger {
                 }
                 else {
                     // 2 boxes
-                    let isReward = await DuelPairRewardCondition(this._duelData.login1, this._duelData.login2);
-                    // if (isReward) {
-                    //     // clear winstreak for other clients
-                    //     await CreateBoxWeb2(client.walletId, client.gameData.displayName, 1);
-                    // }
-                    if (isReward) {
+                    if (isDuelRewarded) {
                         // data.status = 'duelReward';
                         data.status = isWinner ? 'win' : 'loss';
                         data.boxLevel = 1;
@@ -400,14 +405,30 @@ export class Game implements ILogger {
                         data.hideClaimBtn = true;
                     }
                 }
+
             }
 
             if (this.isDuel()) {
                 this.logDebug(`CALL FinishDuel`);
-                FinishDuel(this._duelData.duel_id);
+                try {
+                    FinishDuel(this._duelData.duel_id);
+                } catch (error) {
+                    PackSender.getInstance().message([client], {
+                        msg: `FinishDuel ERROR: ${error}`,
+                        showType: 'popup'
+                    });
+                }
             }
 
             PackSender.getInstance().gameComplete(client, data);
+
+            if (duelRewardError) {
+                PackSender.getInstance().message([client], {
+                    msg: `Duel RewardCondition check ERROR: ${duelRewardError.message}`,
+                    showType: 'popup'
+                });
+            }
+
         }
 
         this.onGameComplete.dispatch(this);
@@ -416,7 +437,7 @@ export class Game implements ILogger {
     isDuel(): boolean {
         return this._duelData != null;
     }
-    
+
     private generateObjectId(): number {
         return this._objIdGen.nextId();
     }
@@ -481,7 +502,7 @@ export class Game implements ILogger {
                 battleShipSpawnDeltaPos: starData.battleShipSpawnDeltaPos,
                 minusHpPerSec: starParams.minusHpPerSec
             });
-            
+
             star.onDamage.add(this.onObjectDamage, this);
 
             // this._field.takeCell(starData.cellPos.x, starData.cellPos.y);
@@ -691,7 +712,7 @@ export class Game implements ILogger {
         this.addObject(linkor);
         this._linkorMng.addLinkor(linkor);
     }
-    
+
     private onShipRotate(aShip: SpaceShip, aPoint: THREE.Vector3, aDur: number) {
         PackSender.getInstance().rotate(this._clients, {
             id: aShip.id,
@@ -727,7 +748,7 @@ export class Game implements ILogger {
             ...dmg,
             attackerId: aShip.id
         });
-        
+
     }
 
     onShipRayStart(aShip: SpaceShip, aEnemy: GameObject) {
@@ -766,7 +787,7 @@ export class Game implements ILogger {
     protected checkWinner() {
 
         let stars: Star[] = this.getAllStars();
-        
+
         // check Stars count and winner
         if (stars.length < 2) {
             if (stars.length == 1) {
