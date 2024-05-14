@@ -123,6 +123,29 @@ export async function GiveResourcesWeb2 (owner: string, login = "", resource: st
     })
 }
 
+export async function DeleteDuel (duelId: string) {
+  return new Promise((resolve, reject) => {
+    fetch(fastServerUrl.concat('api/deleteduel'), {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        signature: GetSignedAuthMessage(), 
+        duelId, 
+      })
+    }).then(res => {
+      if (res.status !== 200) {
+        reject("Request to delete failed")
+      }
+      return res.json()
+    }).then(res => {
+      resolve(res)
+      return res
+    })
+  })
+}
+
 export function CheckTelegramAuth(auth_data: TelegramAuthData): {
   success: Boolean;
   error: string;
