@@ -810,27 +810,31 @@ export class Game implements ILogger {
 
         if (aClient.isSigned && !aClient.isBot) {
             let login = aClient.gameData.tgAuthData ? aClient.gameData.tgAuthData.username : aClient.walletId;
-            lasers = await getUserAvailableLaserLevelsWeb2(login);
-            lasers = lasers.map(n => Number(n));
-            this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
-            if (lasers?.length > 0) {
-                lasers.sort((a, b) => {
-                    return b - a;
-                })
-                // this.logDebug(`sorted laser list:`, lasers);
-                let maxLevel = Number(lasers[0]);
+            try {
+                lasers = await getUserAvailableLaserLevelsWeb2(login);
+                lasers = lasers.map(n => Number(n));
+                this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
+                if (lasers?.length > 0) {
+                    lasers.sort((a, b) => {
+                        return b - a;
+                    })
+                    // this.logDebug(`sorted laser list:`, lasers);
+                    let maxLevel = Number(lasers[0]);
 
-                switch (maxLevel) {
-                    case 0:
-                        laserSkin = 'red';
-                        break;
-                    case 1:
-                        laserSkin = 'white';
-                        break;
-                    case 2:
-                        laserSkin = 'violet';
-                        break;
+                    switch (maxLevel) {
+                        case 0:
+                            laserSkin = 'red';
+                            break;
+                        case 1:
+                            laserSkin = 'white';
+                            break;
+                        case 2:
+                            laserSkin = 'violet';
+                            break;
+                    }
                 }
+            } catch (error) {
+                this.logError(`loadLaserSkinForClient:`, error);
             }
         }
 
