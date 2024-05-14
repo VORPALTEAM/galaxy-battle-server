@@ -409,18 +409,6 @@ export class Game implements ILogger {
 
             }
 
-            if (this.isDuel()) {
-                this.logDebug(`CALL FinishDuel`);
-                try {
-                    FinishDuel(this._duelData.duel_id);
-                } catch (error) {
-                    PackSender.getInstance().message([client], {
-                        msg: `FinishDuel ERROR: ${error}`,
-                        showType: 'popup'
-                    });
-                }
-            }
-
             PackSender.getInstance().gameComplete(client, data);
 
             if (duelRewardError) {
@@ -436,10 +424,22 @@ export class Game implements ILogger {
             if (aDisconnect) {
                 // remove duel record
                 try {
+                    this.logDebug(`CALL DeleteDuel`);
                     DeleteDuel(this._duelData.duel_id);
                 } catch (error) {
                     PackSender.getInstance().message(this._clients, {
                         msg: `DeleteDuel ERROR: ${error}`,
+                        showType: 'popup'
+                    });
+                }
+            }
+            else {
+                this.logDebug(`CALL FinishDuel`);
+                try {
+                    FinishDuel(this._duelData.duel_id);
+                } catch (error) {
+                    PackSender.getInstance().message(this._clients, {
+                        msg: `FinishDuel ERROR: ${error}`,
                         showType: 'popup'
                     });
                 }

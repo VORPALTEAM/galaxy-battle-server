@@ -54,10 +54,10 @@ export enum PackTitle {
 }
 
 export type TGAuthData = {
-    auth_date: number;
-    first_name: string;
-    hash: string;
     id: number;
+    auth_date: number;
+    hash: string;
+    first_name: string;
     last_name: string;
     username: string;
 }

@@ -103,21 +103,22 @@ export class DuelService implements ILogger {
                 GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
 
                     this.logDebug(`onPackRecv(): cancel: call FinishDuel for duel: ${aInfo}`);
-                    this.logDebug(`CALL FinishDuel`);
 
                     // finish duel
                     try {
+                        this.logDebug(`CALL FinishDuel`);
                         FinishDuel(aInfo.duel_id);
                     } catch (error) {
                         this.logError(`FinishDuel ERROR:`, error);
                     }
 
                     // remove duel record
-                    try {
-                        DeleteDuel(aInfo.duel_id);
-                    } catch (error) {
-                        this.logError(`DeleteDuel ERROR:`, error);
-                    }
+                    // try {
+                    //     this.logDebug(`CALL DeleteDuel`);
+                    //     DeleteDuel(aInfo.duel_id);
+                    // } catch (error) {
+                    //     this.logError(`DeleteDuel ERROR:`, error);
+                    // }
 
                 }, (reason) => {
                     this.logDebug(`GetUserLastDuel Reject: `, reason);
