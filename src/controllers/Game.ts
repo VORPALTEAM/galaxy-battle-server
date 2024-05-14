@@ -31,6 +31,7 @@ import { GameObjectFactory } from '../factory/GameObjectFactory.js';
 import { getUserAvailableLaserLevelsWeb2 } from '../blockchain/boxes/boxesweb2.js';
 import { BC_DuelInfo } from '../blockchain/types.js';
 import { DuelPairRewardCondition, FinishDuel } from '../blockchain/duel.js';
+import { DeleteDuel } from '../blockchain/functions.js';
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -429,6 +430,20 @@ export class Game implements ILogger {
                 });
             }
 
+        }
+
+        if (this.isDuel()) {
+            if (aDisconnect) {
+                // remove duel record
+                try {
+                    DeleteDuel(this._duelData.duel_id);
+                } catch (error) {
+                    PackSender.getInstance().message(this._clients, {
+                        msg: `DeleteDuel ERROR: ${error}`,
+                        showType: 'popup'
+                    });
+                }
+            }
         }
 
         this.onGameComplete.dispatch(this);

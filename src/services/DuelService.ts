@@ -5,6 +5,7 @@ import { BC_DuelInfo } from "../blockchain/types.js";
 import { ILogger } from "../interfaces/ILogger.js";
 import { LogMng } from "../utils/LogMng.js";
 import { Signal } from "../utils/events/Signal.js";
+import { DeleteDuel } from "../blockchain/functions.js";
 
 /**
  * Duel Service for checking duels
@@ -44,6 +45,7 @@ export class DuelService implements ILogger {
     private onPackRecv(aClient: Client, aData: DuelInfo) {
         
         switch (aData.cmd) {
+
             case 'check':
 
                 let userNick = aData.userNick.toLowerCase();
@@ -97,10 +99,26 @@ export class DuelService implements ILogger {
             case 'cancel': {
                 let userNick = aData.userNick.toLowerCase();
                 this.logDebug(`onPackRecv(): cancel: call GetUserLastDuel() for userNick: ${userNick}`);
+
                 GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
+
                     this.logDebug(`onPackRecv(): cancel: call FinishDuel for duel: ${aInfo}`);
                     this.logDebug(`CALL FinishDuel`);
-                    FinishDuel(aInfo.duel_id);
+
+                    // finish duel
+                    try {
+                        FinishDuel(aInfo.duel_id);
+                    } catch (error) {
+                        this.logError(`FinishDuel ERROR:`, error);
+                    }
+
+                    // remove duel record
+                    try {
+                        DeleteDuel(aInfo.duel_id);
+                    } catch (error) {
+                        this.logError(`DeleteDuel ERROR:`, error);
+                    }
+
                 }, (reason) => {
                     this.logDebug(`GetUserLastDuel Reject: `, reason);
                 })
