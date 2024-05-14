@@ -809,7 +809,8 @@ export class Game implements ILogger {
         let laserSkin: PlanetLaserSkin = 'blue';
 
         if (aClient.isSigned && !aClient.isBot) {
-            lasers = await getUserAvailableLaserLevelsWeb2(aClient.walletId);
+            let login = aClient.gameData.tgAuthData ? aClient.gameData.tgAuthData.username : aClient.walletId;
+            lasers = await getUserAvailableLaserLevelsWeb2(login);
             lasers = lasers.map(n => Number(n));
             this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
             if (lasers?.length > 0) {
