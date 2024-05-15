@@ -370,6 +370,7 @@ export class Game implements ILogger {
 
             const client = this._clients[i];
             const isWinner = aWinner && client.connectionId == aWinner.connectionId;
+            const nameDisplay = client.gameData.tgAuthData ? client.gameData.tgAuthData.username : client.walletId;
             let data: GameCompleteData;
 
             if (isWinner) {
@@ -377,12 +378,14 @@ export class Game implements ILogger {
                     status: 'win',
                     showBoxClaim: isPlayWithBot ? false : isWinStreak,
                     boxLevel: isPlayWithBot ? null : 1,
-                    hideClaimBtn: isPlayWithBot
+                    hideClaimBtn: isPlayWithBot,
+                    ownerName: nameDisplay
                 };
             }
             else {
                 data = {
-                    status: 'loss'
+                    status: 'loss',
+                    ownerName: nameDisplay
                 };
             }
 

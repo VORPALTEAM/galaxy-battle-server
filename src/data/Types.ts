@@ -134,7 +134,8 @@ export type GameCompleteData = {
     status: 'win' | 'loss' | 'duelEnemyDisconnected' | 'duelReward',
     hideClaimBtn?: boolean,
     showBoxClaim?: boolean,
-    boxLevel?: number
+    boxLevel?: number,
+    ownerName: string
 }
 
 export type DamageInfo = {
