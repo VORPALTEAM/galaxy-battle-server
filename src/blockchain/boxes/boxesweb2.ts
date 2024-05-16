@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { fastServerUrl } from "../network.js";
+import { GetUserItemBalance } from '../functions.js';
 
 export type web2assets = {
     laser1: number;
@@ -115,22 +116,31 @@ export async function getBoxDataWeb2(_boxId: number) {
 }
 
 export async function getUserLaserListWeb2(_user: string) {
-    const data = await GetGameAssetsWeb2(_user);
+    // const data = await GetGameAssetsWeb2(_user);
+    const data = await Promise.all([
+        GetUserItemBalance({login: _user, itemId:8}),
+        GetUserItemBalance({login: _user, itemId:9}),
+        GetUserItemBalance({login: _user, itemId:10})
+    ])
     const levels: number[] = [];
-    if (data.laser1 > 0) {
+    if (data[0] > 0) {
         levels.push(0)
     }
-    if (data.laser2 > 0) {
+    if (data[1] > 0) {
         levels.push(1)
     }
-    if (data.laser3 > 0) {
+    if (data[2] > 0) {
         levels.push(2)
     }
     return levels;
 }
 
-export async function getUserAvailableLaserLevelsWeb2(_user: string) {
+export async function getUserAvailableLaserLevelsWeb2(_user: string): Promise<number[]> {
     const list: number[] = [];
-    const lasers = await getUserLaserListWeb2(_user.toLowerCase());
+    const lasers = await Promise.all([
+        GetUserItemBalance({login: _user, itemId:8}),
+        GetUserItemBalance({login: _user, itemId:9}),
+        GetUserItemBalance({login: _user, itemId:10})
+    ]);
     return lasers
 }
