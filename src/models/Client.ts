@@ -11,6 +11,7 @@ import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLase
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 import { GameClientData } from "./clientData/GameClientData.js";
+import { PackSender } from "src/services/PackSender.js";
 
 export class Client implements ILogger {
     protected _className: string;
@@ -175,24 +176,39 @@ export class Client implements ILogger {
         }
 
         switch (aData.type) {
+            
             case "reward":
                 // client claim reward click
                 this.logDebug(
                     `Claim Reward: RecordWinnerWithChoose call with (${key}, false)`
                 );
-                RecordWinnerWithChoose(key, false).then(
-                    () => {
-                        // resolve
-                        this.logDebug(`RecordWinnerWithChoose resolved`);
-                        this.sendClaimRewardAccept();
-                    },
-                    (aReasone: any) => {
-                        // rejected
-                        this.logDebug(`RecordWinnerWithChoose rejected`);
-                        this.logError(`RecordWinnerWithChoose: ${aReasone}`);
-                        this.sendClaimRewardReject(aData.type, aReasone);
-                    }
-                );
+
+                try {
+
+                    RecordWinnerWithChoose(key, false).then(
+                        () => {
+                            // resolve
+                            this.logDebug(`RecordWinnerWithChoose resolved`);
+                            this.sendClaimRewardAccept();
+                        },
+                        (aReasone: any) => {
+                            // rejected
+                            this.logDebug(`RecordWinnerWithChoose rejected`);
+                            this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                            this.sendClaimRewardReject(aData.type, aReasone);
+                        }
+                    ); 
+
+                } catch (error) {
+
+                    this.sendClaimRewardReject(aData.type, error);
+                    PackSender.getInstance().message([this], {
+                        msg: `RecordWinnerWithChoose ERROR: ${error}`,
+                        showType: 'popup'
+                    });
+
+                }
+                
                 break;
 
             case "box":
@@ -200,19 +216,33 @@ export class Client implements ILogger {
                 this.logDebug(
                     `Open Box: RecordWinnerWithChoose call with (${key}, true)`
                 );
-                RecordWinnerWithChoose(key, true).then(
-                    () => {
-                        // resolve
-                        this.logDebug(`RecordWinnerWithChoose resolved`);
-                        this.sendClaimBoxAccept();
-                    },
-                    (aReasone: any) => {
-                        // rejected
-                        this.logDebug(`RecordWinnerWithChoose rejected`);
-                        this.logError(`RecordWinnerWithChoose: ${aReasone}`);
-                        this.sendClaimRewardReject(aData.type, aReasone);
-                    }
-                );
+
+                try {
+
+                    RecordWinnerWithChoose(key, true).then(
+                        () => {
+                            // resolve
+                            this.logDebug(`RecordWinnerWithChoose resolved`);
+                            this.sendClaimBoxAccept();
+                        },
+                        (aReasone: any) => {
+                            // rejected
+                            this.logDebug(`RecordWinnerWithChoose rejected`);
+                            this.logError(`RecordWinnerWithChoose: ${aReasone}`);
+                            this.sendClaimRewardReject(aData.type, aReasone);
+                        }
+                    );
+
+                } catch (error) {
+
+                    this.sendClaimRewardReject(aData.type, error);
+                    PackSender.getInstance().message([this], {
+                        msg: `RecordWinnerWithChoose ERROR: ${error}`,
+                        showType: 'popup'
+                    });
+
+                }
+                
                 break;
 
             default:
