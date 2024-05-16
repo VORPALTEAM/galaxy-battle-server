@@ -146,6 +146,49 @@ export async function DeleteDuel (duelId: string) {
   })
 }
 
+export async function GetUserItemBalance(data: {login: string, itemId: number}): Promise<number> {
+  return new Promise((resolve, reject) => {
+      fetch(fastServerUrl.concat('api/store/userbalance'), {
+          method: 'post',
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+              login: data.login,
+              itemId: data.itemId
+          })
+      }).then(res => {
+          if (res.status !== 200) {
+              reject("Failed to get data")
+          }
+          return res.json()
+      }).then((res: { balance: number }) => {
+          resolve(res.balance)
+      })
+  })
+}
+
+export async function GetUserItemBalanceAll(login: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+      fetch(fastServerUrl.concat('api/store/userbalanceall'), {
+          method: 'post',
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+              login,
+          })
+      }).then(res => {
+          if (res.status !== 200) {
+              reject("Failed to get data")
+          }
+          return res.json()
+      }).then((res: { balance: any }) => {
+          resolve(res.balance)
+      })
+  })
+}
+
 export function CheckTelegramAuth(auth_data: TelegramAuthData): {
   success: Boolean;
   error: string;
