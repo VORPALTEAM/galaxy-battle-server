@@ -28,7 +28,7 @@ import { MissileController } from './MissileController.js';
 import { HomingMissile } from '../objects/HomingMissile.js';
 import { ObjectController } from './ObjectController.js';
 import { GameObjectFactory } from '../factory/GameObjectFactory.js';
-import { getUserAvailableLaserLevelsWeb2 } from '../blockchain/boxes/boxesweb2.js';
+import { getUserAvailableLaserLevelsWeb2, getUserLaserListWeb2 } from '../blockchain/boxes/boxesweb2.js';
 import { BC_DuelInfo } from '../blockchain/types.js';
 import { DuelPairRewardCondition, FinishDuel } from '../blockchain/duel.js';
 import { DeleteDuel } from '../blockchain/functions.js';
@@ -828,8 +828,15 @@ export class Game implements ILogger {
 
         if (aClient.isSigned && !aClient.isBot) {
             let login = aClient.gameData.tgAuthData ? aClient.gameData.tgAuthData.username : aClient.walletId;
+
+            // LOCAL TEST
+            // if (login == '0xbf094ffe3628041a8b7d7684e8549381136c6a17') {
+            //     login = 'maxmonax';
+            // }
+
             try {
-                lasers = await getUserAvailableLaserLevelsWeb2(login);
+                // lasers = await getUserAvailableLaserLevelsWeb2(login);
+                lasers = await getUserLaserListWeb2(login);
                 lasers = lasers.map(n => Number(n));
                 this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
                 if (lasers?.length > 0) {
