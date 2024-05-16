@@ -11,7 +11,7 @@ import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLase
 import { Signal } from "../utils/events/Signal.js";
 import { RecordWinnerWithChoose } from "../blockchain/boxes/boxes.js";
 import { GameClientData } from "./clientData/GameClientData.js";
-import { PackSender } from "src/services/PackSender.js";
+import { PackSender } from "../services/PackSender.js";
 
 export class Client implements ILogger {
     protected _className: string;
