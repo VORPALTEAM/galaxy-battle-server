@@ -1,13 +1,9 @@
 import * as THREE from 'three';
 import { Signal } from "../utils/events/Signal.js";
-import { DamageInfo, AttackType, FighterCreateData, ObjectUpdateData, ShipParams } from "../data/Types.js";
+import { AttackType, FighterCreateData, ObjectUpdateData } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
 import { MyMath } from '../utils/MyMath.js';
 import { FieldCell } from './FieldCell.js';
-
-const TOWER_SETTINGS = {
-    hp: 500
-}
 
 export type TowerParams = GameObjectParams & {
     lookDir?: THREE.Vector3,
