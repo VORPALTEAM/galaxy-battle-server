@@ -50,10 +50,14 @@ export class MissileController implements ILogger {
         LogMng.error(`${this._className}: ${aMsg}`, aData);
     }
 
-    private onMissileCollided(aMissile: HomingMissile, aObject: GameObject) {
+    private destroyMissile(aMissile: HomingMissile) {
         aMissile.damage({
             damage: aMissile.hp * 2
         });
+    }
+
+    private onMissileCollided(aMissile: HomingMissile, aObject: GameObject) {
+        this.destroyMissile(aMissile);
     }
 
     private getPlanetByPlayer(aOwner: string): Planet {
@@ -164,7 +168,8 @@ export class MissileController implements ILogger {
             attackParams: {
                 radius: 14,
                 damage: [damage, damage]
-            }
+            },
+            lifeTime: 15
         });
 
         this._missiles.set(newMissile.id, newMissile);
@@ -190,6 +195,7 @@ export class MissileController implements ILogger {
     update(dt: number) {
         this._missiles.forEach((obj) => {
             obj.update(dt);
+            if (obj.lifeTime <= 0) this.destroyMissile(obj);
         });
         this._collisionSystem.update(dt);
     }

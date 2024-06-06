@@ -15,7 +15,8 @@ export type HomingMissileParams = GameObjectParams & {
     level: number,
     velocity: number,
     maxTurnRate: number,
-    target?: GameObject
+    lifeTime: number,
+    target?: GameObject,
 }
 
 export type HomingMissileState = 'active' | 'passive' | 'dead';
@@ -29,7 +30,7 @@ export class HomingMissile extends GameObject {
     protected _lookDir: THREE.Vector3;
     protected _maxVelocity: number;
     protected _velocity: THREE.Vector3;
-    protected _target?: GameObject; // Позиция цели
+    protected _target?: GameObject; // target pos
     protected _maxTurnRate: number; // Максимальный угол поворота за обновление в радианах
     // protected _rotation: number;
     private _globalTurnFactor = 0;
@@ -39,6 +40,9 @@ export class HomingMissile extends GameObject {
     protected _wobbleTime: number;
     protected _wobbleDir: number;
 
+    private _lifeTime = 5;
+    
+        
     constructor(aParams: HomingMissileParams) {
         super(aParams);
         this._className = 'HomingMissile';
@@ -52,6 +56,7 @@ export class HomingMissile extends GameObject {
         this._velocity = new THREE.Vector3();
         this._maxTurnRate = aParams.maxTurnRate;
         this._target = aParams.target;
+        this._lifeTime = aParams.lifeTime;
 
         this._wobble = 0;
         this._wobbleActive = false;
@@ -181,6 +186,10 @@ export class HomingMissile extends GameObject {
 
     }
 
+    get lifeTime() {
+        return this._lifeTime;
+    }
+
     getCreateData(): ObjectCreateData {
         return {
             type: this._type,
@@ -232,6 +241,8 @@ export class HomingMissile extends GameObject {
 
         this.updateVelocity(dt);
         this.updatePosition(dt);
+
+        this._lifeTime -= dt;
     }
     
 }
