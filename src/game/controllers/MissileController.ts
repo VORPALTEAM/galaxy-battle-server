@@ -170,11 +170,11 @@ export class MissileController implements ILogger {
                 radius: 14,
                 damage: [damage, damage]
             },
-            lifeTime: 15
+            lifeTime: 20
         });
 
         this._missiles.set(newMissile.id, newMissile);
-        
+
         this._game.addObject(newMissile);
 
         if (target) {
