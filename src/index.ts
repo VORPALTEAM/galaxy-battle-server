@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import * as fs from 'fs/promises';
 import { Config } from './game/data/Config.js';
 import { DB } from './database/DB.js';
+import { HttpEntrySetup } from './httpentry/index.js';
 
 const configPath = './src/config.json';
 
@@ -67,3 +68,5 @@ let battleServer = new BattleServer(io);
 server.listen(PORT, () => {
     console.log(`Vorpal Galaxy Battle Server listening at port ${PORT}`);
 });
+
+HttpEntrySetup();
