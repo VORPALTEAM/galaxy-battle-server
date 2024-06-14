@@ -123,9 +123,9 @@ export async function GiveResourcesWeb2 (owner: string, login = "", resource: st
     })
 }
 
-export async function DeleteDuel (duelId: string) {
+export async function DeleteDuel (duelId: string, onlyFinish?: boolean) {
   return new Promise((resolve, reject) => {
-    fetch(fastServerUrl.concat('api/deleteduel'), {
+    fetch(fastServerUrl.concat(onlyFinish? 'api/finishduel': 'api/deleteduel'), {
       method: 'post',
       headers: {
         "Content-Type": "application/json"
@@ -133,6 +133,7 @@ export async function DeleteDuel (duelId: string) {
       body: JSON.stringify({
         signature: GetSignedAuthMessage(), 
         duelId, 
+        winner: ""
       })
     }).then(res => {
       if (res.status !== 200) {
