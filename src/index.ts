@@ -1,11 +1,11 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { BattleServer } from './controllers/BattleServer.js';
-import { LogMng } from './utils/LogMng.js';
+import { BattleServer } from './game/controllers/BattleServer.js';
+import { LogMng } from './monax/LogMng.js';
 import dotenv from 'dotenv';
 import * as fs from 'fs/promises';
-import { Config } from './data/Config.js';
+import { Config } from './game/data/Config.js';
 import { DB } from './database/DB.js';
 
 const configPath = './src/config.json';

@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import * as ABIs from "./config/ABI/index.js";
 import * as contracts from "./config/contracts.js"
 import { networkParams } from '../network.js';
-import { LogMng } from '../../utils/LogMng.js';
+import { LogMng } from '../../monax/LogMng.js';
 import { CreateBoxWeb2, GiveResourcesWeb2 } from '../functions.js';
 
 const web3 = new Web3(networkParams.rpcUrl)
