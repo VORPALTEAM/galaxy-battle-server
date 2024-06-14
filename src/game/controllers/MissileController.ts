@@ -98,7 +98,8 @@ export class MissileController implements ILogger {
         return objects;
     }
 
-    private findClosestTargetInSector(aOwner: string,
+    private findClosestTargetInSector(
+        aOwner: string,
         missilePosition: { x: number, y: number },
         missileDirectionVector: { x: number, y: number },
         sectorAngle: number
@@ -173,7 +174,16 @@ export class MissileController implements ILogger {
         });
 
         this._missiles.set(newMissile.id, newMissile);
+        
         this._game.addObject(newMissile);
+
+        if (target) {
+            this._game.rocketTargetCreate({
+                action: 'targetCreate',
+                rocketId: newMissile.id,
+                targetId: target.id
+            });
+        }
     }
 
     explodeMissile(aMissile: HomingMissile) {

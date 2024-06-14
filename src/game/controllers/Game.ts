@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData, ObjectRace, EmotionData } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData, ObjectRace, EmotionData, RocketPacket } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../../interfaces/ILogger.js";
 import { LogMng } from "../../monax/LogMng.js";
@@ -896,6 +896,10 @@ export class Game implements ILogger {
     addObject(obj: GameObject) {
         PackSender.getInstance().objectCreate(this._clients, obj.getCreateData());
         this._objectController.addObject(obj);
+    }
+
+    rocketTargetCreate(aData: RocketPacket) {
+        PackSender.getInstance().rocket(this._clients, aData);
     }
 
     private initGame() {
