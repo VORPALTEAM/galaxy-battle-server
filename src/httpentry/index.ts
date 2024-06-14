@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import dotEnv from "dotenv";
 import Web3 from "web3";
 import { Web3Service } from "../game/services/Web3Service.js";
+import { DuelService } from "src/game/services/DuelService.js";
 
 function SetupHeadersGlobal(req: Request, res: Response, next: NextFunction) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -41,6 +42,7 @@ export function HttpEntrySetup() {
     }
 
     // Call duel cancel function
+    DuelService.getInstance().cancelDuel(login, duelId);
 
     res.status(200).send({ success: true })
   })

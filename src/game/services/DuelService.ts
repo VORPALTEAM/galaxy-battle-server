@@ -108,6 +108,7 @@ export class DuelService implements ILogger {
                     try {
                         this.logDebug(`CALL FinishDuel`);
                         FinishDuel(aInfo.duel_id);
+                        DeleteDuel(aInfo.duel_id, true);
                     } catch (error) {
                         this.logError(`FinishDuel ERROR:`, error);
                     }
@@ -159,5 +160,20 @@ export class DuelService implements ILogger {
         aClient.sendSignRequest();
     }
 
+    cancelDuel(aNick: string, aDuelId: string) {
+
+        let client: Client;
+        this._clients.forEach(aClient => {
+            if (aClient.getPlayerData().isNick && aClient.getPlayerData().name == aNick) {
+                client = aClient;
+            }
+        })
+
+        if (client) {
+            client.sendDuelCancel();
+            this.onDuelCancel.dispatch(client);
+        }
+
+    }
 
 }
