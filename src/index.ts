@@ -1,5 +1,6 @@
 import express from 'express';
 import http from 'http';
+import bodyParser from 'body-parser';
 import { Server } from 'socket.io';
 import { BattleServer } from './game/controllers/BattleServer.js';
 import { LogMng } from './monax/LogMng.js';
@@ -52,6 +53,12 @@ const io = new Server(server, {
         origin: '*'
     }
 });
+
+appHttp.use(
+    bodyParser.urlencoded({
+      extended: true,
+    }),
+  );
 
 appHttp.get('/', DefaultWelcome)
 
