@@ -6,20 +6,25 @@ import { Web3Service } from "../game/services/Web3Service.js";
 import { DuelService } from "../game/services/DuelService.js";
 
 export const DuelCancelAction = async (req: Request, res: Response) => {
-    const { signature, login, duelId }= req.body;
-    const adminWallet = process.env.ADMIN_ADDRESS?.toLowerCase() || "";
-    if (!signature || !login || !duelId) {
-        res.status(400).send({ error: "Invalid entry"});
+    try {
+        const { signature, login, duelId }= req.body;
+        const adminWallet = process.env.ADMIN_ADDRESS?.toLowerCase() || "";
+        if (!signature || !login || !duelId) {
+            res.status(400).send({ error: "Invalid entry"});
+        }
+        const wallet = Web3Service.getInstance().getWalletId(signature).toLowerCase();
+        if (wallet !== adminWallet) {
+            res.status(403).send({ error: "Invalid signature"});
+        }
+    
+        // Call duel cancel function
+        DuelService.getInstance().cancelDuel(login, duelId);
+    
+        res.status(200).send({ success: true })
+    } catch (e:any) {
+        console.log(e.message);
+        res.status(500).send({ error: "Server error"})
     }
-    const wallet = Web3Service.getInstance().getWalletId(signature).toLowerCase();
-    if (wallet !== adminWallet) {
-        res.status(403).send({ error: "Invalid signature"});
-    }
-
-    // Call duel cancel function
-    DuelService.getInstance().cancelDuel(login, duelId);
-
-    res.status(200).send({ success: true })
   }
 
 export const DefaultWelcome = (req: Request, res: Response) => {
