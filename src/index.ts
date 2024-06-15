@@ -37,9 +37,15 @@ DB.init({
 
 // init connection
 
+const portHTTP = process.env.HTTP_PORT || '8081';
+
+const appHttp = express();
+const serverHttpEntry = http.createServer(appHttp);
+
 const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3089';
 
 const app = express();
+
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -47,9 +53,13 @@ const io = new Server(server, {
     }
 });
 
-app.get('/', DefaultWelcome)
+appHttp.get('/', DefaultWelcome)
 
-app.post('/api/duelcancel', DuelCancelAction)
+appHttp.get('/api', (req, res) => {
+    res.status(200).send("Api homepage")
+})
+
+appHttp.post('/api/duelcancel', DuelCancelAction)
 
 
 try {
@@ -68,6 +78,10 @@ let battleServer = new BattleServer(io);
 
 server.listen(PORT, () => {
     console.log(`Vorpal Galaxy Battle Server listening at port ${PORT}`);
+});
+
+serverHttpEntry.listen(portHTTP, () => {
+    console.log(`Http entry listening at port ${PORT}`);
 });
 
 // HttpEntrySetup();
