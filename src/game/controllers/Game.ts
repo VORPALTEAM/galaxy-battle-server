@@ -96,7 +96,7 @@ const SETTINGS = {
 
     towerParams: {
         hp: 500, // old value: 750
-        radius: 3,
+        radius: 4.2,
         attackRadius: 23,
         minDmg: 10, // old value: 55
         maxDmg: 30 // old value: 75
