@@ -54,6 +54,12 @@ const io = new Server(server, {
     }
 });
 
+app.use(
+    bodyParser.urlencoded({
+      extended: true,
+    }),
+  );
+
 appHttp.use(
     bodyParser.urlencoded({
       extended: true,
