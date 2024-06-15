@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import * as fs from 'fs/promises';
 import { Config } from './game/data/Config.js';
 import { DB } from './database/DB.js';
-import { HttpEntrySetup } from './httpentry/index.js';
+import { DuelCancelAction, DefaultWelcome } from './httpentry/index.js';
 
 const configPath = './src/config.json';
 
@@ -47,9 +47,10 @@ const io = new Server(server, {
     }
 });
 
-// app.get('/', (req, res) => {
-//     res.send('Vorpal Galaxy Battle Server is running!');
-// });
+app.get('/', DefaultWelcome)
+
+app.post('/api/duelcancel', DuelCancelAction)
+
 
 try {
     // const rawData = await fs.readFile(configPath);
@@ -69,4 +70,4 @@ server.listen(PORT, () => {
     console.log(`Vorpal Galaxy Battle Server listening at port ${PORT}`);
 });
 
-HttpEntrySetup();
+// HttpEntrySetup();
