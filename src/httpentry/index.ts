@@ -46,4 +46,8 @@ export function HttpEntrySetup() {
 
     res.status(200).send({ success: true })
   })
+
+  app.listen(port, () => {
+    console.log(`Http entry listening port ${port}...`);
+  });
 }
