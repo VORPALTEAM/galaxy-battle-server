@@ -71,6 +71,7 @@ export async function GetOpponent(login: string): Promise<string | null> {
 export async function FinishDuel(duelId: string, winner: string = "") {
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`api/finishduel`);
+    console.log("Finish duel called, url: ", url);
     fetch(url, {
       method: "post",
       headers: {
@@ -82,6 +83,7 @@ export async function FinishDuel(duelId: string, winner: string = "") {
         winner,
       }),
     }).then((res) => {
+      console.log("Server responce: ", res)
       if (res.status !== 200) {
         reject(`Failed to execute, ${res.text()}`);
       }
