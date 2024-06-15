@@ -30,6 +30,10 @@ export function HttpEntrySetup() {
     })
   );
 
+  app.get('/',  (req: Request, res: Response) => {
+    res.status(200).send("Entry homepage")
+  })
+
   app.post('/api/duelcancelled', async (req: Request, res: Response) => {
     const { signature, login, duelId }= req.body;
 
