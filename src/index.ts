@@ -81,7 +81,7 @@ server.listen(PORT, () => {
 });
 
 serverHttpEntry.listen(portHTTP, () => {
-    console.log(`Http entry listening at port ${PORT}`);
+    console.log(`Http entry listening at port ${portHTTP}`);
 });
 
 // HttpEntrySetup();
