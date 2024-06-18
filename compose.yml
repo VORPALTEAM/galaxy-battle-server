@@ -3,8 +3,8 @@ services:
   backend:
     image: vorpal_gbs:latest
     build:
-      context: backend
-      dockerfile: .
+      context: .
+      dockerfile: Dockerfile
       args:
         - WS_PORT=${WS_PORT}
         - HTTP_PORT=${HTTP_PORT}
