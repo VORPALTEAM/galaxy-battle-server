@@ -43,6 +43,9 @@ const portHTTP = process.env.HTTP_PORT || '8081';
 const appHttp = express();
 const app = express();
 
+app.use(express.json());
+appHttp.use(express.json());
+
 app.use(
     bodyParser.urlencoded({
       extended: true,
