@@ -4,6 +4,12 @@ import { DuelService } from "../game/services/DuelService.js";
 
 export const DuelCancelAction = async (req: Request, res: Response) => {
     try {
+        console.log("Request: ", req.headers, req)
+
+        if (!req.body) {
+          res.status(400).send({ error: "Invalid entry"});
+          return;
+        }
         const { signature, login, duelId }= req.body;
         const adminWallet = process.env.ADMIN_ADDRESS?.toLowerCase() || "";
         if (!signature || !login || !duelId) {
