@@ -1,4 +1,3 @@
-import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import { Server } from 'socket.io';
@@ -9,6 +8,8 @@ import * as fs from 'fs/promises';
 import { Config } from './game/data/Config.js';
 import { DB } from './database/DB.js';
 import { DuelCancelAction, DefaultWelcome } from './httpentry/index.js';
+
+const express = require('express');
 
 const configPath = './src/config.json';
 
