@@ -1,7 +1,4 @@
 import express, { Request, Response, NextFunction } from "express";
-import bodyParser from "body-parser";
-import dotEnv from "dotenv";
-import Web3 from "web3";
 import { Web3Service } from "../game/services/Web3Service.js";
 import { DuelService } from "../game/services/DuelService.js";
 

@@ -41,18 +41,7 @@ DB.init({
 const portHTTP = process.env.HTTP_PORT || '8081';
 
 const appHttp = express();
-const serverHttpEntry = http.createServer(appHttp);
-
-const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3089';
-
 const app = express();
-
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: '*'
-    }
-});
 
 app.use(
     bodyParser.urlencoded({
@@ -65,6 +54,18 @@ appHttp.use(
       extended: true,
     }),
   );
+  
+const serverHttpEntry = http.createServer(appHttp);
+
+const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3089';
+
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*'
+    }
+});
 
 appHttp.get('/', DefaultWelcome)
 
