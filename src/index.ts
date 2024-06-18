@@ -54,6 +54,9 @@ appHttp.use(
       extended: true,
     }),
   );
+
+app.use(bodyParser.json());
+appHttp.use(bodyParser.json());
   
 const serverHttpEntry = http.createServer(appHttp);
 
