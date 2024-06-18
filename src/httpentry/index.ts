@@ -9,10 +9,13 @@ export const DuelCancelAction = async (req: Request, res: Response) => {
           res.status(400).send({ error: "Invalid entry"});
           return;
         }
-        const { signature, login, duelId } = req.body;
+        const signature = req.body?.signature;
+        const login = req.body?.login;
+        const duelId = req.body?.duelId;
         const adminWallet = process.env.ADMIN_ADDRESS?.toLowerCase() || "";
         if (!signature || !login || !duelId) {
             res.status(400).send({ error: "Invalid entry"});
+            return;
         }
         const wallet = Web3Service.getInstance().getWalletId(signature).toLowerCase();
         if (wallet !== adminWallet) {
