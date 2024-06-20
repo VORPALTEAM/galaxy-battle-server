@@ -3,38 +3,38 @@ import { Web3Service } from "../game/services/Web3Service.js";
 import { DuelService } from "../game/services/DuelService.js";
 
 export const DuelCancelAction = async (req: Request, res: Response) => {
-    console.log("Request: ", req.headers, req.body)
-    try {
-        if (!req.body) {
-          res.status(400).send({ error: "Invalid entry"});
-          return;
-        }
-        const signature = req.body?.signature;
-        const login = req.body?.login;
-        const duelId = req.body?.duelId;
-        const adminWallet = process.env.ADMIN_ADDRESS?.toLowerCase() || "";
-        if (!signature || !login || !duelId) {
-            res.status(400).send({ error: "Invalid entry"});
-            return;
-        }
-        const wallet = Web3Service.getInstance().getWalletId(signature).toLowerCase();
-        if (wallet !== adminWallet) {
-            res.status(403).send({ error: "Invalid signature"});
-        }
-    
-        // Call duel cancel function
-        DuelService.getInstance().cancelDuel(login, duelId);
-    
-        res.status(200).send({ success: true })
-    } catch (e:any) {
-        console.log(e.message);
-        res.status(500).send({ error: "Server error"})
+  console.log("DuelCancelAction Request: ", req.headers, req.body)
+  try {
+    if (!req.body) {
+      res.status(400).send({ error: "Invalid entry" });
+      return;
     }
+    const signature = req.body?.signature;
+    const login = req.body?.login;
+    const duelId = req.body?.duelId;
+    const adminWallet = process.env.ADMIN_ADDRESS?.toLowerCase() || "";
+    if (!signature || !login || !duelId) {
+      res.status(400).send({ error: "Invalid entry" });
+      return;
+    }
+    const wallet = Web3Service.getInstance().getWalletId(signature).toLowerCase();
+    if (wallet !== adminWallet) {
+      res.status(403).send({ error: "Invalid signature" });
+    }
+
+    // Call duel cancel function
+    DuelService.getInstance().cancelDuel(login, duelId);
+
+    res.status(200).send({ success: true })
+  } catch (e: any) {
+    console.log(`Error:`, e.message);
+    res.status(500).send({ error: "Server error" })
   }
+}
 
 export const DefaultWelcome = (req: Request, res: Response) => {
-    res.status(200).send("Entry homepage")
-  }
+  res.status(200).send("Entry homepage")
+}
 
 export function SetupHeadersGlobal(req: Request, res: Response, next: NextFunction) {
   res.setHeader("Access-Control-Allow-Origin", "*");
