@@ -18,3 +18,11 @@ export type SignData = {
     walletId?: string,
     tgAuthData?: TGAuthData
 }
+
+export type SearchGameData = {
+    isFreeConnect?: boolean,
+    isChallenge?: boolean,
+    withBot?: boolean,
+    duelCmd?: 'create' | 'connect',
+    duelNumber?: number,
+}
