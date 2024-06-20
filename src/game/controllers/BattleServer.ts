@@ -70,6 +70,7 @@ export class BattleServer implements ILogger {
     }
 
     onDuelCancel(aClient: Client) {
+        this.logDebug(`onDuelCancel...`);
         this._matchmaker.removeClient(aClient);
     }
 

@@ -162,6 +162,8 @@ export class DuelService implements ILogger {
 
     cancelDuel(aNick: string, aDuelId: string) {
 
+        this.logDebug(`cancelDuel started...`);
+
         let client: Client;
         this._clients.forEach(aClient => {
             if (aClient.getPlayerData().isNick && aClient.getPlayerData().name == aNick) {
@@ -170,8 +172,14 @@ export class DuelService implements ILogger {
         })
 
         if (client) {
+            this.logDebug(`cancelDuel: client found`);
+            this.logDebug(`cancelDuel: send duel cancel to client`);
             client.sendDuelCancel();
+            this.logDebug(`cancelDuel: onDuelCancel.dispatch`);
             this.onDuelCancel.dispatch(client);
+        }
+        else {
+            this.logDebug(`cancelDuel: client == null`);
         }
 
     }
