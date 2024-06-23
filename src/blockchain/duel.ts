@@ -106,6 +106,7 @@ export function DuelPairRewardCondition (part1: string, part2: string): Promise<
         login2: part2
       }),
     }).then((res) => {
+      console.log("Condition responce status: ", res.status)
       if (res.status !== 200) {
         reject(`Failed to execute, ${res.text()}`);
       }
