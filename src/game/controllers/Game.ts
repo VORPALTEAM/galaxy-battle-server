@@ -403,6 +403,19 @@ export class Game implements ILogger {
         message: error,
       };
     }
+    if (!isDuelRewarded) {
+      try {
+        isDuelRewarded = await DuelPairRewardCondition(
+          this._duelData.login1,
+          this._duelData.login2
+        );
+      } catch (error) {
+        console.log("Err: ", error);
+        duelRewardError = {
+          message: error,
+        };
+      }
+    }
     console.log("Is reward?: ", isDuelRewarded);
 
     for (let i = 0; i < this._clients.length; i++) {
