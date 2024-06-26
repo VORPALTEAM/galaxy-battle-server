@@ -184,7 +184,7 @@ export class Client implements ILogger {
                 );
 
                 try {
-
+                    console.log("Record winner: ", key)
                     RecordWinnerWithChoose(key, false).then(
                         () => {
                             // resolve

@@ -96,6 +96,10 @@ export async function FinishDuel(duelId: string, winner: string = "") {
 export function DuelPairRewardCondition (part1: string, part2: string): Promise<boolean> {
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`api/duelrewardcondition`);
+    console.log("Pair: ", {
+      login1: part1,
+      login2: part2
+    })
     fetch(url, {
       method: "post",
       headers: {
@@ -106,6 +110,7 @@ export function DuelPairRewardCondition (part1: string, part2: string): Promise<
         login2: part2
       }),
     }).then((res) => {
+      console.log("Condition responce status: ", res.status)
       if (res.status !== 200) {
         reject(`Failed to execute, ${res.text()}`);
       }
