@@ -135,7 +135,16 @@ export type GameCompleteData = {
     hideClaimBtn?: boolean,
     showBoxClaim?: boolean,
     boxLevel?: number,
-    ownerName: string
+    ownerName: string,
+    params: {
+        damageDone: number,
+        goldEarned: number,
+        expReceived: number,
+        rating: {
+            previous: number,
+            current: number
+        }
+    }
 }
 
 export type DamageInfo = {

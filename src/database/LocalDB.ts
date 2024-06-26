@@ -73,6 +73,8 @@ export const LocalDB: {[index: string]: any} = {
     linkor_explosionDamage_min: 40,
     linkor_explosionDamage_max: 60,
     linkor_explosionDamage_incPercentByLevel: 10,
-    linkor_explosionRadius: 3
+    linkor_explosionRadius: 3,
+
+    
 
 }

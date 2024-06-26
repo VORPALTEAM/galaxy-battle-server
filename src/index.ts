@@ -25,7 +25,6 @@ else {
     dotenv.config({ path: '.env.production' });
 }
 
-
 // init DB
 
 DB.init({
@@ -64,7 +63,6 @@ appHttp.use(bodyParser.json());
 const serverHttpEntry = http.createServer(appHttp);
 
 const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3089';
-
 
 const server = http.createServer(app);
 const io = new Server(server, {

@@ -387,13 +387,31 @@ export class Game implements ILogger {
                     showBoxClaim: isPlayWithBot ? false : isWinStreak,
                     boxLevel: isPlayWithBot ? null : 1,
                     hideClaimBtn: isPlayWithBot,
-                    ownerName: nameDisplay
+                    ownerName: nameDisplay,
+                    params: {
+                        damageDone: 0,
+                        expReceived: this._expMng.getExpInfo(client.walletId).exp,
+                        goldEarned: 0,
+                        rating: {
+                            previous: 0,
+                            current: 100
+                        }
+                    }
                 };
             }
             else {
                 data = {
                     status: 'loss',
-                    ownerName: nameDisplay
+                    ownerName: nameDisplay,
+                    params: {
+                        damageDone: 0,
+                        expReceived: this._expMng.getExpInfo(client.walletId).exp,
+                        goldEarned: 0,
+                        rating: {
+                            previous: 0,
+                            current: 100
+                        }
+                    }
                 };
             }
 
@@ -1019,12 +1037,14 @@ export class Game implements ILogger {
 
     onObjectKill(aObj: GameObject) {
 
-        let objOwner = aObj.owner;
+        const objOwner = aObj.owner;
         let attackerClient: Client;
+
         for (let i = 0; i < this._clients.length; i++) {
             const cli = this._clients[i];
             if (cli.walletId != objOwner) {
                 attackerClient = cli;
+                break;
             }
         }
 
