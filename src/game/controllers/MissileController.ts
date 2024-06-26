@@ -78,6 +78,7 @@ export class MissileController implements ILogger {
             if (!isEnemy) return;
             if (obj.isImmortal) return;
             if (obj instanceof Star) return;
+            if (obj instanceof HomingMissile) return;
             res.push(obj);
         });
         return res;
