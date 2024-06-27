@@ -1,4 +1,4 @@
-import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData, AttackType, DamageInfo, ExpData, ExplosionType, ExplosionData, SniperData, AcceptScreenData, EmotionData, MessagePack, RocketPacket } from "../data/Types.js";
+import { FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData, PackTitle, StarCreateData, StartGameData, AttackType, DamageInfo, ExpData, ExplosionType, ExplosionData, SniperData, AcceptScreenData, EmotionData, MessagePack, RocketPacket, DamageData, ExpTextData, GoldTextData } from "../data/Types.js";
 import { Client } from "../models/Client.js";
 
 export class PackSender {
@@ -90,16 +90,20 @@ export class PackSender {
         this.sendData(aClients, PackTitle.rayStop, aData);
     }
 
-    damage(aClients: Client[], aData: {
-        id: number,
-        pos: { x: number, y: number, z: number },
-        info: DamageInfo
-    }) {
+    damage(aClients: Client[], aData: DamageData) {
         this.sendData(aClients, PackTitle.damage, aData);
     }
 
     planetLaserAttack(aClients: Client[], aData: PlanetLaserData) {
         this.sendData(aClients, PackTitle.planetLaser, aData);
+    }
+
+    expText(aClient: Client, aData: ExpTextData) {
+        this.sendData([aClient], PackTitle.expText, aData);
+    }
+
+    goldText(aClient: Client, aData: GoldTextData) {
+        this.sendData([aClient], PackTitle.goldText, aData);
     }
 
     exp(aClient: Client, aData: ExpData) {

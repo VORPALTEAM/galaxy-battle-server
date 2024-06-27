@@ -412,6 +412,8 @@ export class Game implements ILogger {
                 : client.walletId;
             let data: GameCompleteData;
 
+            const expData = this._expMng.getExpInfo(client.walletId);
+
             if (isWinner) {
                 data = {
                     status: "win",
@@ -421,8 +423,8 @@ export class Game implements ILogger {
                     ownerName: nameDisplay,
                     params: {
                         damageDone: 0,
-                        expReceived: this._expMng.getExpInfo(client.walletId).exp,
-                        goldEarned: 0,
+                        expReceived: expData.exp,
+                        goldEarned: expData.gold,
                         rating: {
                             previous: 0,
                             current: 100
@@ -435,8 +437,8 @@ export class Game implements ILogger {
                     ownerName: nameDisplay,
                     params: {
                         damageDone: 0,
-                        expReceived: this._expMng.getExpInfo(client.walletId).exp,
-                        goldEarned: 0,
+                        expReceived: expData.exp,
+                        goldEarned: expData.gold,
                         rating: {
                             previous: 0,
                             current: 100
@@ -1088,11 +1090,20 @@ export class Game implements ILogger {
         }
 
         const activeKill = objAtkInfo.attacketType == 'Planet';
+        
+        let goldInc = this._expMng.addGoldForObject(attackerClient.walletId, aObj, activeKill);
+        
+        const prevExp = this._expMng.getExpInfo(attackerClient.walletId).exp;
         let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj, activeKill);
-        // this.logDebug(`onObjectKill: expData:`);
-        // console.log(expData);
+        const dtExp = expData.exp - prevExp;
 
         PackSender.getInstance().exp(attackerClient, expData);
+
+        PackSender.getInstance().goldText(attackerClient, {
+            pos: aObj.position.clone(),
+            gold: goldInc
+        });
+
     }
 
     /**

@@ -5,6 +5,7 @@ import { MyMath } from "../../monax/MyMath.js";
 import { Fighter } from "../objects/Fighter.js";
 import { Linkor } from "../objects/Linkor.js";
 import { ExpData, SkillData } from "../data/Types.js";
+import { Tower } from "../objects/Tower.js";
 
 const CONFIG = {
     
@@ -47,6 +48,23 @@ const CONFIG = {
                 max: 120
             }
         },
+        tower: {
+            passiveKill: {
+                min: 60,
+                max: 80
+            },
+            activeKill: {
+                min: 90,
+                max: 120
+            }
+        },
+    },
+
+    gold: {
+        common: {
+            passiveKill: 10,
+            activeKill: 100
+        }
     },
 
     skills: [
@@ -106,6 +124,7 @@ function levelByExp(aExp: number): number {
 
 class ExpRecord {
     private _exp = 0;
+    private _gold = 0;
     private _skillPoints = 0;
     private _skillLevels = [1, 0, 0, 0];
 
@@ -115,6 +134,10 @@ class ExpRecord {
 
     public get exp() {
         return this._exp;
+    }
+
+    public get gold() {
+        return this._gold;
     }
 
     public get skillPoints() {
@@ -128,6 +151,10 @@ class ExpRecord {
         if (level > prevLevel) {
             this._skillPoints++;
         }
+    }
+
+    addGold(aGold: number) {
+        this._gold += aGold;
     }
 
     isSkillLevelUpAvailable(aSkillId: number) {
@@ -261,6 +288,20 @@ export class ExpManager implements ILogger {
         return MyMath.randomIntInRange(data.min, data.max);
     }
 
+    private expForTower(aActiveKill: boolean): number {
+        let data = aActiveKill ?
+            CONFIG.exp.tower.activeKill :
+            CONFIG.exp.tower.passiveKill;
+        return MyMath.randomIntInRange(data.min, data.max);
+    }
+
+    private goldForObject(aActiveKill: boolean): number {
+        let value = aActiveKill ?
+            CONFIG.gold.common.activeKill :
+            CONFIG.gold.common.passiveKill;
+        return value;
+    }
+
     private getLevelExpPercent(aExp: number): number {
         const levels = CONFIG.levels;
         for (let i = 0; i < levels.length; i++) {
@@ -291,6 +332,7 @@ export class ExpManager implements ILogger {
         return {
             exp: currExp,
             level: currLevel,
+            gold: exp.gold,
             levelExpPercent: levelExpPercent,
             skills: exp.getSkills()
         };
@@ -302,14 +344,25 @@ export class ExpManager implements ILogger {
     }
 
     addExpForObject(aClientId: string, aObj: GameObject, aIsActiveKill: boolean): ExpData {
-        let exp = this.getExpRecord(aClientId);
+        let record = this.getExpRecord(aClientId);
         if (aObj instanceof Fighter) {
-            exp.addExp(this.expForFighter(aIsActiveKill));
+            record.addExp(this.expForFighter(aIsActiveKill));
         }
         else if (aObj instanceof Linkor) {
-            exp.addExp(this.expForLinkor(aIsActiveKill));
+            record.addExp(this.expForLinkor(aIsActiveKill));
+        }
+        else if (aObj instanceof Tower) {
+            record.addExp(this.expForTower(aIsActiveKill));
         }
         return this.getExpInfo(aClientId);
+    }
+
+    addGoldForObject(aClientId: string, aObj: GameObject, aIsActiveKill: boolean): number {
+        let record = this.getExpRecord(aClientId);
+        const gold = this.goldForObject(aIsActiveKill);
+        // this.logDebug(`gold value: ${gold}`);
+        record.addGold(gold);
+        return gold;
     }
 
     upSkillLevel(aClientId: string, aSkillId: number): ExpData {

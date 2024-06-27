@@ -35,6 +35,8 @@ export enum PackTitle {
     rayStop = 'rayStop',
     planetLaser = 'planetLaser',
     damage = 'damage',
+    expText = 'expText',
+    goldText = 'goldText',
     exp = 'exp',
     skill = 'skill',
     
@@ -198,6 +200,12 @@ export type PlanetLaserData = {
     skin: PlanetLaserSkin
 }
 
+export type DamageData = {
+    id: number,
+    pos: { x: number, y: number, z: number },
+    info: DamageInfo
+}
+
 export type SkillData = {
     level: number,
     levelUpAvailable: boolean,
@@ -209,8 +217,22 @@ export type SkillData = {
 export type ExpData = {
     exp: number,
     level: number,
+    gold: number,
     levelExpPercent: number,
     skills: SkillData[]
+}
+
+/**
+ * Exp text in battle field
+ */
+export type ExpTextData = {
+    pos: { x: number, y: number, z: number },
+    exp: number
+}
+
+export type GoldTextData = {
+    pos: { x: number, y: number, z: number },
+    gold: number
 }
 
 export type SkillRequest = {
