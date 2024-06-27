@@ -301,13 +301,13 @@ export class ExpManager implements ILogger {
         expRec.addExp(aExp);
     }
 
-    addExpForObject(aClientId: string, aObj: GameObject): ExpData {
+    addExpForObject(aClientId: string, aObj: GameObject, aIsActiveKill: boolean): ExpData {
         let exp = this.getExpRecord(aClientId);
         if (aObj instanceof Fighter) {
-            exp.addExp(this.expForFighter(false));
+            exp.addExp(this.expForFighter(aIsActiveKill));
         }
         else if (aObj instanceof Linkor) {
-            exp.addExp(this.expForLinkor(false));
+            exp.addExp(this.expForLinkor(aIsActiveKill));
         }
         return this.getExpInfo(aClientId);
     }

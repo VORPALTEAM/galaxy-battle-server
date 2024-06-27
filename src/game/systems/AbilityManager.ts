@@ -102,7 +102,9 @@ export class AbilityManager implements ILogger {
                         obj.damage({
                             damage: damage,
                             isCrit: false,
-                            isMiss: false
+                            isMiss: false,
+                            attackerClientId: aClient.walletId,
+                            attacketType: 'Planet'
                         });
                     }
 

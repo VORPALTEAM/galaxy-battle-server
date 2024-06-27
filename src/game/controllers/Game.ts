@@ -374,10 +374,12 @@ export class Game implements ILogger {
             message: string;
         };
 
+        console.log(`completeGame: logins: ${this._duelData?.login1}; ${this._duelData?.login2};`);
+
         try {
             isDuelRewarded = await DuelPairRewardCondition(
-                this._duelData.login1,
-                this._duelData.login2
+                this._duelData?.login1,
+                this._duelData?.login2
             );
         } catch (error) {
             console.log("Err: ", error);
@@ -654,6 +656,14 @@ export class Game implements ILogger {
         return null;
     }
 
+    private getClientByEnemyWallet(aWalletId: string): Client | null {
+        for (let i = 0; i < this._clients.length; i++) {
+            const client = this._clients[i];
+            if (client.walletId != aWalletId) return client;
+        }
+        return null;
+    }
+
     onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number; y: number }) {
         const level = 1;
         const shipParams = SETTINGS.fighters;
@@ -827,6 +837,7 @@ export class Game implements ILogger {
         aEnemy.damage({
             ...dmg,
             attackerId: aShip.id,
+            attacketType: 'FighterShip'
         });
     }
 
@@ -1062,24 +1073,22 @@ export class Game implements ILogger {
 
     onObjectKill(aObj: GameObject) {
 
+        // console.log(`onObjectKill: `, aObj);
+
         const objOwner = aObj.owner;
-        let attackerClient: Client;
-        
-        for (let i = 0; i < this._clients.length; i++) {
-            const cli = this._clients[i];
-            if (cli.walletId != objOwner) {
-                attackerClient = cli;
-                break;
-            }
+        const objAtkInfo = aObj.lastAttackInfo;
+        const attackerClient = this.getClientByEnemyWallet(objOwner);
+
+        if (!attackerClient) {
+            console.log(`!attackerClient`);
+            return;
         }
 
-        // this.logDebug(`onObjectKill owner: ${objOwner}, attacker id: ${attackerClient.walletId}`);
-
-        if (!attackerClient) return;
-
-        let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj);
+        const activeKill = objAtkInfo.attacketType == 'Planet';
+        let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj, activeKill);
         // this.logDebug(`onObjectKill: expData:`);
         // console.log(expData);
+
         PackSender.getInstance().exp(attackerClient, expData);
     }
 
@@ -1105,8 +1114,11 @@ export class Game implements ILogger {
         this._missilesController.update(dt);
 
         let objects = this._objectController.objects;
+
         objects.forEach((obj) => {
+
             if (!obj.isImmortal && obj.hp <= 0) {
+
                 if (obj instanceof Star) {
                     let stars: Star[] = this.getAllStars();
                     if (stars.length <= 1) return;

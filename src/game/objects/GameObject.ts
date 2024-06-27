@@ -19,7 +19,10 @@ type AttackParams = {
 }
 
 export type AttackInfo = DamageInfo & {
-    attackerId?: number
+    // attacker game object id
+    attackerId?: number,
+    attackerClientId?: string,
+    attacketType?: ObjectType
 }
 
 export type GameObjectParams = {
@@ -52,6 +55,9 @@ export class GameObject implements IUpdatable, ILogger {
     protected _attackParams: AttackParams;
     //
     protected _attackObject: GameObject;
+
+    private _lastAttackInfo: AttackInfo;
+    
     /**
      * (sender)
      */
@@ -140,6 +146,10 @@ export class GameObject implements IUpdatable, ILogger {
         return this._mesh;
     }
 
+    get lastAttackInfo(): AttackInfo {
+        return this._lastAttackInfo;
+    }
+
     getEvasion(): number {
         let res = 0;
         try {
@@ -224,6 +234,7 @@ export class GameObject implements IUpdatable, ILogger {
 
     damage(aAtkInfo: AttackInfo) {
         const dmg = aAtkInfo.damage;
+        if (this._hp <= 0) return;
         if (!aAtkInfo.isMiss) {
             let shieldDmg = Math.min(this._shield, dmg);
             let hpDmg = Math.min(this._hp, dmg - shieldDmg);
@@ -231,6 +242,7 @@ export class GameObject implements IUpdatable, ILogger {
             this._hp -= hpDmg;
         }
         this.onDamage.dispatch(this, aAtkInfo);
+        this._lastAttackInfo = aAtkInfo;
     }
 
     lookAt(aTarget: THREE.Vector3) {
