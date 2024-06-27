@@ -382,21 +382,24 @@ export class Game implements ILogger {
                 this._duelData?.login2
             );
         } catch (error) {
-            console.log("Err: ", error);
+            console.log("Error: ", error);
             duelRewardError = {
-                message: error,
+                message: error
             };
         }
+
+        // TODO: redo
+        // repeat: 2nd try
         if (!isDuelRewarded) {
             try {
                 isDuelRewarded = await DuelPairRewardCondition(
-                    this._duelData.login1,
-                    this._duelData.login2
+                    this._duelData?.login1,
+                    this._duelData?.login2
                 );
             } catch (error) {
-                console.log("Err: ", error);
+                console.log("Error: ", error);
                 duelRewardError = {
-                    message: error,
+                    message: error
                 };
             }
         }

@@ -100,6 +100,18 @@ export function DuelPairRewardCondition (part1: string, part2: string): Promise<
       login1: part1,
       login2: part2
     })
+
+    if (!part1) {
+      reject(`Failed to execute: login1 == null`);
+      return;
+    }
+    if (!part2) {
+      reject(`Failed to execute: login2 == null`);
+      return;
+    }
+
+    console.log(`continue DuelPairRewardCondition...`);
+
     fetch(url, {
       method: "post",
       headers: {
@@ -111,10 +123,14 @@ export function DuelPairRewardCondition (part1: string, part2: string): Promise<
       }),
     }).then((res) => {
       console.log("Condition responce status: ", res.status)
-      if (res.status !== 200) {
+      if (!res || res.status !== 200) {
         reject(`Failed to execute, ${res.text()}`);
       }
-      return res.json();
+      try {
+        return res.json();
+      } catch (error) {
+        reject(`Failed to execute, ${error}`);
+      }
     }).then((res: { reward: boolean}) => {
       resolve(res.reward);
       return;
