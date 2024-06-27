@@ -373,11 +373,7 @@ export class Game implements ILogger {
         let duelRewardError: {
             message: string;
         };
-        console.log(
-            "Condition data: ",
-            this._duelData.login1,
-            this._duelData.login2
-        );
+
         try {
             isDuelRewarded = await DuelPairRewardCondition(
                 this._duelData.login1,
@@ -402,7 +398,6 @@ export class Game implements ILogger {
                 };
             }
         }
-        console.log("Is reward?: ", isDuelRewarded);
 
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
