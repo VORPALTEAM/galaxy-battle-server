@@ -83,22 +83,6 @@ export function GetSignedAuthMessage() {
   return signature;
 }
 
-export async function CreateBoxWeb2 (owner: string, login = "", level = 1) {
-    return new Promise((resolve, reject) => {
-        fetch(fastServerUrl.concat('api/boxes/create'), {
-            method: 'post',
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              signature: GetSignedAuthMessage(), 
-              ownerAddress: owner, 
-              ownerLogin: login || owner,
-              level: level
-            })
-          }).then(res => res.json()).then(res => resolve(res))
-    })
-}
 
 export async function GiveResourcesWeb2 (owner: string, login = "", resource: string, amount: number) {
     return new Promise((resolve, reject) => {
@@ -119,6 +103,9 @@ export async function GiveResourcesWeb2 (owner: string, login = "", resource: st
           }).then(res => {
             resolve(res)
             return res
+          }).catch((e) => {
+            console.log(e);
+            reject("Failed to get data")
           })
     })
 }
@@ -146,6 +133,9 @@ export async function DeleteDuel (duelId: string, onlyFinish?: boolean) {
     }).then(res => {
       resolve(res)
       return res
+    }).catch((e) => {
+      console.log(e);
+      reject("Failed to get data")
     })
   })
 }
@@ -168,6 +158,9 @@ export async function GetUserItemBalance(data: {login: string, itemId: number}):
           return res.json()
       }).then((res: { balance: number }) => {
           resolve(res.balance)
+      }).catch((e) => {
+        console.log(e);
+        reject("Failed to get data")
       })
   })
 }
@@ -189,6 +182,9 @@ export async function GetUserItemBalanceAll(login: string): Promise<any> {
           return res.json()
       }).then((res: { balance: any }) => {
           resolve(res.balance)
+      }).catch((e) => {
+        console.log(e);
+        reject("Failed to get data")
       })
   })
 }

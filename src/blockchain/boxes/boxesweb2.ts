@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { fastServerUrl } from "../network.js";
-import { GetUserItemBalance } from '../functions.js';
+import { GetSignedAuthMessage, GetUserItemBalance } from '../functions.js';
 
 export type web2assets = {
     laser1: number;
@@ -112,6 +112,24 @@ export async function getBoxDataWeb2(_boxId: number) {
              }
              return res.assets;
           })
+    })
+}
+
+
+export async function CreateBoxWeb2 (owner: string, login = "", level = 1) {
+    return new Promise((resolve, reject) => {
+        fetch(fastServerUrl.concat('api/boxes/create'), {
+            method: 'post',
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              signature: GetSignedAuthMessage(), 
+              ownerAddress: owner, 
+              ownerLogin: login || owner,
+              level: level
+            })
+          }).then(res => res.json()).then(res => resolve(res))
     })
 }
 
