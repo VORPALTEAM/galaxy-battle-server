@@ -193,7 +193,7 @@ export class MissileController implements ILogger {
         let objects = this.getObjectsInAtkRadius(aMissile);
         objects.map(obj => obj.damage({
             damage: dmg.damage,
-            attackerId: aMissile.owner,
+            attackerId: aMissile.id,
             attacketType: 'HomingMissile'
         }));
         // send explosion pack

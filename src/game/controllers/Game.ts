@@ -2,7 +2,8 @@ import * as THREE from "three";
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
 import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData,
-    ObjectRace, EmotionData, RocketPacket } from "../data/Types.js";
+    ObjectRace, EmotionData, RocketPacket, 
+    ObjectType} from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../../interfaces/ILogger.js";
 import { LogMng } from "../../monax/LogMng.js";
@@ -1093,7 +1094,8 @@ export class Game implements ILogger {
             return;
         }
 
-        const activeKill = objAtkInfo.attacketType == 'Planet';
+        const types: ObjectType[] = ['Planet', 'HomingMissile'];
+        const activeKill = types.indexOf(objAtkInfo.attacketType) >= 0;
         
         let goldInc = this._expMng.addGoldForObject(attackerClient.walletId, aObj, activeKill);
         
