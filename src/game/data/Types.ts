@@ -253,8 +253,6 @@ export type DebugTestData = {
     action: 'win' | 'loss'
 }
 
-// export type ExplosionType = 'rocket';
-
 export type ExplosionData = {
     type: ObjectType,
     pos: { x: number, y: number, z: number }
