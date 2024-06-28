@@ -174,6 +174,16 @@ export class FighterManager implements ILogger {
                 this._field.takeCellByObject(aFighter.id, nextCell);
 
             } break;
+
+            case 'fight':
+                // check target distance
+                if (aFighter.attackObject) {
+                    let dist = aFighter.position.distanceTo(aFighter.attackObject.position);
+                    if (dist > aFighter.attackRadius) {
+                        aFighter.stopAttack();
+                    }
+                }
+                break;
             
         }
 
