@@ -1,4 +1,4 @@
-import { MyMath } from "src/monax/MyMath.js";
+import { MyMath } from "../../monax/MyMath.js";
 import { Signal } from "../../monax/events/Signal.js";
 import { ObjectUpdateData, StarCreateData } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
