@@ -197,11 +197,15 @@ export class LinkorManager implements ILogger {
 
             case 'fight':
                 // check target distance
-                if (aShip.attackObject) {
-                    let dist = aShip.position.distanceTo(aShip.attackObject.position);
-                    if (dist > aShip.attackRadius) {
-                        aShip.stopAttack();
+                try {
+                    if (aShip.attackObject) {
+                        let dist = aShip.position?.distanceTo(aShip.attackObject.position);
+                        if (dist > aShip.attackRadius) {
+                            aShip.stopAttack();
+                        }
                     }
+                } catch (error) {
+                    
                 }
                 break;
 

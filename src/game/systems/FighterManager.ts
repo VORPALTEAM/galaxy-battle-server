@@ -177,11 +177,15 @@ export class FighterManager implements ILogger {
 
             case 'fight':
                 // check target distance
-                if (aFighter.attackObject) {
-                    let dist = aFighter.position.distanceTo(aFighter.attackObject.position);
-                    if (dist > aFighter.attackRadius) {
-                        aFighter.stopAttack();
+                try {
+                    if (aFighter.attackObject) {
+                        let dist = aFighter.position?.distanceTo(aFighter.attackObject.position);
+                        if (dist > aFighter.attackRadius) {
+                            aFighter.stopAttack();
+                        }
                     }
+                } catch (error) {
+                    
                 }
                 break;
             

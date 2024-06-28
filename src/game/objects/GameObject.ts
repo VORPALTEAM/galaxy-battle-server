@@ -143,7 +143,7 @@ export class GameObject implements IUpdatable, ILogger {
     }
 
     get position(): THREE.Vector3 {
-        return this._mesh.position.clone();
+        return this._mesh?.position?.clone();
     }
 
     get mesh(): THREE.Mesh {
