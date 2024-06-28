@@ -9,7 +9,7 @@ export class Fighter extends SpaceShip {
 
     constructor(aParams: FighterParams) {
         super(aParams);
-        this._type = 'FighterShip';
+        this._objectType = 'FighterShip';
     }
     
 

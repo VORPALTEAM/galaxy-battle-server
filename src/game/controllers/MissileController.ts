@@ -198,7 +198,7 @@ export class MissileController implements ILogger {
         }));
         // send explosion pack
         PackSender.getInstance().explosion(this._clients, {
-            type: 'rocket',
+            type: 'HomingMissile',
             pos: aMissile.position
         });
     }

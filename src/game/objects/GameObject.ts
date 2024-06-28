@@ -45,7 +45,7 @@ export class GameObject implements IUpdatable, ILogger {
     private _owner: string;
     // game object id
     protected _id: number;
-    protected _type: ObjectType;
+    protected _objectType: ObjectType;
     // object radius
     private _radius: number;
     protected _hp: number;
@@ -111,6 +111,10 @@ export class GameObject implements IUpdatable, ILogger {
     
     get id(): number {
         return this._id;
+    }
+
+    get objectType(): ObjectType {
+        return this._objectType;
     }
 
     get radius(): number {

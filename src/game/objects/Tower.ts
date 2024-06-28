@@ -46,7 +46,7 @@ export class Tower extends GameObject {
 
     constructor(aParams: TowerParams) {
         super(aParams);
-        this._type = 'Tower';
+        this._objectType = 'Tower';
         this._towerParams = aParams;
         this._lookDir = aParams.lookDir;
         // this.lookByDir(this._lookDir);
@@ -130,7 +130,7 @@ export class Tower extends GameObject {
 
     getCreateData(): FighterCreateData {
         return {
-            type: this._type,
+            type: this._objectType,
             owner: this.owner,
             hp: this.hp,
             shield: this.shield,

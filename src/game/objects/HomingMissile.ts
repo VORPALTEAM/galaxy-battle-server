@@ -50,7 +50,7 @@ export class HomingMissile extends GameObject {
         this._lookDir = aParams.lookDir;
         this.lookByDir(this._lookDir);
         this._state = 'active';
-        this._type = 'HomingMissile';
+        this._objectType = 'HomingMissile';
 
         this._maxVelocity = aParams.velocity;
         this._velocity = new THREE.Vector3();
@@ -192,7 +192,7 @@ export class HomingMissile extends GameObject {
 
     getCreateData(): ObjectCreateData {
         return {
-            type: this._type,
+            type: this._objectType,
             owner: this.owner,
             hp: this.hp,
             shield: this.shield,

@@ -1094,8 +1094,16 @@ export class Game implements ILogger {
             return;
         }
 
-        const types: ObjectType[] = ['Planet', 'HomingMissile'];
-        const activeKill = types.indexOf(objAtkInfo.attacketType) >= 0;
+        const killerTypes: ObjectType[] = ['Planet', 'HomingMissile'];
+        const activeKill = killerTypes.indexOf(objAtkInfo.attacketType) >= 0;
+
+        const explosionTypes: ObjectType[] = ['FighterShip', 'BattleShip', 'Tower', 'HomingMissile'];
+        if (explosionTypes.indexOf(aObj.objectType) >= 0) {
+            PackSender.getInstance().explosion(this._clients, {
+                type: aObj.objectType,
+                pos: aObj.position
+            });
+        }
         
         let goldInc = this._expMng.addGoldForObject(attackerClient.walletId, aObj, activeKill);
         
