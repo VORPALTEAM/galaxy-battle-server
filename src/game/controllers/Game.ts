@@ -422,7 +422,7 @@ export class Game implements ILogger {
                     hideClaimBtn: isPlayWithBot,
                     ownerName: nameDisplay,
                     params: {
-                        damageDone: 0,
+                        damageDone: expData.damage,
                         expReceived: expData.exp,
                         goldEarned: expData.gold,
                         rating: {
@@ -436,7 +436,7 @@ export class Game implements ILogger {
                     status: "loss",
                     ownerName: nameDisplay,
                     params: {
-                        damageDone: 0,
+                        damageDone: expData.damage,
                         expReceived: expData.exp,
                         goldEarned: expData.gold,
                         rating: {
@@ -860,6 +860,10 @@ export class Game implements ILogger {
     }
 
     private onObjectDamage(aSender: GameObject, aAttackInfo: DamageInfo) {
+        let client = this.getClientByWallet(aSender.owner);
+        if (client && !aAttackInfo.isMiss) {
+            this._expMng.addDamage(client.walletId, aAttackInfo.damage);
+        }
         PackSender.getInstance().damage(this._clients, {
             id: aSender.id,
             pos: aSender.position,

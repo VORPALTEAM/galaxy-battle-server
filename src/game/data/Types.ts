@@ -218,6 +218,7 @@ export type ExpData = {
     exp: number,
     level: number,
     gold: number,
+    damage: number,
     levelExpPercent: number,
     skills: SkillData[]
 }

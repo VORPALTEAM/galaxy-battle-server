@@ -125,6 +125,7 @@ function levelByExp(aExp: number): number {
 class ExpRecord {
     private _exp = 0;
     private _gold = 0;
+    private _damage = 0;
     private _skillPoints = 0;
     private _skillLevels = [1, 0, 0, 0];
 
@@ -138,6 +139,10 @@ class ExpRecord {
 
     public get gold() {
         return this._gold;
+    }
+
+    public get damage() {
+        return this._damage;
     }
 
     public get skillPoints() {
@@ -155,6 +160,10 @@ class ExpRecord {
 
     addGold(aGold: number) {
         this._gold += aGold;
+    }
+
+    addDamage(aDamage: number) {
+        this._damage += aDamage;
     }
 
     isSkillLevelUpAvailable(aSkillId: number) {
@@ -333,6 +342,7 @@ export class ExpManager implements ILogger {
             exp: currExp,
             level: currLevel,
             gold: exp.gold,
+            damage: exp.damage,
             levelExpPercent: levelExpPercent,
             skills: exp.getSkills()
         };
@@ -363,6 +373,11 @@ export class ExpManager implements ILogger {
         // this.logDebug(`gold value: ${gold}`);
         record.addGold(gold);
         return gold;
+    }
+
+    addDamage(aClientId: string, aDamage: number) {
+        let expRec = this.getExpRecord(aClientId);
+        expRec.addDamage(aDamage);
     }
 
     upSkillLevel(aClientId: string, aSkillId: number): ExpData {
