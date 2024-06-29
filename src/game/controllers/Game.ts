@@ -345,7 +345,7 @@ export class Game implements ILogger {
         return this._sceneLoaded[0] && this._sceneLoaded[1];
     }
 
-    private async completeGame(aWinner: Client, aDisconnect?: boolean) {
+    private async completeGame(aWinner: Client, aIsDisconnect?: boolean) {
         this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
 
         let isPlayWithBot = false;
@@ -377,32 +377,24 @@ export class Game implements ILogger {
 
         console.log(`completeGame: logins: ${this._duelData?.login1}; ${this._duelData?.login2};`);
 
-        try {
-            isDuelRewarded = await DuelPairRewardCondition(
-                this._duelData?.login1,
-                this._duelData?.login2
-            );
-        } catch (error) {
-            console.log("Error: ", error);
-            duelRewardError = {
-                message: error
-            };
-        }
+        const rewardTries = 2;
+        let rewardTriesCounter = 0;
 
-        // TODO: redo
-        // repeat: 2nd try
-        if (!isDuelRewarded) {
+        while (rewardTriesCounter < rewardTries) {
             try {
+                if (isPlayWithBot) break;
                 isDuelRewarded = await DuelPairRewardCondition(
                     this._duelData?.login1,
                     this._duelData?.login2
                 );
+                if (isDuelRewarded) break;
             } catch (error) {
                 console.log("Error: ", error);
                 duelRewardError = {
                     message: error
                 };
             }
+            rewardTriesCounter++;
         }
 
         for (let i = 0; i < this._clients.length; i++) {
@@ -449,7 +441,7 @@ export class Game implements ILogger {
             }
 
             if (this.isDuel()) {
-                if (aDisconnect) {
+                if (aIsDisconnect) {
                     data.status = "duelEnemyDisconnected";
                 } else {
                     // 2 boxes
@@ -479,7 +471,7 @@ export class Game implements ILogger {
         }
 
         if (this.isDuel()) {
-            if (aDisconnect) {
+            if (aIsDisconnect) {
                 // remove duel record
                 try {
                     this.logDebug(`CALL DeleteDuel`);
