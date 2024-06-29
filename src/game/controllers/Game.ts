@@ -34,6 +34,7 @@ import { getUserLaserListWeb2 } from "../../blockchain/boxes/boxesweb2.js";
 import { BC_DuelInfo } from "../../blockchain/types.js";
 import { DuelPairRewardCondition, FinishDuel } from "../../blockchain/duel.js";
 import { DeleteDuel } from "../../blockchain/functions.js";
+import { BotAI } from "./BotAI.js";
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -158,6 +159,7 @@ export class Game implements ILogger {
     private _abilsMng: AbilityManager;
     private _missilesController: MissileController;
     private _expMng: ExpManager;
+    private _botAi: BotAI;
     // events
     onGameComplete = new Signal();
 
@@ -350,12 +352,15 @@ export class Game implements ILogger {
 
         let isPlayWithBot = false;
 
-        // clear winstreak for other clients
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
+
+            // clear winstreak for other clients
             if (client.connectionId != aWinner.connectionId) {
                 WINSTREAKS[client.walletId] = 0;
             }
+
+            // check a Bot
             if (client.isBot) isPlayWithBot = true;
         }
 
@@ -549,8 +554,26 @@ export class Game implements ILogger {
 
         this.initStars();
         this.initTowers();
-
+        this.initBotAI();
+        
         this._state = "game";
+    }
+
+    private initBotAI() {
+
+        for (let i = 0; i < this._clients.length; i++) {
+            const cli = this._clients[i];
+            if (cli.isBot) {
+                this._botAi = new BotAI({
+                    client: cli,
+                    abilsMng: this._abilsMng,
+                    expMng: this._expMng,
+                    missilesController: this._missilesController
+                });
+                break;
+            }
+        }
+
     }
 
     private async initStars() {
@@ -1117,6 +1140,7 @@ export class Game implements ILogger {
      * @param dt delta time in sec
      */
     update(dt: number) {
+        
         switch (this._state) {
             case "clientLoading":
                 if (this.clientsLoaded()) this.initGame();
@@ -1132,6 +1156,7 @@ export class Game implements ILogger {
         this._fighterMng.update(dt);
         this._linkorMng.update(dt);
         this._missilesController.update(dt);
+        this._botAi.update(dt);
 
         let objects = this._objectController.objects;
 
@@ -1187,6 +1212,7 @@ export class Game implements ILogger {
     }
 
     free() {
+        this._botAi?.stop();
         this.clearAllClientListeners();
         this.stopLoop();
         this._loopInterval = null;

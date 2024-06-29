@@ -209,6 +209,7 @@ class ExpRecord {
 
     getSkillDamage(aSkillId: number): number {
         const level = this._skillLevels[aSkillId];
+        if (level <= 0) return 0;
         if (CONFIG.skills[aSkillId].damage) {
             const minDmg = CONFIG.skills[aSkillId].damage[level - 1].min;
             const maxDmg = CONFIG.skills[aSkillId].damage[level - 1].max;
