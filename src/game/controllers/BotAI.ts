@@ -2,10 +2,10 @@ import { Client } from '../models/Client.js';
 import { ExpManager } from '../systems/ExpManager.js';
 import { AbilityManager } from '../systems/AbilityManager.js';
 import { MissileController } from './MissileController.js';
-import { IUpdatable } from 'src/interfaces/IUpdatable.js';
-import { ILogger } from 'src/interfaces/ILogger.js';
-import { LogMng } from 'src/monax/LogMng.js';
-import { MyMath } from 'src/monax/MyMath.js';
+import { IUpdatable } from '../../interfaces/IUpdatable.js';
+import { ILogger } from '../../interfaces/ILogger.js';
+import { LogMng } from '../../monax/LogMng.js';
+import { MyMath } from '../../monax/MyMath.js';
 
 enum TimerNames {
     laser = 'laser',
