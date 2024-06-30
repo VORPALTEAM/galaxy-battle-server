@@ -71,6 +71,7 @@ export async function GetOpponent(login: string): Promise<string | null> {
 export async function FinishDuel(duelId: string, winner: string = "") {
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`api/finishduel`);
+    console.log("Finish duel called, url: ", url);
     fetch(url, {
       method: "post",
       headers: {
@@ -82,6 +83,7 @@ export async function FinishDuel(duelId: string, winner: string = "") {
         winner,
       }),
     }).then((res) => {
+      console.log("Server responce: ", res)
       if (res.status !== 200) {
         reject(`Failed to execute, ${res.text()}`);
       }
@@ -94,6 +96,22 @@ export async function FinishDuel(duelId: string, winner: string = "") {
 export function DuelPairRewardCondition (part1: string, part2: string): Promise<boolean> {
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`api/duelrewardcondition`);
+    console.log("Pair: ", {
+      login1: part1,
+      login2: part2
+    })
+
+    if (!part1) {
+      reject(`Failed to execute: login1 == null`);
+      return;
+    }
+    if (!part2) {
+      reject(`Failed to execute: login2 == null`);
+      return;
+    }
+
+    console.log(`continue DuelPairRewardCondition...`);
+
     fetch(url, {
       method: "post",
       headers: {
@@ -104,10 +122,15 @@ export function DuelPairRewardCondition (part1: string, part2: string): Promise<
         login2: part2
       }),
     }).then((res) => {
-      if (res.status !== 200) {
+      console.log("Condition responce status: ", res.status)
+      if (!res || res.status !== 200) {
         reject(`Failed to execute, ${res.text()}`);
       }
-      return res.json();
+      try {
+        return res.json();
+      } catch (error) {
+        reject(`Failed to execute, ${error}`);
+      }
     }).then((res: { reward: boolean}) => {
       resolve(res.reward);
       return;

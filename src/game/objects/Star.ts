@@ -1,3 +1,4 @@
+import { MyMath } from "../../monax/MyMath.js";
 import { Signal } from "../../monax/events/Signal.js";
 import { ObjectUpdateData, StarCreateData } from "../data/Types.js";
 import { GameObject, GameObjectParams } from "./GameObject.js";
@@ -32,7 +33,7 @@ export class Star extends GameObject {
     
     constructor(aParams: StarParams) {
         super(aParams);
-        this._type = 'Star';
+        this._objectType = 'Star';
         this._params = aParams;
         this._timerFighterSpawn = FIGHTER_SPAWN_START_DELAY;
         this._timerBattleShipSpawn = BATTLESHIP_SPAWN_START_DELAY;
@@ -42,7 +43,9 @@ export class Star extends GameObject {
         const deltaPos = this._params.fightersSpawnDeltaPos;
         for (let i = 0; i < deltaPos.length; i++) {
             const dPos = deltaPos[i];
-            this.onFighterSpawn.dispatch(this, dPos);
+            setTimeout(() => {
+                this.onFighterSpawn.dispatch(this, dPos);
+            }, i * 250);
         }
     }
 
@@ -50,7 +53,9 @@ export class Star extends GameObject {
         const deltaPos = this._params.battleShipSpawnDeltaPos;
         for (let i = 0; i < deltaPos.length; i++) {
             const dPos = deltaPos[i];
-            this.onLinkorSpawn.dispatch(this, dPos);
+            setTimeout(() => {
+                this.onLinkorSpawn.dispatch(this, dPos);
+            }, i * MyMath.randomIntInRange(0, 500));
         }
     }
 

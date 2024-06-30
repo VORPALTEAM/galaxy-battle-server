@@ -1,7 +1,9 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
-import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData, ObjectRace, EmotionData, RocketPacket } from "../data/Types.js";
+import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData,
+    ObjectRace, EmotionData, RocketPacket, 
+    ObjectType} from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../../interfaces/ILogger.js";
 import { LogMng } from "../../monax/LogMng.js";
@@ -9,29 +11,30 @@ import { Star } from "../objects/Star.js";
 import { Fighter } from "../objects/Fighter.js";
 import { GameObject } from "../objects/GameObject.js";
 import { FighterManager } from "../systems/FighterManager.js";
-import { MyMath } from '../../monax/MyMath.js';
-import { Signal } from '../../monax/events/Signal.js';
-import { Planet } from '../objects/Planet.js';
-import { StarController } from './StarController.js';
-import { Linkor } from '../objects/Linkor.js';
-import { LinkorManager } from '../systems/LinkorManager.js';
-import { AbilityManager } from '../systems/AbilityManager.js';
-import { SpaceShip } from '../objects/SpaceShip.js';
-import { FighterFactory } from '../factory/FighterFactory.js';
-import { LinkorFactory } from '../factory/LinkorFactory.js';
-import { Tower } from '../objects/Tower.js';
-import { TowerManager } from '../systems/TowerManager.js';
-import { ExpManager } from '../systems/ExpManager.js';
-import { WINSTREAKS } from '../../database/DB.js';
-import { IdGenerator } from '../../monax/game/IdGenerator.js';
-import { MissileController } from './MissileController.js';
-import { HomingMissile } from '../objects/HomingMissile.js';
-import { ObjectController } from './ObjectController.js';
-import { GameObjectFactory } from '../factory/GameObjectFactory.js';
-import { getUserAvailableLaserLevelsWeb2, getUserLaserListWeb2 } from '../../blockchain/boxes/boxesweb2.js';
-import { BC_DuelInfo } from '../../blockchain/types.js';
-import { DuelPairRewardCondition, FinishDuel } from '../../blockchain/duel.js';
-import { DeleteDuel } from '../../blockchain/functions.js';
+import { MyMath } from "../../monax/MyMath.js";
+import { Signal } from "../../monax/events/Signal.js";
+import { Planet } from "../objects/Planet.js";
+import { StarController } from "./StarController.js";
+import { Linkor } from "../objects/Linkor.js";
+import { LinkorManager } from "../systems/LinkorManager.js";
+import { AbilityManager } from "../systems/AbilityManager.js";
+import { SpaceShip } from "../objects/SpaceShip.js";
+import { FighterFactory } from "../factory/FighterFactory.js";
+import { LinkorFactory } from "../factory/LinkorFactory.js";
+import { Tower } from "../objects/Tower.js";
+import { TowerManager } from "../systems/TowerManager.js";
+import { ExpManager } from "../systems/ExpManager.js";
+import { WINSTREAKS } from "../../database/DB.js";
+import { IdGenerator } from "../../monax/game/IdGenerator.js";
+import { MissileController } from "./MissileController.js";
+import { HomingMissile } from "../objects/HomingMissile.js";
+import { ObjectController } from "./ObjectController.js";
+import { GameObjectFactory } from "../factory/GameObjectFactory.js";
+import { getUserLaserListWeb2 } from "../../blockchain/boxes/boxesweb2.js";
+import { BC_DuelInfo } from "../../blockchain/types.js";
+import { DuelPairRewardCondition, FinishDuel } from "../../blockchain/duel.js";
+import { DeleteDuel } from "../../blockchain/functions.js";
+import { BotAI } from "./BotAI.js";
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -42,7 +45,7 @@ const SETTINGS = {
             cols: 8,
             rows: 11,
             sectorWidth: 10,
-            sectorHeight: 9
+            sectorHeight: 9,
         },
     },
 
@@ -52,7 +55,7 @@ const SETTINGS = {
         attackRadius: 14,
         minDmg: 10,
         maxDmg: 20,
-        minusHpPerSec: 1
+        minusHpPerSec: 1,
     },
     stars: [
         {
@@ -66,9 +69,7 @@ const SETTINGS = {
                 // { x: 2, y: 2 },
                 // { x: 1, y: 2 },
             ],
-            battleShipSpawnDeltaPos: [
-                { x: -2, y: 1 }
-            ]
+            battleShipSpawnDeltaPos: [{ x: -2, y: 1 }],
         },
         {
             cellPos: { x: 3, y: 9 },
@@ -81,10 +82,8 @@ const SETTINGS = {
                 // { x: 2, y: -2 },
                 // { x: 1, y: -2 },
             ],
-            battleShipSpawnDeltaPos: [
-                { x: 3, y: -1 }
-            ]
-        }
+            battleShipSpawnDeltaPos: [{ x: 3, y: -1 }],
+        },
     ],
 
     planet: {
@@ -99,25 +98,25 @@ const SETTINGS = {
         radius: 4.2,
         attackRadius: 23,
         minDmg: 10, // old value: 55
-        maxDmg: 30 // old value: 75
+        maxDmg: 30, // old value: 75
     },
     towers: [
         {
             cellPos: { x: 3 - 2, y: 1 + 2 },
-            ownerId: 0
+            ownerId: 0,
         },
         {
             cellPos: { x: 3 + 2, y: 1 + 2 },
-            ownerId: 0
+            ownerId: 0,
         },
         {
             cellPos: { x: 3 - 2, y: 9 - 2 },
-            ownerId: 1
+            ownerId: 1,
         },
         {
             cellPos: { x: 3 + 2, y: 9 - 2 },
-            ownerId: 1
-        }
+            ownerId: 1,
+        },
     ],
 
     fighters: {
@@ -126,7 +125,7 @@ const SETTINGS = {
         attackPeriod: 1,
         rotationTime: 1,
         prepareJumpTime: 0.5,
-        jumpTime: 1
+        jumpTime: 1,
     },
 
     battleShips: {
@@ -135,16 +134,15 @@ const SETTINGS = {
         attackPeriod: 1,
         rotationTime: 1,
         prepareJumpTime: 0.5,
-        jumpTime: 1
+        jumpTime: 1,
     },
+};
 
-}
-
-type GameState = 'none' | 'clientLoading' | 'init' | 'game' | 'final';
+type GameState = "none" | "clientLoading" | "init" | "game" | "final";
 
 export class Game implements ILogger {
-    private _className = 'Game';
-    private _state: GameState = 'none';
+    private _className = "Game";
+    private _state: GameState = "none";
     private _id: number; // game id
     private _duelData: BC_DuelInfo;
     private _loopInterval: NodeJS.Timeout;
@@ -161,23 +159,23 @@ export class Game implements ILogger {
     private _abilsMng: AbilityManager;
     private _missilesController: MissileController;
     private _expMng: ExpManager;
+    private _botAi: BotAI;
     // events
     onGameComplete = new Signal();
 
     constructor(aParams: {
-        gameId: number,
-        clientA: Client,
-        clientB: Client,
-        duelData: BC_DuelInfo
+        gameId: number;
+        clientA: Client;
+        clientB: Client;
+        duelData: BC_DuelInfo;
     }) {
-
         this.logDebug(`Game creation:`, {
             client1_ConnId: aParams.clientA.connectionId,
             client2_ConnId: aParams.clientB.connectionId,
-            duelInfo: aParams.duelData
+            duelInfo: aParams.duelData,
         });
 
-        this._state = 'none';
+        this._state = "none";
         this._id = aParams.gameId;
         this._duelData = aParams.duelData;
         this._objIdGen = new IdGenerator();
@@ -186,7 +184,7 @@ export class Game implements ILogger {
         this._clients = [aParams.clientA, aParams.clientB];
 
         // random races - temporary solution
-        const races: ObjectRace[] = ['Waters', 'Insects'];
+        const races: ObjectRace[] = ["Waters", "Insects"];
         MyMath.shuffleArray(races);
         // this._clientDataMng.addClient(aClientA).race = races[0];
         aParams.clientA.gameData.race = races[0];
@@ -246,46 +244,58 @@ export class Game implements ILogger {
 
     private onSkillRequest(aClient: Client, aData: SkillRequest) {
         switch (aData.action) {
-
-            case 'click':
+            case "click":
                 switch (aData.skillId) {
+                    case 0:
+                        {
+                            const dmg = this._expMng.getSkillDamage(
+                                aClient.walletId,
+                                aData.skillId
+                            );
+                            this._abilsMng?.laserAttack(aClient, dmg);
+                        }
+                        break;
 
-                    case 0: {
-                        const dmg = this._expMng.getSkillDamage(aClient.walletId, aData.skillId);
-                        this._abilsMng?.laserAttack(aClient, dmg);
-                    } break;
-
-                    case 1: {
-                        const dmg = this._expMng.getSkillDamage(aClient.walletId, aData.skillId);
-                        this._missilesController.launchMissile({
-                            client: aClient,
-                            damage: dmg
-                        });
-                    } break;
-
-                    case 2: {
-                        let slowFactor = this._expMng.getSniperSpeedFactor(aClient.walletId);
-                        let slowTime = this._expMng.getSniperDuration(aClient.walletId);
-                        let planet = this._objectController.getPlayerPlanet(aClient.walletId);
-                        if (planet) {
-                            this.logDebug(`onSkillRequest: Sniper Activate...`);
-                            planet.activateSniperSkill(slowFactor, slowTime);
-                            PackSender.getInstance().sniper(this._clients, {
-                                action: 'start',
-                                planetId: planet.id
+                    case 1:
+                        {
+                            const dmg = this._expMng.getSkillDamage(
+                                aClient.walletId,
+                                aData.skillId
+                            );
+                            this._missilesController.launchMissile({
+                                client: aClient,
+                                damage: dmg,
                             });
-                            setTimeout(() => {
-                                PackSender.getInstance().sniper(this._clients, {
-                                    action: 'end',
-                                    planetId: planet.id
-                                });
-                            }, slowTime * 1000);
                         }
-                        else {
-                            this.logWarn(`onSkillRequest: Sniper: No Planet Detected!`);
-                        }
+                        break;
 
-                    } break;
+                    case 2:
+                        {
+                            let slowFactor = this._expMng.getSniperSpeedFactor(
+                                aClient.walletId
+                            );
+                            let slowTime = this._expMng.getSniperDuration(aClient.walletId);
+                            let planet = this._objectController.getPlayerPlanet(
+                                aClient.walletId
+                            );
+                            if (planet) {
+                                this.logDebug(`onSkillRequest: Sniper Activate...`);
+                                planet.activateSniperSkill(slowFactor, slowTime);
+                                PackSender.getInstance().sniper(this._clients, {
+                                    action: "start",
+                                    planetId: planet.id,
+                                });
+                                setTimeout(() => {
+                                    PackSender.getInstance().sniper(this._clients, {
+                                        action: "end",
+                                        planetId: planet.id,
+                                    });
+                                }, slowTime * 1000);
+                            } else {
+                                this.logWarn(`onSkillRequest: Sniper: No Planet Detected!`);
+                            }
+                        }
+                        break;
 
                     default:
                         this.logError(`onSkillRequest: unhandled click skill id: ${aData}`);
@@ -293,20 +303,23 @@ export class Game implements ILogger {
                 }
                 break;
 
-            case 'levelUp':
-                let expData = this._expMng.upSkillLevel(aClient.walletId, aData.skillId);
+            case "levelUp":
+                let expData = this._expMng.upSkillLevel(
+                    aClient.walletId,
+                    aData.skillId
+                );
                 PackSender.getInstance().exp(aClient, expData);
                 break;
 
             default:
                 this.logError(`onSkillRequest: unknown skill action: ${aData}`);
                 break;
-
         }
     }
 
     private onClientExitGame(aClient: Client) {
-        let aWinner = this._clients[0] == aClient ? this._clients[1] : this._clients[0];
+        let aWinner =
+            this._clients[0] == aClient ? this._clients[1] : this._clients[0];
         this.completeGame(aWinner);
     }
 
@@ -317,14 +330,13 @@ export class Game implements ILogger {
 
     private onClientDebugTest(aClient: Client, aData: DebugTestData) {
         switch (aData.action) {
-            case 'win':
+            case "win":
                 this.completeGame(aClient);
                 break;
-            case 'loss':
+            case "loss":
                 if (this._clients[0] == aClient) {
                     this.completeGame(this._clients[1]);
-                }
-                else {
+                } else {
                     this.completeGame(this._clients[0]);
                 }
                 break;
@@ -335,18 +347,20 @@ export class Game implements ILogger {
         return this._sceneLoaded[0] && this._sceneLoaded[1];
     }
 
-    private async completeGame(aWinner: Client, aDisconnect?: boolean) {
-
+    private async completeGame(aWinner: Client, aIsDisconnect?: boolean) {
         this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
 
         let isPlayWithBot = false;
 
-        // clear winstreak for other clients
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
+
+            // clear winstreak for other clients
             if (client.connectionId != aWinner.connectionId) {
                 WINSTREAKS[client.walletId] = 0;
             }
+
+            // check a Bot
             if (client.isBot) isPlayWithBot = true;
         }
 
@@ -363,61 +377,92 @@ export class Game implements ILogger {
 
         let isDuelRewarded = false;
         let duelRewardError: {
-            message: string
+            message: string;
         };
 
-        try {
-            isDuelRewarded = await DuelPairRewardCondition(this._duelData.login1, this._duelData.login2);
-        } catch (error) {
-            duelRewardError = {
-                message: error
+        console.log(`completeGame: logins: ${this._duelData?.login1}; ${this._duelData?.login2};`);
+
+        const rewardTries = 2;
+        let rewardTriesCounter = 0;
+
+        while (rewardTriesCounter < rewardTries) {
+            try {
+                if (isPlayWithBot) break;
+                isDuelRewarded = await DuelPairRewardCondition(
+                    this._duelData?.login1,
+                    this._duelData?.login2
+                );
+                if (isDuelRewarded) break;
+            } catch (error) {
+                console.log("Error: ", error);
+                duelRewardError = {
+                    message: error
+                };
             }
+            rewardTriesCounter++;
         }
 
         for (let i = 0; i < this._clients.length; i++) {
-
             const client = this._clients[i];
             const isWinner = aWinner && client.connectionId == aWinner.connectionId;
-            const nameDisplay = client.gameData.tgAuthData ? client.gameData.tgAuthData.username : client.walletId;
+            const nameDisplay = client.gameData.tgAuthData
+                ? client.gameData.tgAuthData.username
+                : client.walletId;
             let data: GameCompleteData;
+
+            const expData = this._expMng.getExpInfo(client.walletId);
 
             if (isWinner) {
                 data = {
-                    status: 'win',
+                    status: "win",
                     showBoxClaim: isPlayWithBot ? false : isWinStreak,
                     boxLevel: isPlayWithBot ? null : 1,
                     hideClaimBtn: isPlayWithBot,
-                    ownerName: nameDisplay
+                    ownerName: nameDisplay,
+                    params: {
+                        damageDone: expData.damage,
+                        expReceived: expData.exp,
+                        goldEarned: expData.gold,
+                        rating: {
+                            previous: 0,
+                            current: 100
+                        }
+                    }
                 };
-            }
-            else {
+            } else {
                 data = {
-                    status: 'loss',
-                    ownerName: nameDisplay
+                    status: "loss",
+                    ownerName: nameDisplay,
+                    params: {
+                        damageDone: expData.damage,
+                        expReceived: expData.exp,
+                        goldEarned: expData.gold,
+                        rating: {
+                            previous: 0,
+                            current: 100
+                        }
+                    }
                 };
             }
 
             if (this.isDuel()) {
-                if (aDisconnect) {
-                    data.status = 'duelEnemyDisconnected';
-                }
-                else {
+                if (aIsDisconnect) {
+                    data.status = "duelEnemyDisconnected";
+                } else {
                     // 2 boxes
                     if (isDuelRewarded) {
                         // data.status = 'duelReward';
-                        data.status = isWinner ? 'win' : 'loss';
+                        data.status = isWinner ? "win" : "loss";
                         data.boxLevel = 1;
                         data.showBoxClaim = true;
                         data.hideClaimBtn = true;
-                    }
-                    else {
-                        data.status = isWinner ? 'win' : 'loss';
+                    } else {
+                        data.status = isWinner ? "win" : "loss";
                         data.boxLevel = null;
                         data.showBoxClaim = false;
                         data.hideClaimBtn = true;
                     }
                 }
-
             }
 
             PackSender.getInstance().gameComplete(client, data);
@@ -425,14 +470,13 @@ export class Game implements ILogger {
             if (duelRewardError) {
                 PackSender.getInstance().message([client], {
                     msg: `Duel RewardCondition check ERROR: ${duelRewardError.message}`,
-                    showType: 'popup'
+                    showType: "popup",
                 });
             }
-
         }
 
         if (this.isDuel()) {
-            if (aDisconnect) {
+            if (aIsDisconnect) {
                 // remove duel record
                 try {
                     this.logDebug(`CALL DeleteDuel`);
@@ -440,18 +484,17 @@ export class Game implements ILogger {
                 } catch (error) {
                     PackSender.getInstance().message(this._clients, {
                         msg: `DeleteDuel ERROR: ${error}`,
-                        showType: 'popup'
+                        showType: "popup",
                     });
                 }
-            }
-            else {
+            } else {
                 this.logDebug(`CALL FinishDuel`);
                 try {
                     FinishDuel(this._duelData.duel_id);
                 } catch (error) {
                     PackSender.getInstance().message(this._clients, {
                         msg: `FinishDuel ERROR: ${error}`,
-                        showType: 'popup'
+                        showType: "popup",
                     });
                 }
             }
@@ -482,29 +525,58 @@ export class Game implements ILogger {
     }
 
     private init() {
-
         // create field
         this._field = new Field(SETTINGS.field);
 
         this._starController = new StarController(this, this._objectController);
-        this._towerMng = new TowerManager({ field: this._field, objects: this._objectController.objects });
-        this._fighterMng = new FighterManager(this._field, this._objectController.objects);
-        this._linkorMng = new LinkorManager(this._field, this._objectController.objects);
+        this._towerMng = new TowerManager({
+            field: this._field,
+            objects: this._objectController.objects,
+        });
+        this._fighterMng = new FighterManager(
+            this._field,
+            this._objectController.objects
+        );
+        this._linkorMng = new LinkorManager(
+            this._field,
+            this._objectController.objects
+        );
 
         this._abilsMng = new AbilityManager(this._objectController.objects);
         this._abilsMng.onLaserAttack.add(this.onPlanetLaserAttack, this);
 
-        this._missilesController = new MissileController(this, this._objIdGen, this._objectController.objects, this._clients);
+        this._missilesController = new MissileController(
+            this,
+            this._objIdGen,
+            this._objectController.objects,
+            this._clients
+        );
 
         this.initStars();
         this.initTowers();
+        this.initBotAI();
+        
+        this._state = "game";
+    }
 
-        this._state = 'game';
+    private initBotAI() {
+
+        for (let i = 0; i < this._clients.length; i++) {
+            const cli = this._clients[i];
+            if (cli.isBot) {
+                this._botAi = new BotAI({
+                    client: cli,
+                    abilsMng: this._abilsMng,
+                    expMng: this._expMng,
+                    missilesController: this._missilesController
+                });
+                break;
+            }
+        }
 
     }
 
     private async initStars() {
-
         // create stars
         const starParams = SETTINGS.starParams;
         const starsData = SETTINGS.stars;
@@ -526,7 +598,7 @@ export class Game implements ILogger {
                 isTopStar: starData.cellPos.y < SETTINGS.field.size.rows / 2,
                 fightersSpawnDeltaPos: starData.fightersSpawnDeltaPos,
                 battleShipSpawnDeltaPos: starData.battleShipSpawnDeltaPos,
-                minusHpPerSec: starParams.minusHpPerSec
+                minusHpPerSec: starParams.minusHpPerSec,
             });
 
             star.onDamage.add(this.onObjectDamage, this);
@@ -537,14 +609,15 @@ export class Game implements ILogger {
             stars.push(star);
 
             this._starController.addStar(star);
-
         }
 
         // create planets
         for (let i = 0; i < stars.length; i++) {
             let client = this._clients[i];
             const star = stars[i];
-            const isTopStar = star.position.z < (SETTINGS.field.size.rows * SETTINGS.field.size.sectorHeight) / 2;
+            const isTopStar =
+                star.position.z <
+                (SETTINGS.field.size.rows * SETTINGS.field.size.sectorHeight) / 2;
             const planetParams = SETTINGS.planet;
 
             let planet = new Planet({
@@ -558,16 +631,14 @@ export class Game implements ILogger {
                 rotationPeriod: planetParams.rotationPeriod,
                 startAngle: MyMath.randomInRange(0, Math.PI * 2),
                 startOrbitAngle: isTopStar ? Math.PI / 2 : -Math.PI / 2,
-                laserSkin: client.laserSkin
+                laserSkin: client.laserSkin,
             });
 
             this.addObject(planet);
         }
-
     }
 
     private initTowers() {
-
         // create stars
         const towerParams = SETTINGS.towerParams;
         const towers = SETTINGS.towers;
@@ -584,7 +655,7 @@ export class Game implements ILogger {
                     radius: towerParams.attackRadius,
                     damage: [towerParams.minDmg, towerParams.maxDmg],
                 },
-                attackPeriod: 2
+                attackPeriod: 2,
             });
 
             tower.onAttack.add(this.onShipAttack, this);
@@ -595,9 +666,7 @@ export class Game implements ILogger {
             this.addObject(tower);
 
             // this._towerMng.addStar(tower);
-
         }
-
     }
 
     private getClientByWallet(aWalletId: string): Client | null {
@@ -608,12 +677,23 @@ export class Game implements ILogger {
         return null;
     }
 
-    onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+    private getClientByEnemyWallet(aWalletId: string): Client | null {
+        for (let i = 0; i < this._clients.length; i++) {
+            const client = this._clients[i];
+            if (client.walletId != aWalletId) return client;
+        }
+        return null;
+    }
+
+    onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number; y: number }) {
         const level = 1;
         const shipParams = SETTINGS.fighters;
         const shipFactoryParams = new FighterFactory().getShipParams(level);
         const yDir = aStar.isTopStar ? 1 : -1;
-        let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
+        let cellPos = this._field.globalToCellPos(
+            aStar.position.x,
+            aStar.position.z
+        );
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
 
@@ -625,12 +705,11 @@ export class Game implements ILogger {
                 let obj = this._objectController.getObjectOnCell(this._field, cellPos);
                 if (obj) {
                     obj.damage({
-                        damage: obj.hp * 2
+                        damage: obj.hp * 2,
                     });
                 }
                 return;
-            }
-            else {
+            } else {
                 cellPos = neighbors[0];
             }
         }
@@ -649,15 +728,15 @@ export class Game implements ILogger {
                 hitPenetration: shipFactoryParams.hitPenetration,
                 crit: {
                     critChance: shipFactoryParams.critChance,
-                    critFactor: shipFactoryParams.critFactor
-                }
+                    critFactor: shipFactoryParams.critFactor,
+                },
             },
             evasion: shipFactoryParams.evasion,
             lookDir: new THREE.Vector3(0, 0, yDir),
             attackPeriod: shipParams.attackPeriod,
             rotationTime: shipParams.rotationTime,
             prepareJumpTime: shipParams.prepareJumpTime,
-            jumpTime: shipParams.jumpTime
+            jumpTime: shipParams.jumpTime,
         });
 
         fighter.onRotate.add(this.onShipRotate, this);
@@ -673,12 +752,15 @@ export class Game implements ILogger {
         this._fighterMng.addShip(fighter);
     }
 
-    onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number, y: number }) {
+    onStarLinkorSpawn(aStar: Star, aCellDeltaPos: { x: number; y: number }) {
         const level = 1;
         const shipParams = SETTINGS.battleShips;
         const shipFactoryParams = new LinkorFactory().getShipParams(level);
         const yDir = aStar.isTopStar ? 1 : -1;
-        let cellPos = this._field.globalToCellPos(aStar.position.x, aStar.position.z);
+        let cellPos = this._field.globalToCellPos(
+            aStar.position.x,
+            aStar.position.z
+        );
         cellPos.x += aCellDeltaPos.x;
         cellPos.y += aCellDeltaPos.y;
 
@@ -690,12 +772,11 @@ export class Game implements ILogger {
                 let obj = this._objectController.getObjectOnCell(this._field, cellPos);
                 if (obj) {
                     obj.damage({
-                        damage: obj.hp * 2
+                        damage: obj.hp * 2,
                     });
                 }
                 return;
-            }
-            else {
+            } else {
                 cellPos = neighbors[0];
             }
         }
@@ -714,15 +795,15 @@ export class Game implements ILogger {
                 hitPenetration: shipFactoryParams.hitPenetration,
                 crit: {
                     critChance: shipFactoryParams.critChance,
-                    critFactor: shipFactoryParams.critFactor
-                }
+                    critFactor: shipFactoryParams.critFactor,
+                },
             },
             evasion: shipFactoryParams.evasion,
             lookDir: new THREE.Vector3(0, 0, yDir),
             attackPeriod: shipParams.attackPeriod,
             rotationTime: shipParams.rotationTime,
             prepareJumpTime: shipParams.prepareJumpTime,
-            jumpTime: shipParams.jumpTime
+            jumpTime: shipParams.jumpTime,
         });
 
         linkor.onRotate.add(this.onShipRotate, this);
@@ -742,9 +823,9 @@ export class Game implements ILogger {
     private onShipRotate(aShip: SpaceShip, aPoint: THREE.Vector3, aDur: number) {
         PackSender.getInstance().rotate(this._clients, {
             id: aShip.id,
-            type: 'toPoint',
+            type: "toPoint",
             target: aPoint,
-            duration: aDur
+            duration: aDur,
         });
     }
 
@@ -752,14 +833,18 @@ export class Game implements ILogger {
         PackSender.getInstance().jump(this._clients, {
             id: aShip.id,
             pos: aPosition,
-            duration: aDur
+            duration: aDur,
         });
     }
 
-    private onShipAttack(aShip: SpaceShip, aEnemy: GameObject, aType: AttackType) {
+    private onShipAttack(
+        aShip: SpaceShip,
+        aEnemy: GameObject,
+        aType: AttackType
+    ) {
         const dmg = aShip.getAttackDamage({
-            noCrit: aType == 'ray',
-            noMiss: aType == 'ray'
+            noCrit: aType == "ray",
+            noMiss: aType == "ray",
         });
         PackSender.getInstance().attack(this._clients, {
             attackType: aType,
@@ -767,34 +852,38 @@ export class Game implements ILogger {
             idTo: aEnemy.id,
             damage: dmg.damage,
             isMiss: dmg.isMiss,
-            isCrit: dmg.isCrit
+            isCrit: dmg.isCrit,
         });
 
         aEnemy.damage({
             ...dmg,
-            attackerId: aShip.id
+            attackerId: aShip.id,
+            attacketType: 'FighterShip'
         });
-
     }
 
     onShipRayStart(aShip: SpaceShip, aEnemy: GameObject) {
         PackSender.getInstance().rayStart(this._clients, {
             idFrom: aShip.id,
-            idTo: aEnemy.id
+            idTo: aEnemy.id,
         });
     }
 
     onShipRayStop(aShip: SpaceShip) {
         PackSender.getInstance().rayStop(this._clients, {
-            idFrom: aShip.id
+            idFrom: aShip.id,
         });
     }
 
     private onObjectDamage(aSender: GameObject, aAttackInfo: DamageInfo) {
+        let client = this.getClientByWallet(aSender.owner);
+        if (client && !aAttackInfo.isMiss) {
+            this._expMng.addDamage(client.walletId, aAttackInfo.damage);
+        }
         PackSender.getInstance().damage(this._clients, {
             id: aSender.id,
             pos: aSender.position,
-            info: aAttackInfo
+            info: aAttackInfo,
         });
     }
 
@@ -811,7 +900,6 @@ export class Game implements ILogger {
     }
 
     protected checkWinner() {
-
         let stars: Star[] = this.getAllStars();
 
         // check Stars count and winner
@@ -821,21 +909,21 @@ export class Game implements ILogger {
                 let winnerStar = stars[0];
                 let client = this.getClientByWallet(winnerStar.owner);
                 this.completeGame(client);
-            }
-            else {
+            } else {
                 // draw
                 this.completeGame(null);
             }
         }
-
     }
 
     private async loadLaserSkinForClient(aClient: Client) {
         let lasers: number[] = [];
-        let laserSkin: PlanetLaserSkin = 'blue';
+        let laserSkin: PlanetLaserSkin = "blue";
 
         if (aClient.isSigned && !aClient.isBot) {
-            let login = aClient.gameData.tgAuthData ? aClient.gameData.tgAuthData.username : aClient.walletId;
+            let login = aClient.gameData.tgAuthData
+                ? aClient.gameData.tgAuthData.username
+                : aClient.walletId;
 
             // LOCAL TEST
             // if (login == '0xbf094ffe3628041a8b7d7684e8549381136c6a17') {
@@ -845,24 +933,24 @@ export class Game implements ILogger {
             try {
                 // lasers = await getUserAvailableLaserLevelsWeb2(login);
                 lasers = await getUserLaserListWeb2(login);
-                lasers = lasers.map(n => Number(n));
+                lasers = lasers.map((n) => Number(n));
                 this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
                 if (lasers?.length > 0) {
                     lasers.sort((a, b) => {
                         return b - a;
-                    })
+                    });
                     // this.logDebug(`sorted laser list:`, lasers);
                     let maxLevel = Number(lasers[0]);
 
                     switch (maxLevel) {
                         case 0:
-                            laserSkin = 'red';
+                            laserSkin = "red";
                             break;
                         case 1:
-                            laserSkin = 'white';
+                            laserSkin = "white";
                             break;
                         case 2:
-                            laserSkin = 'violet';
+                            laserSkin = "violet";
                             break;
                     }
                 }
@@ -891,7 +979,7 @@ export class Game implements ILogger {
 
     /**
      * Adding new objects to main list of the game
-     * @param obj 
+     * @param obj
      */
     addObject(obj: GameObject) {
         PackSender.getInstance().objectCreate(this._clients, obj.getCreateData());
@@ -903,7 +991,6 @@ export class Game implements ILogger {
     }
 
     private initGame() {
-
         const cli1 = this._clients[0];
         const cli2 = this._clients[1];
         const cli1Data = cli1.gameData;
@@ -912,28 +999,26 @@ export class Game implements ILogger {
         PackSender.getInstance().fieldInit([cli1], {
             fieldParams: SETTINGS.field,
             playerWalletAddr: cli1.walletId,
-            playerPosition: 'top',
+            playerPosition: "top",
             playerRace: cli1Data?.race,
             enemyRace: cli2Data?.race,
-
         });
         PackSender.getInstance().fieldInit([cli2], {
             fieldParams: SETTINGS.field,
             playerWalletAddr: cli2.walletId,
-            playerPosition: 'bot',
+            playerPosition: "bot",
             playerRace: cli2Data?.race,
-            enemyRace: cli1Data?.race
+            enemyRace: cli1Data?.race,
         });
 
         setTimeout(() => {
             this.init();
         }, SETTINGS.battlePrerollTimer * 1000);
 
-        this._state = 'init';
+        this._state = "init";
     }
 
     start() {
-
         this.loadLaserSkins();
 
         if (!this._clients) {
@@ -947,15 +1032,12 @@ export class Game implements ILogger {
             const cli = this._clients[i];
             if (cli.isBot) {
                 this._sceneLoaded[i] = true;
-            }
-            else {
+            } else {
                 cli.onSceneLoaded.addOnce(() => {
                     this._sceneLoaded[i] = true;
                 }, this);
             }
         }
-
-
 
         PackSender.getInstance().gameStart([cli1], {
             prerollTimerSec: SETTINGS.battlePrerollTimer,
@@ -965,11 +1047,10 @@ export class Game implements ILogger {
         PackSender.getInstance().gameStart([cli2], {
             prerollTimerSec: SETTINGS.battlePrerollTimer,
             playerData: cli2.getPlayerData(),
-            enemyData: cli1.getPlayerData()
+            enemyData: cli1.getPlayerData(),
         });
 
-        this._state = 'clientLoading';
-
+        this._state = "clientLoading";
     }
 
     tests() {
@@ -992,7 +1073,7 @@ export class Game implements ILogger {
         }
         this.logDebug(`TEST cx to coords`, {
             cellPoses: cellPoses,
-            res: cellPosesRes
+            res: cellPosesRes,
         });
 
         const globalPoses = [
@@ -1011,45 +1092,61 @@ export class Game implements ILogger {
         }
         this.logDebug(`TEST coords to cx`, {
             globalPoses: globalPoses,
-            res: globalPosesRes
+            res: globalPosesRes,
         });
-
-
     }
 
     onObjectKill(aObj: GameObject) {
 
-        let objOwner = aObj.owner;
-        let attackerClient: Client;
-        for (let i = 0; i < this._clients.length; i++) {
-            const cli = this._clients[i];
-            if (cli.walletId != objOwner) {
-                attackerClient = cli;
-            }
+        // console.log(`onObjectKill: `, aObj);
+
+        const objOwner = aObj.owner;
+        const objAtkInfo = aObj.lastAttackInfo;
+        const attackerClient = this.getClientByEnemyWallet(objOwner);
+
+        if (!attackerClient) {
+            console.log(`!attackerClient`);
+            return;
         }
 
-        // this.logDebug(`onObjectKill owner: ${objOwner}, attacker id: ${attackerClient.walletId}`);
+        const killerTypes: ObjectType[] = ['Planet', 'HomingMissile'];
+        const activeKill = killerTypes.indexOf(objAtkInfo.attacketType) >= 0;
 
-        if (!attackerClient) return;
+        const explosionTypes: ObjectType[] = ['FighterShip', 'BattleShip', 'Tower', 'HomingMissile'];
+        if (explosionTypes.indexOf(aObj.objectType) >= 0) {
+            PackSender.getInstance().explosion(this._clients, {
+                type: aObj.objectType,
+                pos: aObj.position
+            });
+        }
+        
+        let goldInc = this._expMng.addGoldForObject(attackerClient.walletId, aObj, activeKill);
+        
+        const prevExp = this._expMng.getExpInfo(attackerClient.walletId).exp;
+        let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj, activeKill);
+        const dtExp = expData.exp - prevExp;
 
-        let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj);
-        // this.logDebug(`onObjectKill: expData:`);
-        // console.log(expData);
         PackSender.getInstance().exp(attackerClient, expData);
+
+        PackSender.getInstance().goldText(attackerClient, {
+            pos: aObj.position.clone(),
+            gold: goldInc
+        });
+
     }
 
     /**
-     * 
+     *
      * @param dt delta time in sec
      */
     update(dt: number) {
 
         switch (this._state) {
-            case 'clientLoading':
+            case "clientLoading":
                 if (this.clientsLoaded()) this.initGame();
                 return;
-            case 'none':
-            case 'init':
+            case "none":
+            case "init":
                 return;
         }
 
@@ -1059,8 +1156,10 @@ export class Game implements ILogger {
         this._fighterMng.update(dt);
         this._linkorMng.update(dt);
         this._missilesController.update(dt);
+        this._botAi?.update(dt);
 
         let objects = this._objectController.objects;
+
         objects.forEach((obj) => {
 
             if (!obj.isImmortal && obj.hp <= 0) {
@@ -1090,7 +1189,6 @@ export class Game implements ILogger {
                 this._field.takeOffCellByObject(obj.id);
                 obj.free();
                 return;
-
             }
 
             if (obj instanceof Tower) {
@@ -1099,7 +1197,6 @@ export class Game implements ILogger {
 
             obj.update(dt);
             updateData.push(obj.getUpdateData());
-
         });
 
         updateData = updateData.filter((item) => {
@@ -1112,10 +1209,10 @@ export class Game implements ILogger {
         }
 
         this.checkWinner();
-
     }
 
     free() {
+        this._botAi?.stop();
         this.clearAllClientListeners();
         this.stopLoop();
         this._loopInterval = null;
@@ -1128,6 +1225,4 @@ export class Game implements ILogger {
         this._objectController = null;
         this._clients = [];
     }
-
-
 }

@@ -125,6 +125,8 @@ export async function GiveResourcesWeb2 (owner: string, login = "", resource: st
 
 export async function DeleteDuel (duelId: string, onlyFinish?: boolean) {
   return new Promise((resolve, reject) => {
+    const url = fastServerUrl.concat(onlyFinish? 'api/finishduel': 'api/deleteduel');
+    console.log("Duel deletion url: ", url);
     fetch(fastServerUrl.concat(onlyFinish? 'api/finishduel': 'api/deleteduel'), {
       method: 'post',
       headers: {
@@ -136,6 +138,7 @@ export async function DeleteDuel (duelId: string, onlyFinish?: boolean) {
         winner: ""
       })
     }).then(res => {
+      console.log("Responce: ", res);
       if (res.status !== 200) {
         reject("Request to delete failed")
       }

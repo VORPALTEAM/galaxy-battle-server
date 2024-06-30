@@ -1,5 +1,6 @@
-import express from 'express';
 import http from 'http';
+import express from 'express';
+import bodyParser from 'body-parser';
 import { Server } from 'socket.io';
 import { BattleServer } from './game/controllers/BattleServer.js';
 import { LogMng } from './monax/LogMng.js';
@@ -24,7 +25,6 @@ else {
     dotenv.config({ path: '.env.production' });
 }
 
-
 // init DB
 
 DB.init({
@@ -40,11 +40,29 @@ DB.init({
 const portHTTP = process.env.HTTP_PORT || '8081';
 
 const appHttp = express();
+const app = express();
+
+app.use(express.json());
+appHttp.use(express.json());
+
+app.use(
+    bodyParser.urlencoded({
+      extended: true,
+    }),
+  );
+
+appHttp.use(
+    bodyParser.urlencoded({
+      extended: true,
+    }),
+  );
+
+app.use(bodyParser.json());
+appHttp.use(bodyParser.json());
+  
 const serverHttpEntry = http.createServer(appHttp);
 
 const PORT = process.env.WS_PORT ? process.env.WS_PORT : '3089';
-
-const app = express();
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -81,7 +99,7 @@ server.listen(PORT, () => {
 });
 
 serverHttpEntry.listen(portHTTP, () => {
-    console.log(`Http entry listening at port ${PORT}`);
+    console.log(`Http entry listening at port ${portHTTP}`);
 });
 
 // HttpEntrySetup();

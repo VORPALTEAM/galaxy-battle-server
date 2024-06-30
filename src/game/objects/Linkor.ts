@@ -11,7 +11,7 @@ export class Linkor extends SpaceShip {
 
     constructor(aParams: LinkorParams) {
         super(aParams);
-        this._type = 'BattleShip';
+        this._objectType = 'BattleShip';
     }
 
     attack(aAttackObject: GameObject, aAttackType: AttackType) {

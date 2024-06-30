@@ -2,9 +2,16 @@ version: "3.8"
 services:
   backend:
     image: vorpal_gbs:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - WS_PORT=${WS_PORT}
+        - HTTP_PORT=${HTTP_PORT}
     container_name: vorpal_gbs
     ports:
-      - 3089:3089
+      - "${WS_PORT}:${WS_PORT}"
+      - "${HTTP_PORT}:${HTTP_PORT}"
     env_file:
       - .env
     restart: on-failure  

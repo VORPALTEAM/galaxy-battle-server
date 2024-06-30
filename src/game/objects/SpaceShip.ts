@@ -172,7 +172,7 @@ export class SpaceShip extends GameObject {
 
     getCreateData(): FighterCreateData {
         return {
-            type: this._type,
+            type: this._objectType,
             owner: this.owner,
             hp: this.hp,
             shield: this.shield,
