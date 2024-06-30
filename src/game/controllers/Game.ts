@@ -1140,7 +1140,7 @@ export class Game implements ILogger {
      * @param dt delta time in sec
      */
     update(dt: number) {
-        
+
         switch (this._state) {
             case "clientLoading":
                 if (this.clientsLoaded()) this.initGame();
@@ -1156,7 +1156,7 @@ export class Game implements ILogger {
         this._fighterMng.update(dt);
         this._linkorMng.update(dt);
         this._missilesController.update(dt);
-        this._botAi.update(dt);
+        this._botAi?.update(dt);
 
         let objects = this._objectController.objects;
 
