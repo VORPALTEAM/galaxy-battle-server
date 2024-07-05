@@ -171,8 +171,8 @@ export class Client implements ILogger {
     private handleClaimRewardRequest(aData: ClaimRewardData) {
         
         let key = this._walletId;
-        if (this._gameData.tgNick?.length > 0) {
-            key = this._gameData.tgNick;
+        if (this._gameData.tgId) {
+            key = this._gameData.tgId;
         }
 
         switch (aData.type) {

@@ -32,4 +32,8 @@ export class GameClientData {
         return this._tgAuthData?.username || '';
     }
 
+    get tgId(): string {
+        return String(this._tgAuthData?.id || '');
+    }
+
 }
