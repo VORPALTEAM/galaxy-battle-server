@@ -24,8 +24,8 @@ export class GameClientData {
     get tgAuthData(): TGAuthData {
         return this._tgAuthData;
     }
-    set tgAuthData(value: TGAuthData | TGAuthWebAppData ) {
-        this._tgAuthData = 'user' in value ? value.user : value;
+    set tgAuthData(value: TGAuthData) {
+        this._tgAuthData = value.user || value;
     }
 
     get tgNick(): string {

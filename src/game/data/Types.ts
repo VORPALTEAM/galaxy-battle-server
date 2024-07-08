@@ -62,6 +62,15 @@ export type TGAuthData = {
     first_name: string;
     last_name: string;
     username: string;
+    user?: {
+        id: number;
+        auth_date: number;
+        hash: string;
+        first_name: string;
+        last_name: string;
+        username: string;
+    }
+    query_id?: string;
 }
 
 export type TGAuthWebAppData = {
