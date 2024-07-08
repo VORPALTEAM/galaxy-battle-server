@@ -25,7 +25,9 @@ export class GameClientData {
         return this._tgAuthData;
     }
     set tgAuthData(value: TGAuthData) {
+        console.log("Auth data: ", value)
         this._tgAuthData = value.user || value;
+        console.log("Saved data: ", this._tgAuthData)
     }
 
     get tgNick(): string {
@@ -33,6 +35,7 @@ export class GameClientData {
     }
 
     get tgId(): string {
+        console.log("Auth data get: ", this._tgAuthData)
         return String(this._tgAuthData?.id || this._tgAuthData?.id || '');
     }
 
