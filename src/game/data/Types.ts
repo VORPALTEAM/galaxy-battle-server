@@ -115,6 +115,7 @@ export type PlayerData = {
     name: string,
     isNick: boolean,
     starName: string,
+    displayNick: string,
     race: ObjectRace
 }
 export type StartGameData = {

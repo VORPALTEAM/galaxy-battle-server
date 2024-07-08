@@ -29,7 +29,7 @@ export class GameClientData {
     }
 
     get tgNick(): string {
-        return this._tgAuthData?.username || '';
+        return this._tgAuthData?.username || this._tgAuthData?.first_name || 'Anonimous';
     }
 
     get tgId(): string {

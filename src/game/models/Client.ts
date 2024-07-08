@@ -171,6 +171,7 @@ export class Client implements ILogger {
     private handleClaimRewardRequest(aData: ClaimRewardData) {
         
         let key = this._walletId;
+        console.log("Info id: ", this._gameData.tgId)
         if (this._gameData.tgId) {
             key = this._gameData.tgId;
         }
@@ -453,8 +454,9 @@ export class Client implements ILogger {
 
     getPlayerData(): PlayerData {
         return {
-            name: this._gameData.tgNick?.length > 0 ? this._gameData.tgNick : this.walletId,
+            name: this._gameData.tgId?.length > 0 ? this._gameData.tgId : this.walletId,
             isNick: this._gameData.tgNick?.length > 0,
+            displayNick: this._gameData.tgId ? this._gameData.tgNick : this.walletId,
             starName: this.starName,
             race: this._gameData.race
         }
