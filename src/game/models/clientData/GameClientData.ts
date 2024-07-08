@@ -1,4 +1,4 @@
-import { ObjectRace, TGAuthData } from "../../data/Types";
+import { ObjectRace, TGAuthData, TGAuthWebAppData } from "../../data/Types";
 
 export class GameClientData {
     private _race: ObjectRace;
@@ -24,8 +24,8 @@ export class GameClientData {
     get tgAuthData(): TGAuthData {
         return this._tgAuthData;
     }
-    set tgAuthData(value: TGAuthData) {
-        this._tgAuthData = value;
+    set tgAuthData(value: TGAuthData | TGAuthWebAppData ) {
+        this._tgAuthData = 'user' in value ? value.user : value;
     }
 
     get tgNick(): string {
@@ -33,7 +33,7 @@ export class GameClientData {
     }
 
     get tgId(): string {
-        return String(this._tgAuthData?.id || '');
+        return String(this._tgAuthData?.id || this._tgAuthData?.id || '');
     }
 
 }

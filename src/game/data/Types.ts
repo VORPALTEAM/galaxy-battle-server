@@ -64,6 +64,18 @@ export type TGAuthData = {
     username: string;
 }
 
+export type TGAuthWebAppData = {
+    user: {
+      id: number;
+      auth_date: number;
+      hash: string;
+      first_name: string;
+      last_name: string;
+      username: string;
+    }
+}
+
+
 export type SignData = {
     fromServer?: 'request' | 'reject' | 'success',
     fromCli?: 'web3' | 'web2',
