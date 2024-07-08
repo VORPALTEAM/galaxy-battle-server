@@ -41,7 +41,7 @@ export class SignService {
 
         // update client
         console.log("Sign data: ", aData.tgAuthData)
-        aClient.sign(walletId, aData.tgAuthData);
+        aClient.sign(walletId, String(aData.tgAuthData));
         aClient.onSignSuccess(walletId);
     }
 

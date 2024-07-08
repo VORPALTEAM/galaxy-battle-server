@@ -321,7 +321,7 @@ export class Client implements ILogger {
         this._laserSkin = value;
     }
 
-    sign(aWalletId: string, aTgData?: TGAuthData) {
+    sign(aWalletId: string, aTgData?: string) {
         this.logDebug(`sign: walletId = ${aWalletId}; tgData:`, aTgData);
         this._walletId = aWalletId;
         this._gameData.tgAuthData = aTgData;

@@ -1,3 +1,4 @@
+import { decodeParams } from "src/blockchain/utils";
 import { ObjectRace, TGAuthData, TGAuthWebAppData } from "../../data/Types";
 
 export class GameClientData {
@@ -24,10 +25,11 @@ export class GameClientData {
     get tgAuthData(): TGAuthData {
         return this._tgAuthData;
     }
-    set tgAuthData(value: TGAuthData) {
+    set tgAuthData(value: string) {
         console.log("Auth data: ", value)
-        this._tgAuthData = value.user || value;
-        console.log("Saved data: ", this._tgAuthData)
+        const entry: TGAuthData = decodeParams(value)
+        this._tgAuthData = entry.user || entry;
+        console.log("Saved data: ", entry)
     }
 
     get tgNick(): string {
