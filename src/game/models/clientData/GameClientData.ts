@@ -1,4 +1,4 @@
-import { decodeParams } from "../../../blockchain/utils";
+import { decodeParams } from "../../../blockchain";
 import { ObjectRace, TGAuthData, TGAuthWebAppData } from "../../data/Types";
 
 export class GameClientData {
