@@ -62,7 +62,28 @@ export type TGAuthData = {
     first_name: string;
     last_name: string;
     username: string;
+    user?: {
+        id: number;
+        auth_date: number;
+        hash: string;
+        first_name: string;
+        last_name: string;
+        username: string;
+    }
+    query_id?: string;
 }
+
+export type TGAuthWebAppData = {
+    user: {
+      id: number;
+      auth_date: number;
+      hash: string;
+      first_name: string;
+      last_name: string;
+      username: string;
+    }
+}
+
 
 export type SignData = {
     fromServer?: 'request' | 'reject' | 'success',
@@ -115,6 +136,7 @@ export type PlayerData = {
     name: string,
     isNick: boolean,
     starName: string,
+    displayNick: string,
     race: ObjectRace
 }
 export type StartGameData = {

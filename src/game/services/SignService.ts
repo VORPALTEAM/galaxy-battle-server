@@ -40,7 +40,8 @@ export class SignService {
         // });
 
         // update client
-        aClient.sign(walletId, aData.tgAuthData);
+        console.log("Sign data: ", aData.tgAuthData)
+        aClient.sign(walletId, String(aData.tgAuthData));
         aClient.onSignSuccess(walletId);
     }
 

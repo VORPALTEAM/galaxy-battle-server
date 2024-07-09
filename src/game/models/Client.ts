@@ -171,8 +171,9 @@ export class Client implements ILogger {
     private handleClaimRewardRequest(aData: ClaimRewardData) {
         
         let key = this._walletId;
-        if (this._gameData.tgNick?.length > 0) {
-            key = this._gameData.tgNick;
+        console.log("Info data: ", this._gameData.tgAuthData, this._gameData.tgId, this._gameData.tgNick, this._gameData.tgAuthData?.id)
+        if (this._gameData.tgAuthData?.id) {
+            key = String(this._gameData.tgAuthData.id)
         }
 
         switch (aData.type) {
@@ -320,7 +321,7 @@ export class Client implements ILogger {
         this._laserSkin = value;
     }
 
-    sign(aWalletId: string, aTgData?: TGAuthData) {
+    sign(aWalletId: string, aTgData?: string) {
         this.logDebug(`sign: walletId = ${aWalletId}; tgData:`, aTgData);
         this._walletId = aWalletId;
         this._gameData.tgAuthData = aTgData;
@@ -453,8 +454,9 @@ export class Client implements ILogger {
 
     getPlayerData(): PlayerData {
         return {
-            name: this._gameData.tgNick?.length > 0 ? this._gameData.tgNick : this.walletId,
+            name: this._gameData.tgId?.length > 0 ? this._gameData.tgId : this.walletId,
             isNick: this._gameData.tgNick?.length > 0,
+            displayNick: this._gameData.tgId ? this._gameData.tgNick : this.walletId,
             starName: this.starName,
             race: this._gameData.race
         }
