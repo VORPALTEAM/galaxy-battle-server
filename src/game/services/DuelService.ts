@@ -51,7 +51,7 @@ export class DuelService implements ILogger {
                 let userNick = aData.userNick.toLowerCase();
 
                 this.logDebug(`'check' pack: call GetUserLastDuel() for userNick: ${userNick}`);
-
+                
                 GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
                     
                     this.logDebug(`GetUserLastDuel info: `, aInfo);
