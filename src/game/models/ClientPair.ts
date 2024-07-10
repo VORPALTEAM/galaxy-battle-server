@@ -17,12 +17,12 @@ export class ClientPair implements ILogger {
 
     constructor(aId: number, aClientA: Client, aClientB: Client, aDuelInfo: BC_DuelInfo) {
         this._id = aId;
-        this._duelInfo = aDuelInfo;
         this._clients = new Map();
         this._accepts = new Map();
         this._loaded = new Map();
         this.addClient(aClientA);
         this.addClient(aClientB);
+        this._duelInfo = aDuelInfo;
     }
 
     logDebug(aMsg: string, aData?: any): void {

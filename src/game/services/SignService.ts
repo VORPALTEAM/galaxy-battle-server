@@ -46,14 +46,6 @@ export class SignService {
                 LogMng.warn(`onSignRecv Web3Service.getWalletId error: `, error);
             }
         }
-
-        // check the player in connections
-        // this._clients.forEach((client) => {
-        //     if (client.walletId === walletId) {
-        //         aClient.onSignReject('Sign failed, client with this key is already online');
-        //         return;
-        //     }
-        // });
         
     }
 

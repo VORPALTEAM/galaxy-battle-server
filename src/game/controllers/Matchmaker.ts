@@ -86,7 +86,7 @@ export class Matchmaker implements ILogger {
     }
 
     private createPair(aClientA: Client, aClientB: Client, aDuelInfo?: BC_DuelInfo) {
-        this.logDebug('pair creation...');
+        this.logDebug('createPair: aDuelInfo: ', aDuelInfo);
         let pair = new ClientPair(this.getNewPairId(), aClientA, aClientB, aDuelInfo);
         this._pairs.set(pair.id, pair);
         pair.onBreak.add(this.onPairBreak, this);
@@ -106,7 +106,7 @@ export class Matchmaker implements ILogger {
     }
 
     private onPairReady(aPair: ClientPair, aDuelInfo: BC_DuelInfo) {
-        this.logDebug(`onPairReady...`);
+        this.logDebug(`onPairReady: duelInfo:`, aDuelInfo);
         const pId = aPair.id;
         let pair = this._pairs.get(pId);
         let clients: Client[] = [];

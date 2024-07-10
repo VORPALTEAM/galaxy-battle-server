@@ -50,7 +50,7 @@ export class LogMng {
     };
 
     public static system(aMsg: any, aLink: string = '') {
-        console.log("%s", aMsg);
+        console.log(`system: `, aMsg);
     }
 
     public static debug(aMsg: any, aData?: any): boolean {

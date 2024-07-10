@@ -348,9 +348,15 @@ export class Game implements ILogger {
     }
 
     private async completeGame(aWinner: Client, aIsDisconnect?: boolean) {
-        this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
-
+        this.logDebug(`completeGame: winner client:`, {
+            walletId: aWinner.walletId,
+            tgId: aWinner.gameData.tgAuthData.id,
+            tgUsername: aWinner.gameData.tgAuthData.username
+        });
+        
         let isPlayWithBot = false;
+        let tgId1: number;
+        let tgId2: number; 
 
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
@@ -361,10 +367,18 @@ export class Game implements ILogger {
             }
 
             // check a Bot
-            if (client.isBot) isPlayWithBot = true;
+            if (client.isBot) {
+                isPlayWithBot = true;
+            }
+            else {
+                i == 0 ?
+                    tgId1 = client.gameData.tgAuthData.id :
+                    tgId2 = client.gameData.tgAuthData.id;
+            }
         }
 
         this.logDebug(`completeGame: isPlayWithBot: (${isPlayWithBot})`);
+        this.logDebug(`completeGame: TG ids: ${tgId1}; ${tgId2};`);
 
         let isWinStreak = false;
         if (!aWinner.isBot && aWinner.isSigned) {
@@ -380,22 +394,13 @@ export class Game implements ILogger {
             message: string;
         };
 
-        if (this._duelData && !this._duelData.login2) {
-            this._duelData.login2 = this._clients[1].gameData.tgId;
-        }
-
-        console.log(`completeGame: logins: ${this._duelData?.login1}; ${this._duelData?.login2};`);
-
         const rewardTries = 2;
         let rewardTriesCounter = 0;
 
         while (rewardTriesCounter < rewardTries) {
             try {
                 if (isPlayWithBot) break;
-                isDuelRewarded = await DuelPairRewardCondition(
-                    this._duelData?.login1,
-                    this._duelData?.login2
-                );
+                isDuelRewarded = await DuelPairRewardCondition(String(tgId1), String(tgId2));
                 if (isDuelRewarded) break;
             } catch (error) {
                 console.log("Error: ", error);
