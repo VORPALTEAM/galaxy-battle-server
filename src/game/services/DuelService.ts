@@ -85,7 +85,7 @@ export class DuelService implements ILogger {
 
                     let enemyNick = '';
                     if (aClient.getPlayerData().displayNick) {
-                        enemyNick = aClient.getPlayerData().displayNick == aInfo.login1 ? aInfo.login2 : aInfo.login1;
+                        enemyNick = aClient.getPlayerData().displayNick == aInfo.id1 ? aInfo.id2 : aInfo.id1;
                     }
                     
                     aClient.sendDuelFound(aInfo.duel_id, enemyNick);

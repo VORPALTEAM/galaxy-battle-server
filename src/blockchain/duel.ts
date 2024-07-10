@@ -38,9 +38,9 @@ export async function GetDuelData(duelId: string): Promise<BC_DuelInfo | null> {
   });
 }
 
-export async function GetUserLastDuel(login: string): Promise<BC_DuelInfo | null> {
+export async function GetUserLastDuel(id: string): Promise<BC_DuelInfo | null> {
   return new Promise(async (resolve, reject) => {
-    const url = fastServerUrl.concat(`api/dueldatabylogin/${login}`);
+    const url = fastServerUrl.concat(`api/dueldatabylogin/${id}`);
     fetch(url)
       .then((res) => {
         if (res.status !== 200)
@@ -53,9 +53,9 @@ export async function GetUserLastDuel(login: string): Promise<BC_DuelInfo | null
   });
 }
 
-export async function GetOpponent(login: string): Promise<string | null> {
+export async function GetOpponent(id: string): Promise<string | null> {
   return new Promise(async (resolve, reject) => {
-    const url = fastServerUrl.concat(`api/getopponent/${login}`);
+    const url = fastServerUrl.concat(`api/getopponent/${id}`);
     fetch(url)
       .then((res) => {
         if (res.status !== 200)
@@ -97,8 +97,8 @@ export function DuelPairRewardCondition (part1: string, part2: string): Promise<
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`api/duelrewardcondition`);
     console.log("Pair: ", {
-      login1: part1,
-      login2: part2
+      id1: part1,
+      id2: part2
     })
 
     if (!part1) {
