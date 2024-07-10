@@ -25,10 +25,26 @@ export class SignService {
     private onSignRecv(aClient: Client, aData: SignData) {
         // const tgNick = aData.tgNick || '';
         let walletId: string;
-        try {
-            walletId = Web3Service.getInstance().getWalletId(aData.signature);
-        } catch (error) {
-            LogMng.warn(`onSignRecv Web3Service.getWalletId error: `, error);
+
+        if (aData.tgInitData && aData.tgAuthData) {
+            // telegram
+            console.log("Sign data: ", aData.tgAuthData)
+            aClient.sign({
+                tgInitStr: aData.tgInitData,
+                tgAuthData: aData.tgAuthData
+            });
+            aClient.onSignSuccess(walletId);
+        }
+        else {
+            // for web3
+            try {
+                walletId = Web3Service.getInstance().getWalletId(aData.signature);
+                aClient.sign({
+                    walletId: walletId
+                });
+            } catch (error) {
+                LogMng.warn(`onSignRecv Web3Service.getWalletId error: `, error);
+            }
         }
 
         // check the player in connections
@@ -38,11 +54,7 @@ export class SignService {
         //         return;
         //     }
         // });
-
-        // update client
-        console.log("Sign data: ", aData.tgAuthData)
-        aClient.sign(walletId, String(aData.tgAuthData));
-        aClient.onSignSuccess(walletId);
+        
     }
 
     addClient(aClient: Client) {

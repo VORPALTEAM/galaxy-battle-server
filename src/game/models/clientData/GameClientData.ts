@@ -1,12 +1,27 @@
-import { decodeParams } from "../../../blockchain/utils.js";
-import { ObjectRace, TGAuthData, TGAuthWebAppData } from "../../data/Types";
+import { TGInitData } from "src/game/data/TGTypes.js";
+import { ObjectRace, TGAuthData } from "../../data/Types";
+import { ILogger } from "src/interfaces/ILogger.js";
+import { LogMng } from "src/monax/LogMng.js";
+import { decodeTgInitData as decodeTgInitString } from "src/blockchain";
 
-export class GameClientData {
+export class GameClientData implements ILogger {
     private _race: ObjectRace;
     private _starName: string;
+    private _tgInitDataStr: string;
+    private _tgInitData: TGInitData;
     private _tgAuthData: TGAuthData;
     
-    constructor() {}
+    constructor() { }
+    
+    logDebug(aMsg: string, aData?: any): void {
+        LogMng.debug(`GameClientData: ${aMsg}`, aData);
+    }
+    logWarn(aMsg: string, aData?: any): void {
+        LogMng.warn(`GameClientData: ${aMsg}`, aData);
+    }
+    logError(aMsg: string, aData?: any): void {
+        LogMng.error(`GameClientData: ${aMsg}`, aData);
+    }
 
     get race(): ObjectRace {
         return this._race;
@@ -22,14 +37,19 @@ export class GameClientData {
         this._starName = value;
     }
     
+    get tgInitDataStr(): string {
+        return this._tgInitDataStr;
+    }
+
+    get tgInitData(): TGInitData {
+        return this._tgInitData;
+    }
+
     get tgAuthData(): TGAuthData {
         return this._tgAuthData;
     }
-    set tgAuthData(value: string) {
-        console.log("Auth data: ", value)
-        const entry: TGAuthData = decodeParams(value)
-        this._tgAuthData = entry.user || entry;
-        console.log("Saved data: ", entry)
+    set tgAuthData(value: TGAuthData) {
+        this._tgAuthData = value;
     }
 
     get tgNick(): string {
@@ -39,6 +59,13 @@ export class GameClientData {
     get tgId(): string {
         console.log("Auth data get: ", this._tgAuthData)
         return String(this._tgAuthData?.id || this._tgAuthData?.id || '');
+    }
+
+    setTgInitData(aTgInitData: string) {
+        this._tgInitDataStr = aTgInitData;
+        this._tgInitData = decodeTgInitString(aTgInitData);
+        // this._tgInitData = JSON.parse(aTgInitData);
+        this.logDebug(`setTgInitData:`, this._tgInitData);
     }
 
 }

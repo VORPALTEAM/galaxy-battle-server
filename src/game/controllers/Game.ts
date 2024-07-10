@@ -1183,7 +1183,6 @@ export class Game implements ILogger {
                 this._fighterMng.deleteShip(obj.id);
                 this._linkorMng.deleteShip(obj.id);
                 // free the field cell
-                // this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
                 this._field.takeOffCellByObject(obj.id);
                 obj.free();
                 return;

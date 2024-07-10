@@ -12,6 +12,7 @@ import { Signal } from "../../monax/events/Signal.js";
 import { RecordWinnerWithChoose } from "../../blockchain/boxes/boxes.js";
 import { GameClientData } from "./clientData/GameClientData.js";
 import { PackSender } from "../services/PackSender.js";
+import { TGInitData } from "../data/TGTypes.js";
 
 export class Client implements ILogger {
     protected _className: string;
@@ -198,7 +199,7 @@ export class Client implements ILogger {
                             this.logError(`RecordWinnerWithChoose: ${aReasone}`);
                             this.sendClaimRewardReject(aData.type, aReasone);
                         }
-                    ); 
+                    );
 
                 } catch (error) {
 
@@ -321,12 +322,17 @@ export class Client implements ILogger {
         this._laserSkin = value;
     }
 
-    sign(aWalletId: string, aTgData?: string) {
-        this.logDebug(`sign: walletId = ${aWalletId}; tgData:`, aTgData);
-        this._walletId = aWalletId;
-        this._gameData.tgAuthData = aTgData;
+    sign(params: {
+        walletId?: string,
+        tgInitStr?: string,
+        tgAuthData?: TGAuthData
+    }) {
+        // this.logDebug(`sign: walletId = ${aWalletId}; tgData:`, aTgData);
+        this.logDebug(`sign params:`, params);
+        this._walletId = params.walletId;
+        this._gameData.setTgInitData(params.tgInitStr);
+        this._gameData.tgAuthData = params.tgAuthData;
         this._isSigned = true;
-        // this.logDebug(`signed...`);
     }
 
     sendPack(aPackTitle: PackTitle, aData: any) {
