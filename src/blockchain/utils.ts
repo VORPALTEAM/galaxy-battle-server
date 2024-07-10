@@ -1,4 +1,4 @@
-import { TGInitData } from "src/game/data/TGTypes";
+import { TGInitData } from "../game/data/TGTypes";
 
 export function decodeTgInitData(urlParams: string): TGInitData {
     let params = new URLSearchParams(urlParams);

@@ -1,8 +1,8 @@
-import { TGInitData } from "src/game/data/TGTypes.js";
+import { TGInitData } from "../../data/TGTypes.js";
 import { ObjectRace, TGAuthData } from "../../data/Types";
-import { ILogger } from "src/interfaces/ILogger.js";
-import { LogMng } from "src/monax/LogMng.js";
-import { decodeTgInitData as decodeTgInitString } from "src/blockchain";
+import { ILogger } from "../../../interfaces/ILogger.js";
+import { LogMng } from "../../../monax/LogMng.js";
+import { decodeTgInitData as decodeTgInitString } from "../../../blockchain";
 
 export class GameClientData implements ILogger {
     private _race: ObjectRace;
