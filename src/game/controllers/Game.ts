@@ -380,6 +380,10 @@ export class Game implements ILogger {
             message: string;
         };
 
+        if (this._duelData && !this._duelData.login2) {
+            this._duelData.login2 = this._clients[1].gameData.tgId;
+        }
+
         console.log(`completeGame: logins: ${this._duelData?.login1}; ${this._duelData?.login2};`);
 
         const rewardTries = 2;
