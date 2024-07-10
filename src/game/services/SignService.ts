@@ -26,11 +26,11 @@ export class SignService {
         // const tgNick = aData.tgNick || '';
         let walletId: string;
 
-        if (aData.tgInitData && aData.tgAuthData) {
+        if (aData.tgInitString && aData.tgAuthData) {
             // telegram
             console.log("Sign data: ", aData.tgAuthData)
             aClient.sign({
-                tgInitStr: aData.tgInitData,
+                tgInitStr: aData.tgInitString,
                 tgAuthData: aData.tgAuthData
             });
             aClient.onSignSuccess(walletId);

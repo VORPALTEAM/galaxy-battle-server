@@ -55,35 +55,6 @@ export enum PackTitle {
     
 }
 
-// export type TGAuthData = {
-//     id: number;
-//     auth_date: number;
-//     hash: string;
-//     first_name: string;
-//     last_name: string;
-//     username: string;
-//     user?: {
-//         id: number;
-//         auth_date: number;
-//         hash: string;
-//         first_name: string;
-//         last_name: string;
-//         username: string;
-//     }
-//     query_id?: string;
-// }
-
-// export type TGAuthWebAppData = {
-//     user: {
-//       id: number;
-//       auth_date: number;
-//       hash: string;
-//       first_name: string;
-//       last_name: string;
-//       username: string;
-//     }
-// }
-
 export type TGAuthData = {
     auth_date: number;
     first_name: string;
@@ -99,7 +70,7 @@ export type SignData = {
     signature?: string,
     message?: string,
     walletId?: string,
-    tgInitData?: string,
+    tgInitString?: string,
     tgAuthData?: TGAuthData
 }
 
