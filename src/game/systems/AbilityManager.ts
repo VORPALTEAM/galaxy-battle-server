@@ -55,7 +55,7 @@ export class AbilityManager implements ILogger {
 
     laserAttack(aClient: Client, aDamage: number) {
 
-        let planet = this.getPlanetByPlayer(aClient.walletId);
+        let planet = this.getPlanetByPlayer(aClient.gameData.id);
         if (!planet) return;
         const origin = planet.position.clone();
         let dir = planet.getDirrection();
@@ -103,7 +103,7 @@ export class AbilityManager implements ILogger {
                             damage: damage,
                             isCrit: false,
                             isMiss: false,
-                            attackerClientId: aClient.walletId,
+                            attackerClientId: aClient.gameData.id,
                             attacketType: 'Planet'
                         });
                     }

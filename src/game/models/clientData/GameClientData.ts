@@ -4,7 +4,11 @@ import { ILogger } from "../../../interfaces/ILogger.js";
 import { LogMng } from "../../../monax/LogMng.js";
 import { decodeTgInitString } from "../../../blockchain/utils.js";
 
+const DEFAULT_ID = 'null_id';
+const DEFAULT_NICK = 'Anonimous';
+
 export class GameClientData implements ILogger {
+    private _walletId: string;
     private _race: ObjectRace;
     private _starName: string;
     private _tgInitDataStr: string;
@@ -21,6 +25,13 @@ export class GameClientData implements ILogger {
     }
     logError(aMsg: string, aData?: any): void {
         LogMng.error(`GameClientData: ${aMsg}`, aData);
+    }
+
+    get walletId(): string {
+        return this._walletId;
+    }
+    set walletId(value: string) {
+        this._walletId = value;
     }
 
     get race(): ObjectRace {
@@ -52,12 +63,38 @@ export class GameClientData implements ILogger {
         this._tgAuthData = value;
     }
 
-    get tgId(): string {
-        return String(this._tgAuthData?.id || this._tgInitData?.user?.id || '');
+    get isTg(): boolean {
+        return this._tgAuthData != null || this._tgInitData != null;
     }
 
-    get tgNick(): string {
-        return this._tgAuthData?.username || this._tgAuthData?.first_name || 'Anonimous';
+    get id(): string {
+        let id = DEFAULT_ID;
+        if (this._tgAuthData || this._tgInitData) {
+            id = String(this._tgAuthData?.id || this._tgInitData?.user?.id);
+        }
+        else if (this._walletId) {
+            id = this._walletId;
+        }
+        return id;
+    }
+
+    // get tgId(): string {
+    //     return String(this._tgAuthData?.id || this._tgInitData?.user?.id || DEFAULT_ID);
+    // }
+
+    // get tgNick(): string {
+    //     return this._tgAuthData?.username || this._tgAuthData?.first_name || DEFAULT_NICK;
+    // }
+
+    get nick(): string {
+        let nick = DEFAULT_NICK;
+        if (this._tgAuthData || this._tgInitData) {
+            nick = this._tgAuthData?.username || this._tgAuthData?.first_name;
+        }
+        else if (this._walletId) {
+            nick = this._walletId;
+        }
+        return nick;
     }
     
     setTgInitData(aTgInitData: string) {

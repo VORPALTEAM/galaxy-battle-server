@@ -18,7 +18,7 @@ export class Client implements ILogger {
     protected _className: string;
     protected _socket: Socket;
     protected _connectionId: string;
-    protected _walletId: string;
+    // protected _walletId: string;
 
     // player data
     private _gameData: GameClientData;
@@ -80,7 +80,8 @@ export class Client implements ILogger {
             // this._isDuelMode = aData?.isChallenge;
             this._isFreeConnection = aData?.isFreeConnect;
             if (this._isFreeConnection) {
-                this._walletId = "0x0";
+                // this._walletId = "0x0";
+                this._gameData.walletId = "0x0";
             }
             if (this._isWithBot) {
                 this.logDebug(`search game with bot request...`);
@@ -171,12 +172,8 @@ export class Client implements ILogger {
 
     private handleClaimRewardRequest(aData: ClaimRewardData) {
         
-        let key = this._walletId;
+        let key = this._gameData.id;
         
-        if (this._gameData.tgAuthData?.id) {
-            key = String(this._gameData.tgAuthData.id)
-        }
-
         switch (aData.type) {
             
             case "reward":
@@ -275,9 +272,9 @@ export class Client implements ILogger {
         this._isSignPending = value;
     }
 
-    get walletId(): string {
-        return this._walletId;
-    }
+    // get walletId(): string {
+    //     return this._walletId;
+    // }
 
     get gameData(): GameClientData {
         return this._gameData;
@@ -328,7 +325,7 @@ export class Client implements ILogger {
         tgAuthData?: TGAuthData
     }) {
         this.logDebug(`sign params:`, params);
-        this._walletId = params.walletId;
+        this._gameData.walletId = params.walletId;
         this._gameData.setTgInitData(params.tgInitStr);
         this._gameData.tgAuthData = params.tgAuthData;
         this._isSigned = true;
@@ -458,11 +455,11 @@ export class Client implements ILogger {
     }
 
     getPlayerData(): PlayerData {
-        let isTg = this._gameData.tgId?.length > 0; 
+        let isTg = this._gameData.isTg;
         return {
-            name: isTg ? this._gameData.tgNick : (this.walletId || "Anonimous"),
+            name: this._gameData.nick,
             isNick: isTg,
-            displayNick: isTg ? this._gameData.tgNick : (this.walletId || "Anonimous"),
+            displayNick: this._gameData.nick,
             starName: this.starName,
             race: this._gameData.race
         }

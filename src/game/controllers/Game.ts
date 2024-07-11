@@ -248,20 +248,21 @@ export class Game implements ILogger {
         switch (aData.action) {
             case "click":
                 switch (aData.skillId) {
-                    case 0:
+                    case 0: // laser
                         {
                             const dmg = this._expMng.getSkillDamage(
-                                aClient.walletId,
+                                aClient.gameData.id,
                                 aData.skillId
                             );
+                            this.logDebug(`laser dmg:`, dmg);
                             this._abilsMng?.laserAttack(aClient, dmg);
                         }
                         break;
 
-                    case 1:
+                    case 1: // rocket
                         {
                             const dmg = this._expMng.getSkillDamage(
-                                aClient.walletId,
+                                aClient.gameData.id,
                                 aData.skillId
                             );
                             this._missilesController.launchMissile({
@@ -271,14 +272,14 @@ export class Game implements ILogger {
                         }
                         break;
 
-                    case 2:
+                    case 2: // sniper
                         {
                             let slowFactor = this._expMng.getSniperSpeedFactor(
-                                aClient.walletId
+                                aClient.gameData.id
                             );
-                            let slowTime = this._expMng.getSniperDuration(aClient.walletId);
+                            let slowTime = this._expMng.getSniperDuration(aClient.gameData.id);
                             let planet = this._objectController.getPlayerPlanet(
-                                aClient.walletId
+                                aClient.gameData.id
                             );
                             if (planet) {
                                 this.logDebug(`onSkillRequest: Sniper Activate...`);
@@ -307,7 +308,7 @@ export class Game implements ILogger {
 
             case "levelUp":
                 let expData = this._expMng.upSkillLevel(
-                    aClient.walletId,
+                    aClient.gameData.id,
                     aData.skillId
                 );
                 PackSender.getInstance().exp(aClient, expData);
@@ -326,7 +327,7 @@ export class Game implements ILogger {
     }
 
     private onClientEmotion(aClient: Client, aEmotionData: EmotionData) {
-        aEmotionData.owner = aClient.walletId;
+        aEmotionData.owner = aClient.gameData.id;
         PackSender.getInstance().emotion(this._clients, aEmotionData);
     }
 
@@ -351,7 +352,7 @@ export class Game implements ILogger {
 
     private async completeGame(aWinner: Client, aIsDisconnect?: boolean) {
         this.logDebug(`completeGame: winner client:`, {
-            walletId: aWinner?.walletId,
+            id: aWinner?.gameData.id,
             tgId: aWinner?.gameData?.tgAuthData?.id,
             tgUsername: aWinner?.gameData?.tgAuthData?.username
         });
@@ -367,7 +368,7 @@ export class Game implements ILogger {
 
             // clear winstreak for other clients
             if (client.connectionId != aWinner.connectionId) {
-                WINSTREAKS[client.walletId] = 0;
+                WINSTREAKS[client.gameData.id] = 0;
             }
 
             // check a Bot
@@ -387,8 +388,8 @@ export class Game implements ILogger {
         let isWinStreak = false;
         if (!aWinner.isBot && aWinner.isSigned) {
             // inc ws
-            let ws = WINSTREAKS[aWinner.walletId] || 0;
-            WINSTREAKS[aWinner.walletId] = ws + 1;
+            let ws = WINSTREAKS[aWinner.gameData.id] || 0;
+            WINSTREAKS[aWinner.gameData.id] = ws + 1;
             // isWinStreak = await this.isWinStreak(aWinner.walletId);
             isWinStreak = ws + 1 >= 3;
         }
@@ -420,10 +421,10 @@ export class Game implements ILogger {
             const isWinner = aWinner && client.connectionId == aWinner.connectionId;
             const nameDisplay = client.gameData.tgAuthData
                 ? client.gameData.tgAuthData.username
-                : client.walletId;
+                : client.gameData.id;
             let data: GameCompleteData;
 
-            const expData = this._expMng.getExpInfo(client.walletId);
+            const expData = this._expMng.getExpInfo(client.gameData.id);
 
             if (isWinner) {
                 data = {
@@ -600,7 +601,7 @@ export class Game implements ILogger {
 
             let star = new Star({
                 id: this.generateObjectId(),
-                owner: this._clients[i].walletId,
+                owner: this._clients[i].gameData.id,
                 position: this._field.cellPosToGlobalVec3(starData.cellPos),
                 radius: starParams.radius,
                 hp: starParams.hp,
@@ -660,7 +661,7 @@ export class Game implements ILogger {
 
             let tower = new Tower({
                 id: this.generateObjectId(),
-                owner: this._clients[towerData.ownerId].walletId,
+                owner: this._clients[towerData.ownerId].gameData.id,
                 position: this._field.cellPosToGlobalVec3(towerData.cellPos),
                 radius: towerParams.radius,
                 hp: towerParams.hp,
@@ -685,7 +686,7 @@ export class Game implements ILogger {
     private getClientByWallet(aWalletId: string): Client | null {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
-            if (client.walletId == aWalletId) return client;
+            if (client.gameData.id == aWalletId) return client;
         }
         return null;
     }
@@ -693,7 +694,7 @@ export class Game implements ILogger {
     private getClientByEnemyWallet(aWalletId: string): Client | null {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
-            if (client.walletId != aWalletId) return client;
+            if (client.gameData.id != aWalletId) return client;
         }
         return null;
     }
@@ -891,7 +892,7 @@ export class Game implements ILogger {
     private onObjectDamage(aSender: GameObject, aAttackInfo: DamageInfo) {
         let client = this.getClientByWallet(aSender.owner);
         if (client && !aAttackInfo.isMiss) {
-            this._expMng.addDamage(client.walletId, aAttackInfo.damage);
+            this._expMng.addDamage(client.gameData.id, aAttackInfo.damage);
         }
         PackSender.getInstance().damage(this._clients, {
             id: aSender.id,
@@ -933,7 +934,7 @@ export class Game implements ILogger {
         let lasers: number[] = [];
         let laserSkin: PlanetLaserSkin = "blue";
         const nick = aClient.getPlayerData().displayNick;
-        const id = aClient.gameData.tgAuthData?.id || aClient.walletId;
+        const id = aClient.gameData.tgAuthData?.id || aClient.gameData.id;
 
         if (aClient.isSigned && !aClient.isBot) {
 
@@ -1010,14 +1011,14 @@ export class Game implements ILogger {
 
         PackSender.getInstance().fieldInit([cli1], {
             fieldParams: SETTINGS.field,
-            playerWalletAddr: cli1.walletId,
+            playerWalletAddr: cli1.gameData.id,
             playerPosition: "top",
             playerRace: cli1Data?.race,
             enemyRace: cli2Data?.race,
         });
         PackSender.getInstance().fieldInit([cli2], {
             fieldParams: SETTINGS.field,
-            playerWalletAddr: cli2.walletId,
+            playerWalletAddr: cli2.gameData.id,
             playerPosition: "bot",
             playerRace: cli2Data?.race,
             enemyRace: cli1Data?.race,
@@ -1132,10 +1133,10 @@ export class Game implements ILogger {
             });
         }
         
-        let goldInc = this._expMng.addGoldForObject(attackerClient.walletId, aObj, activeKill);
+        let goldInc = this._expMng.addGoldForObject(attackerClient.gameData.id, aObj, activeKill);
         
-        const prevExp = this._expMng.getExpInfo(attackerClient.walletId).exp;
-        let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj, activeKill);
+        const prevExp = this._expMng.getExpInfo(attackerClient.gameData.id).exp;
+        let expData = this._expMng.addExpForObject(attackerClient.gameData.id, aObj, activeKill);
         const dtExp = expData.exp - prevExp;
 
         PackSender.getInstance().exp(attackerClient, expData);
