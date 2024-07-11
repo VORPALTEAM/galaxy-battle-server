@@ -229,7 +229,9 @@ export class Game implements ILogger {
     }
 
     private onClientDisconnect(aClient: Client) {
-        this.logDebug(`client (${aClient.walletId}) disconnect`);
+        const clientName = aClient.getPlayerData().displayNick;
+
+        this.logDebug(`client (${clientName}) disconnected`);
 
         let winner: Client;
         for (let i = 0; i < this._clients.length; i++) {
@@ -379,7 +381,7 @@ export class Game implements ILogger {
             }
         }
 
-        this.logDebug(`completeGame: isPlayWithBot: (${isPlayWithBot})`);
+        this.logDebug(`completeGame: isPlayWithBot: ${isPlayWithBot}`);
         this.logDebug(`completeGame: TG ids: ${tgId1}; ${tgId2};`);
 
         let isWinStreak = false;
@@ -490,7 +492,7 @@ export class Game implements ILogger {
             if (aIsDisconnect) {
                 // remove duel record
                 try {
-                    this.logDebug(`CALL DeleteDuel`);
+                    this.logDebug(`call DeleteDuel for duel_id = ${this._duelData.duel_id}`);
                     DeleteDuel(this._duelData.duel_id);
                 } catch (error) {
                     PackSender.getInstance().message(this._clients, {
@@ -499,7 +501,7 @@ export class Game implements ILogger {
                     });
                 }
             } else {
-                this.logDebug(`CALL FinishDuel`);
+                this.logDebug(`call FinishDuel for duel_id = ${this._duelData.duel_id}`);
                 try {
                     FinishDuel(this._duelData.duel_id);
                 } catch (error) {

@@ -53,7 +53,7 @@ export class ClientPair implements ILogger {
         switch (aData.action) {
 
             case 'accept':
-                this.logDebug(`onAcceptScreenPack: accept recieved...`);
+                this.logDebug(`accept...`);
 
                 this._accepts.set(aClient.connectionId, true);
                 this._clients.forEach((client) => {
@@ -82,7 +82,7 @@ export class ClientPair implements ILogger {
                 break;
 
             case 'loading':
-                this.logDebug(`onAcceptScreenPack: loading recieved...`);
+                this.logDebug(`loading...`);
                 this._loaded.set(aClient.connectionId, true);
                 aClient.setPlayerData({
                     starName: aData.loadingData?.starName
@@ -94,7 +94,7 @@ export class ClientPair implements ILogger {
                 break;
 
             case 'closeClick':
-                this.logDebug(`onAcceptScreenPack: closeClick recieved...`);
+                this.logDebug(`closeClick...`);
 
                 PackSender.getInstance().sendBattleAcceptState(clients, {
                     action: 'cancel'
