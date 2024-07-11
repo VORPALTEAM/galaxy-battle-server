@@ -75,7 +75,7 @@ export class ClientPair implements ILogger {
                     this._clients.forEach((client) => {
                         setTimeout(() => {
                             client.sendAcceptScreenLoading();
-                        }, 1000);
+                        }, 750);
                     });
                 }
 
