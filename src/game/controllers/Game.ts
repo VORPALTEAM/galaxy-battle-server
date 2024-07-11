@@ -349,10 +349,12 @@ export class Game implements ILogger {
 
     private async completeGame(aWinner: Client, aIsDisconnect?: boolean) {
         this.logDebug(`completeGame: winner client:`, {
-            walletId: aWinner.walletId,
-            tgId: aWinner.gameData.tgAuthData.id,
-            tgUsername: aWinner.gameData.tgAuthData.username
+            walletId: aWinner?.walletId,
+            tgId: aWinner?.gameData?.tgAuthData?.id,
+            tgUsername: aWinner?.gameData?.tgAuthData?.username
         });
+
+        this._starController.deactivateStars();
         
         let isPlayWithBot = false;
         let tgId1: number;

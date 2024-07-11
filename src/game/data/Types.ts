@@ -60,7 +60,7 @@ export type TGAuthData = {
     first_name: string;
     hash: string;
     id: number;
-    last_name: string;
+    last_name?: string;
     username: string;
 }
 
