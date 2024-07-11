@@ -39,8 +39,6 @@ export class LogMng {
     };
 
     private static log(aMsg: any, aLevel: string = DEBUG, aData?: any): boolean {
-        console.log("Logmng log called");
-        console.log("Log condition: ", aLevel, LogMng.levels.indexOf(aLevel));
         if (LogMng.levels.indexOf(aLevel) < 0) return false;
         const str = `${aLevel}: ${aMsg}`;
         aData ?
