@@ -17,11 +17,11 @@ LogMng.system(`LogMng.mode = ${LogMng.mode}`);
 
 LogMng.debug(`env init...`);
 if (process.env.NODE_ENV === 'development') {
-    LogMng.setMode(LogMng.MODE_DEBUG);
+    // LogMng.setMode(LogMng.MODE_DEBUG);
     dotenv.config({ path: '.env.development' });
 }
 else {
-    LogMng.setMode(LogMng.MODE_RELEASE);
+    // LogMng.setMode(LogMng.MODE_RELEASE);
     dotenv.config({ path: '.env.production' });
 }
 
