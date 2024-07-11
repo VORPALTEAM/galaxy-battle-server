@@ -57,7 +57,7 @@ export class GameClientData implements ILogger {
     }
 
     get tgId(): string {
-        return String(this._tgAuthData?.id || this._tgInitData?.user.id || '');
+        return String(this._tgAuthData?.id || this._tgInitData?.user?.id || '');
     }
 
     setTgInitData(aTgInitData: string) {
