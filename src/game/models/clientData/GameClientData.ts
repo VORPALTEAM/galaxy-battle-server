@@ -52,14 +52,14 @@ export class GameClientData implements ILogger {
         this._tgAuthData = value;
     }
 
-    get tgNick(): string {
-        return this._tgAuthData?.username || this._tgAuthData?.first_name || 'Anonimous';
-    }
-
     get tgId(): string {
         return String(this._tgAuthData?.id || this._tgInitData?.user?.id || '');
     }
 
+    get tgNick(): string {
+        return this._tgAuthData?.username || this._tgAuthData?.first_name || 'Anonimous';
+    }
+    
     setTgInitData(aTgInitData: string) {
         this._tgInitDataStr = aTgInitData;
         this._tgInitData = decodeTgInitString(aTgInitData);

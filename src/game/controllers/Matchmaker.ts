@@ -119,7 +119,7 @@ export class Matchmaker implements ILogger {
     }
 
     private createGame(aClientA: Client, aClientB: Client, aDuelInfo: BC_DuelInfo) {
-        this.logDebug('game creation...');
+        this.logDebug('createGame: aDuelInfo: ', aDuelInfo);
         let game = new Game({
             gameId: this.getNewGameId(),
             clientA: aClientA,

@@ -37,11 +37,11 @@ export class SignService implements ILogger {
     private onSignRecv(aClient: Client, aData: SignData) {
         // const tgNick = aData.tgNick || '';
         let walletId: string;
-        this.logDebug("onSignRecv: aData: ", aData);
+        this.logDebug(`onSignRecv: aData: `, aData);
 
         if (aData.tgInitString && aData.tgAuthData) {
             // telegram
-            this.logDebug("onSignRecv: TG detected");
+            this.logDebug('onSignRecv: Telegram detected...');
             aClient.sign({
                 tgInitStr: aData.tgInitString,
                 tgAuthData: aData.tgAuthData

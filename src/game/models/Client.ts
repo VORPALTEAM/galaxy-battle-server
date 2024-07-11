@@ -458,10 +458,11 @@ export class Client implements ILogger {
     }
 
     getPlayerData(): PlayerData {
+        let isTg = this._gameData.tgId?.length > 0; 
         return {
-            name: this._gameData.tgId?.length > 0 ? this._gameData.tgId : this.walletId,
-            isNick: this._gameData.tgNick?.length > 0,
-            displayNick: this._gameData.tgId ? this._gameData.tgNick : (this.walletId || "Anonimous"),
+            name: isTg ? this._gameData.tgNick : (this.walletId || "Anonimous"),
+            isNick: isTg,
+            displayNick: isTg ? this._gameData.tgNick : (this.walletId || "Anonimous"),
             starName: this.starName,
             race: this._gameData.race
         }
