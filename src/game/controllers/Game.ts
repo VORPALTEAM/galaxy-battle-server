@@ -709,7 +709,7 @@ export class Game implements ILogger {
         cellPos.y += aCellDeltaPos.y;
 
         if (this._field.isCellTaken(cellPos)) {
-            this.logDebug(`onStarFighterSpawn: cell taken:`, cellPos);
+            // this.logDebug(`onStarFighterSpawn: cell taken:`, cellPos);
             let neighbors = this._field.getNeighbors(cellPos, true);
             if (neighbors.length <= 0) {
                 // explosion current object on the cell
@@ -930,9 +930,10 @@ export class Game implements ILogger {
     private async loadLaserSkinForClient(aClient: Client) {
         let lasers: number[] = [];
         let laserSkin: PlanetLaserSkin = "blue";
+        const nick = aClient.getPlayerData().displayNick;
+        const id = aClient.gameData.tgAuthData?.id || aClient.walletId;
 
         if (aClient.isSigned && !aClient.isBot) {
-            let login = aClient.gameData.tgAuthData?.id || aClient.walletId;
 
             // LOCAL TEST
             // if (login == '0xbf094ffe3628041a8b7d7684e8549381136c6a17') {
@@ -941,9 +942,9 @@ export class Game implements ILogger {
 
             try {
                 // lasers = await getUserAvailableLaserLevelsWeb2(login);
-                lasers = await getUserLaserListWeb2(String(login));
+                lasers = await getUserLaserListWeb2(String(id));
                 lasers = lasers.map((n) => Number(n));
-                this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
+                this.logDebug(`laser list for client(${nick}):`, lasers);
                 if (lasers?.length > 0) {
                     lasers.sort((a, b) => {
                         return b - a;
@@ -971,7 +972,7 @@ export class Game implements ILogger {
         // test
         // laserSkin = 'violet';
 
-        this.logDebug(`set laser skin for client(${aClient.walletId}):`, laserSkin);
+        this.logDebug(`set laser skin for client(${nick}):`, laserSkin);
         aClient.laserSkin = laserSkin;
     }
 
