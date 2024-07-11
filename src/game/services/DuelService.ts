@@ -87,6 +87,7 @@ export class DuelService implements ILogger {
                     if (aClient.getPlayerData().displayNick) {
                         enemyNick = aClient.gameData.tgId == aInfo.id1 ? aInfo.nickName2 : aInfo.nickName1;
                     }
+                    this.logDebug(`onPackRecv(): enemyNick = ${enemyNick}`);
                     
                     aClient.sendDuelFound(aInfo.duel_id, enemyNick);
                     this.onDuelFound.dispatch(aClient, aInfo);
