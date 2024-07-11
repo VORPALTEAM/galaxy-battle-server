@@ -2,7 +2,7 @@ import { TGInitData } from "../../data/TGTypes.js";
 import { ObjectRace, TGAuthData } from "../../data/Types";
 import { ILogger } from "../../../interfaces/ILogger.js";
 import { LogMng } from "../../../monax/LogMng.js";
-import { decodeTgInitData as decodeTgInitString } from "../../../blockchain/utils.js";
+import { decodeTgInitString } from "../../../blockchain/utils.js";
 
 export class GameClientData implements ILogger {
     private _race: ObjectRace;
@@ -57,7 +57,7 @@ export class GameClientData implements ILogger {
     }
 
     get tgId(): string {
-        console.log("Auth data get: ", this._tgAuthData)
+        this.logDebug(`get tgId: `, this._tgAuthData);
         return String(this._tgAuthData?.id || this._tgAuthData?.id || '');
     }
 

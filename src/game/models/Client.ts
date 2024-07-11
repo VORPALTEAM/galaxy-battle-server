@@ -327,7 +327,6 @@ export class Client implements ILogger {
         tgInitStr?: string,
         tgAuthData?: TGAuthData
     }) {
-        // this.logDebug(`sign: walletId = ${aWalletId}; tgData:`, aTgData);
         this.logDebug(`sign params:`, params);
         this._walletId = params.walletId;
         this._gameData.setTgInitData(params.tgInitStr);
