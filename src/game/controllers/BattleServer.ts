@@ -22,6 +22,7 @@ export class BattleServer implements ILogger {
     }
 
     logDebug(aMsg: string, aData?: any): void {
+        console.log("Log debug method called");
         LogMng.debug(`${this._className}: ${aMsg}`, aData);
     }
 
