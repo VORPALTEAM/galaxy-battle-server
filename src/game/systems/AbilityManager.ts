@@ -55,6 +55,8 @@ export class AbilityManager implements ILogger {
 
     laserAttack(aClient: Client, aDamage: number) {
 
+        this.logDebug(`client (${aClient.gameData.nick}) laserAttack (dmg: ${aDamage})`);
+
         let planet = this.getPlanetByPlayer(aClient.gameData.id);
         if (!planet) return;
         const origin = planet.position.clone();

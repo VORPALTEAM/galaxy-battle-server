@@ -254,7 +254,7 @@ export class Game implements ILogger {
                                 aClient.gameData.id,
                                 aData.skillId
                             );
-                            this.logDebug(`laser dmg:`, dmg);
+                            // this.logDebug(`laser dmg:`, dmg);
                             this._abilsMng?.laserAttack(aClient, dmg);
                         }
                         break;
@@ -282,7 +282,7 @@ export class Game implements ILogger {
                                 aClient.gameData.id
                             );
                             if (planet) {
-                                this.logDebug(`onSkillRequest: Sniper Activate...`);
+                                // this.logDebug(`onSkillRequest: Sniper Activate...`);
                                 planet.activateSniperSkill(slowFactor, slowTime);
                                 PackSender.getInstance().sniper(this._clients, {
                                     action: "start",
@@ -351,7 +351,10 @@ export class Game implements ILogger {
     }
 
     private async completeGame(aWinner: Client, aIsDisconnect?: boolean) {
-        this.logDebug(`completeGame: winner client:`, {
+
+        this.logDebug(`--- completeGame log start ---`);
+
+        this.logDebug(`winner:`, {
             id: aWinner?.gameData.id,
             tgId: aWinner?.gameData?.tgAuthData?.id,
             tgUsername: aWinner?.gameData?.tgAuthData?.username
@@ -382,8 +385,9 @@ export class Game implements ILogger {
             }
         }
 
-        this.logDebug(`completeGame: isPlayWithBot: ${isPlayWithBot}`);
-        this.logDebug(`completeGame: TG ids: ${tgId1}; ${tgId2};`);
+        this.logDebug(`isPlayWithBot: ${isPlayWithBot}`);
+        this.logDebug(`isDisconnect: ${aIsDisconnect}`);
+        this.logDebug(`TG ids: ${tgId1}; ${tgId2};`);
 
         let isWinStreak = false;
         if (!aWinner.isBot && aWinner.isSigned) {
@@ -443,7 +447,8 @@ export class Game implements ILogger {
                         }
                     }
                 };
-            } else {
+            }
+            else {
                 data = {
                     status: "loss",
                     ownerName: nameDisplay,
@@ -462,7 +467,8 @@ export class Game implements ILogger {
             if (this.isDuel()) {
                 if (aIsDisconnect) {
                     data.status = "duelEnemyDisconnected";
-                } else {
+                }
+                else {
                     // 2 boxes
                     if (isDuelRewarded) {
                         // data.status = 'duelReward';
@@ -479,6 +485,7 @@ export class Game implements ILogger {
                 }
             }
 
+            this.logDebug(`send gameComplete to client (${client.gameData.nick})`);
             PackSender.getInstance().gameComplete(client, data);
 
             if (duelRewardError) {
@@ -515,6 +522,9 @@ export class Game implements ILogger {
         }
 
         this.onGameComplete.dispatch(this);
+
+        this.logDebug(`--- completeGame log end ---`);
+
     }
 
     isDuel(): boolean {
