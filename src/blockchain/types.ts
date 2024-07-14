@@ -32,3 +32,24 @@ export type DuelInfoResponce = {
 export type OpponentResponce = {
   opponent: string | null;
 };
+
+export interface PlayerSummaryStats {
+  player: string;
+  total_damage: number;
+  total_experience: number;
+  total_gold: number;
+}
+
+export interface DuelPlayerStats {
+  id?: number;
+  duel_id: string;
+  player: string;
+  damage_total: number;
+  experience: number;
+  gold: number;
+}
+
+export interface DuelStatsMessage {
+  signature: string;
+  stats: DuelPlayerStats[]
+}
