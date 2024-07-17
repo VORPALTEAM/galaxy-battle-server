@@ -426,7 +426,7 @@ export class Game implements ILogger {
             /* const nameDisplay = client.gameData.tgAuthData
                 ? client.gameData.tgAuthData.username
                 : client.gameData.id; */
-            this.logDebug("Client data: ", client.gameData);
+            this.logDebug("Client data: ", client.gameData.id);
             const nameDisplay = client.gameData.id || "Unknown";
             let data: GameCompleteData;
 
@@ -487,7 +487,7 @@ export class Game implements ILogger {
                 }
             }
 
-            this.logDebug(`send gameComplete to client (${client.gameData.nick})`);
+            this.logDebug(`send gameComplete to client (${client.gameData.nick})`, data);
             PackSender.getInstance().gameComplete(client, data);
 
             if (duelRewardError) {
