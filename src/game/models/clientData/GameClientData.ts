@@ -69,7 +69,8 @@ export class GameClientData implements ILogger {
 
     get id(): string {
         let id = DEFAULT_ID;
-        if (this._tgAuthData || this._tgInitData) {
+        console.log("Tg data 1: ", this._tgInitData, "Tg data 2: ", this._tgAuthData);
+        if (this._tgInitData || this._tgAuthData) {
             id = String(this._tgAuthData?.id || this._tgInitData?.user?.id);
         }
         else if (this._walletId) {
