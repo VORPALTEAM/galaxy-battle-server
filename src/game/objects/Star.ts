@@ -23,6 +23,7 @@ export class Star extends GameObject {
     protected _timerFighterSpawn: number;
     protected _timerBattleShipSpawn: number;
     protected _attackTimer = 0;
+    isActive = true;
     // events
     /**
      * f( Star, spawnDeltaPos: {x, y} )
@@ -44,6 +45,7 @@ export class Star extends GameObject {
         for (let i = 0; i < deltaPos.length; i++) {
             const dPos = deltaPos[i];
             setTimeout(() => {
+                if (!this.isActive) return;
                 this.onFighterSpawn.dispatch(this, dPos);
             }, i * 250);
         }
@@ -54,6 +56,7 @@ export class Star extends GameObject {
         for (let i = 0; i < deltaPos.length; i++) {
             const dPos = deltaPos[i];
             setTimeout(() => {
+                if (!this.isActive) return;
                 this.onLinkorSpawn.dispatch(this, dPos);
             }, i * MyMath.randomIntInRange(0, 500));
         }
@@ -111,6 +114,7 @@ export class Star extends GameObject {
     }
 
     update(dt: number) {
+        if (!this.isActive) return;
         this.updateAttack(dt);
         this.updateFighterSpawn(dt);
         this.updateBattleShipSpawn(dt);

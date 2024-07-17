@@ -271,7 +271,7 @@ export class ExpManager implements ILogger {
         const tests = [0, 25, 650, 1000, 3700, 4040, 4500];
         for (let i = 0; i < tests.length; i++) {
             const val = tests[i];
-            this.logDebug(`exp perc ${val}: ${this.getLevelExpPercent(val)}`);
+            // this.logDebug(`exp perc ${val}: ${this.getLevelExpPercent(val)}`);
         }
     }
 

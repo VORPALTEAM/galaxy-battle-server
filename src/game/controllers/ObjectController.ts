@@ -5,6 +5,7 @@ import { GameObject } from "../objects/GameObject.js";
 import { Planet } from "../objects/Planet.js";
 import { Game } from "./Game.js";
 import { Field } from '../objects/Field.js';
+import { Star } from '../objects/Star.js';
 
 export class ObjectController implements ILogger {
     protected _className = 'ObjectController';
@@ -45,6 +46,14 @@ export class ObjectController implements ILogger {
             }
         });
         return null;
+    }
+
+    getAllStars(): Star[] {
+        let stars: Star[] = [];
+        this._objects.forEach(obj => {
+            if (obj instanceof Star) stars.push(obj);
+        });
+        return stars;
     }
 
     getPlayerPlanet(aOwnerWalletId: string): Planet {

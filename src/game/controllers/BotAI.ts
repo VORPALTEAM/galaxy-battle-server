@@ -88,12 +88,12 @@ export class BotAI implements IUpdatable, ILogger {
     }
 
     private updateLaserSkill() {
-        const dmg = this._expMng.getSkillDamage(this._client.walletId, 0);
+        const dmg = this._expMng.getSkillDamage(this._client.gameData.id, 0);
         this._abilsMng?.laserAttack(this._client, dmg);
     }
 
     private updateRocketSkill() {
-        const dmg = this._expMng.getSkillDamage(this._client.walletId, 1);
+        const dmg = this._expMng.getSkillDamage(this._client.gameData.id, 1);
         this._missilesController.launchMissile({
             client: this._client,
             damage: dmg
@@ -101,14 +101,14 @@ export class BotAI implements IUpdatable, ILogger {
     }
 
     private updateLevelUp() {
-        let skill1 = this._expMng.getExpInfo(this._client.walletId).skills[0];
-        let skill2 = this._expMng.getExpInfo(this._client.walletId).skills[1];
+        let skill1 = this._expMng.getExpInfo(this._client.gameData.id).skills[0];
+        let skill2 = this._expMng.getExpInfo(this._client.gameData.id).skills[1];
         if (skill1.level < skill2.level && skill1.levelUpAvailable) {
-            this._expMng.upSkillLevel(this._client.walletId, 0);
+            this._expMng.upSkillLevel(this._client.gameData.id, 0);
             this.logDebug(`level up Laser Skill`);
         }
         else if (skill1.level >= skill2.level && skill2.levelUpAvailable) {
-            this._expMng.upSkillLevel(this._client.walletId, 1);
+            this._expMng.upSkillLevel(this._client.gameData.id, 1);
             this.logDebug(`level up Rocket Skill`);
         }
     }

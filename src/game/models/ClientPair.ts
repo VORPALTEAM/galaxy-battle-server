@@ -17,12 +17,12 @@ export class ClientPair implements ILogger {
 
     constructor(aId: number, aClientA: Client, aClientB: Client, aDuelInfo: BC_DuelInfo) {
         this._id = aId;
-        this._duelInfo = aDuelInfo;
         this._clients = new Map();
         this._accepts = new Map();
         this._loaded = new Map();
         this.addClient(aClientA);
         this.addClient(aClientB);
+        this._duelInfo = aDuelInfo;
     }
 
     logDebug(aMsg: string, aData?: any): void {
@@ -53,7 +53,7 @@ export class ClientPair implements ILogger {
         switch (aData.action) {
 
             case 'accept':
-                this.logDebug(`onAcceptScreenPack: accept recieved...`);
+                this.logDebug(`accept...`);
 
                 this._accepts.set(aClient.connectionId, true);
                 this._clients.forEach((client) => {
@@ -75,14 +75,14 @@ export class ClientPair implements ILogger {
                     this._clients.forEach((client) => {
                         setTimeout(() => {
                             client.sendAcceptScreenLoading();
-                        }, 1000);
+                        }, 750);
                     });
                 }
 
                 break;
 
             case 'loading':
-                this.logDebug(`onAcceptScreenPack: loading recieved...`);
+                this.logDebug(`loading...`);
                 this._loaded.set(aClient.connectionId, true);
                 aClient.setPlayerData({
                     starName: aData.loadingData?.starName
@@ -94,7 +94,7 @@ export class ClientPair implements ILogger {
                 break;
 
             case 'closeClick':
-                this.logDebug(`onAcceptScreenPack: closeClick recieved...`);
+                this.logDebug(`closeClick...`);
 
                 PackSender.getInstance().sendBattleAcceptState(clients, {
                     action: 'cancel'

@@ -13,17 +13,18 @@ import { DuelCancelAction, DefaultWelcome } from './httpentry/index.js';
 const configPath = './src/config.json';
 
 LogMng.setMode(LogMng.MODE_DEBUG);
-LogMng.system(`LogMng.mode = ${LogMng.mode}`);
 
 LogMng.debug(`env init...`);
 if (process.env.NODE_ENV === 'development') {
-    LogMng.setMode(LogMng.MODE_DEBUG);
+    // LogMng.setMode(LogMng.MODE_DEBUG);
     dotenv.config({ path: '.env.development' });
 }
 else {
-    LogMng.setMode(LogMng.MODE_RELEASE);
+    // LogMng.setMode(LogMng.MODE_RELEASE);
     dotenv.config({ path: '.env.production' });
 }
+
+LogMng.system(`LogMng.mode = ${LogMng.mode}`);
 
 // init DB
 

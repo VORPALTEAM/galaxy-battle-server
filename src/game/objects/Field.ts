@@ -109,8 +109,8 @@ export class Field implements ILogger {
             return null;
         }
 
-        const openList: FieldCell[] = []; // Список для открытых ячеек
-        const closedList: Set<FieldCell> = new Set(); // Множество для закрытых ячеек
+        const openList: FieldCell[] = []; // List for open cells
+        const closedList: Set<FieldCell> = new Set(); // Set for closed cells
 
         openList.push(startCell);
 
@@ -118,7 +118,7 @@ export class Field implements ILogger {
             let currentNode = openList[0];
             let currentIndex = 0;
 
-            // Находим ячейку с наименьшей стоимостью f в openList
+            // Find the cell with the smallest cost f in openList
             openList.forEach((cell, index) => {
                 if (cell.pathFinding.f < currentNode.pathFinding.f) {
                     currentNode = cell;
@@ -126,11 +126,11 @@ export class Field implements ILogger {
                 }
             });
 
-            // Удаляем текущую ячейку из openList и добавляем в closedList
+            // remove current cell from openList and add to closedList
             openList.splice(currentIndex, 1);
             closedList.add(currentNode);
 
-            // Если достигли целевой ячейки - возвращаем путь
+            // If we reach the target cell, we return the path
             if (currentNode === targetCell) {
                 const path = [];
                 let current = currentNode;
@@ -141,7 +141,7 @@ export class Field implements ILogger {
                 return path.reverse();
             }
 
-            // Получаем всех соседей текущей ячейки
+            // get all neighbors for this cell
             const neighbors = this.getNeighbors(currentNode);
 
             neighbors.forEach((neighbor) => {
@@ -149,9 +149,9 @@ export class Field implements ILogger {
                     return;
                 }
 
-                const gScore = currentNode.pathFinding.g + 1; // Временное gScore
+                const gScore = currentNode.pathFinding.g + 1; // temporary gScore
 
-                // Если сосед не входит в openList, добавляем его туда
+                // If the neighbor is not in openList, add it there
                 if (!openList.includes(neighbor)) {
                     openList.push(neighbor);
                 }
@@ -170,7 +170,7 @@ export class Field implements ILogger {
     }
 
     private heuristic(start: { x: number, y: number }, end: { x: number, y: number }): number {
-        // Эвристика: расстояние между точками по прямой
+        // heuristic: distance between 2 points
         const p1 = this.cellPosToGlobalVec3(start);
         const p2 = this.cellPosToGlobalVec3(end);
         return p1.distanceTo(p2);

@@ -1,7 +1,5 @@
 import Web3 from "web3";
-import fetch from "node-fetch";
-import crypto from "crypto";
-import { ERC20ABI, JournalABI } from "./ABI.js";
+// import { ERC20ABI, JournalABI } from "./ABI.js";
 import {
   admin,
   decimals,
@@ -20,8 +18,8 @@ import {
 import { GetSignedAuthMessage } from "./functions.js";
 
 const web3 = new Web3(networkParams.rpcUrl);
-const journalContract = new web3.eth.Contract(JournalABI, journal);
-const tokenContract = new web3.eth.Contract(ERC20ABI, token);
+// const journalContract = new web3.eth.Contract(JournalABI, journal);
+// const tokenContract = new web3.eth.Contract(ERC20ABI, token);
 
 export async function GetDuelData(duelId: string): Promise<BC_DuelInfo | null> {
   return new Promise(async (resolve, reject) => {
@@ -38,9 +36,9 @@ export async function GetDuelData(duelId: string): Promise<BC_DuelInfo | null> {
   });
 }
 
-export async function GetUserLastDuel(login: string): Promise<BC_DuelInfo | null> {
+export async function GetUserLastDuel(id: string): Promise<BC_DuelInfo | null> {
   return new Promise(async (resolve, reject) => {
-    const url = fastServerUrl.concat(`api/dueldatabylogin/${login}`);
+    const url = fastServerUrl.concat(`api/dueldatabylogin/${id}`);
     fetch(url)
       .then((res) => {
         if (res.status !== 200)
@@ -53,9 +51,9 @@ export async function GetUserLastDuel(login: string): Promise<BC_DuelInfo | null
   });
 }
 
-export async function GetOpponent(login: string): Promise<string | null> {
+export async function GetOpponent(id: string): Promise<string | null> {
   return new Promise(async (resolve, reject) => {
-    const url = fastServerUrl.concat(`api/getopponent/${login}`);
+    const url = fastServerUrl.concat(`api/getopponent/${id}`);
     fetch(url)
       .then((res) => {
         if (res.status !== 200)
@@ -97,8 +95,8 @@ export function DuelPairRewardCondition (part1: string, part2: string): Promise<
   return new Promise(async (resolve, reject) => {
     const url = fastServerUrl.concat(`api/duelrewardcondition`);
     console.log("Pair: ", {
-      login1: part1,
-      login2: part2
+      id1: part1,
+      id2: part2
     })
 
     if (!part1) {

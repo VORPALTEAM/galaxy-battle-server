@@ -51,7 +51,7 @@ export class DuelService implements ILogger {
                 let userNick = aData.userNick.toLowerCase();
 
                 this.logDebug(`'check' pack: call GetUserLastDuel() for userNick: ${userNick}`);
-
+                
                 GetUserLastDuel(userNick).then((aInfo: BC_DuelInfo) => {
                     
                     this.logDebug(`GetUserLastDuel info: `, aInfo);
@@ -84,9 +84,11 @@ export class DuelService implements ILogger {
                     }
 
                     let enemyNick = '';
-                    if (aClient.getPlayerData().name) {
-                        enemyNick = aClient.getPlayerData().name == aInfo.login1 ? aInfo.login2 : aInfo.login1;
+                    if (aClient.getPlayerData().displayNick) {
+                        this.logDebug(`check enemy nick for client id = ${aClient.gameData.id}`);
+                        enemyNick = aClient.gameData.id == aInfo.id1 ? aInfo.nickName2 : aInfo.nickName1;
                     }
+                    this.logDebug(`enemyNick = ${enemyNick}`);
                     
                     aClient.sendDuelFound(aInfo.duel_id, enemyNick);
                     this.onDuelFound.dispatch(aClient, aInfo);
@@ -166,7 +168,7 @@ export class DuelService implements ILogger {
 
         let client: Client;
         this._clients.forEach(aClient => {
-            if (aClient.getPlayerData().isNick && aClient.getPlayerData().name == aNick) {
+            if (aClient.getPlayerData().isNick && aClient.getPlayerData().displayNick == aNick) {
                 client = aClient;
             }
         })

@@ -56,11 +56,11 @@ export enum PackTitle {
 }
 
 export type TGAuthData = {
-    id: number;
     auth_date: number;
-    hash: string;
     first_name: string;
-    last_name: string;
+    hash: string;
+    id: number;
+    last_name?: string;
     username: string;
 }
 
@@ -70,6 +70,7 @@ export type SignData = {
     signature?: string,
     message?: string,
     walletId?: string,
+    tgInitString?: string,
     tgAuthData?: TGAuthData
 }
 
@@ -115,6 +116,7 @@ export type PlayerData = {
     name: string,
     isNick: boolean,
     starName: string,
+    displayNick: string,
     race: ObjectRace
 }
 export type StartGameData = {

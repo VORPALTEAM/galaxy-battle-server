@@ -15,8 +15,10 @@ export interface ComplexAutData {
 
 export interface BC_DuelInfo {
   duel_id: string;
-  login1: string;
-  login2?: string;
+  id1: string;
+  id2?: string;
+  nickName1?: string;
+  nickName2?: string;
   creation: number;
   isfinished?: string;
   isexpired?: string;
@@ -30,3 +32,24 @@ export type DuelInfoResponce = {
 export type OpponentResponce = {
   opponent: string | null;
 };
+
+export interface PlayerSummaryStats {
+  player: string;
+  total_damage: number;
+  total_experience: number;
+  total_gold: number;
+}
+
+export interface DuelPlayerStats {
+  id?: number;
+  duel_id: string;
+  player: string;
+  damage_total: number;
+  experience: number;
+  gold: number;
+}
+
+export interface DuelStatsMessage {
+  signature: string;
+  stats: DuelPlayerStats[]
+}

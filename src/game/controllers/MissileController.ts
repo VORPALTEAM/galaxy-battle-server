@@ -142,11 +142,11 @@ export class MissileController implements ILogger {
     }) {
         const damage = aParams.damage;
 
-        let planet = this.getPlanetByPlayer(aParams.client.walletId);
+        let planet = this.getPlanetByPlayer(aParams.client.gameData.id);
         if (!planet) return;
         let dir = planet.getDirrection();
         const origin = planet.position.clone().add(dir.clone().multiplyScalar(2));
-        let target = this.findClosestTargetInSector(aParams.client.walletId,
+        let target = this.findClosestTargetInSector(aParams.client.gameData.id,
             { x: origin.x, y: origin.z },
             { x: dir.x, y: dir.z },
             Math.PI / 4
@@ -163,7 +163,7 @@ export class MissileController implements ILogger {
             position: origin,
             target: target,
             maxTurnRate: 1,
-            owner: aParams.client.walletId,
+            owner: aParams.client.gameData.id,
             radius: 1,
             velocity: 8,
             hp: 100,

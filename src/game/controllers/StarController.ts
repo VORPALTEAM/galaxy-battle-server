@@ -48,6 +48,14 @@ export class StarController implements ILogger {
         aStar.onFighterSpawn.add(this.onStarFighterSpawn, this);
         aStar.onLinkorSpawn.add(this.onStarLinkorSpawn, this);
     }
+
+    deactivateStars() {
+        let stars = this._objectController.getAllStars();
+        for (let i = 0; i < stars.length; i++) {
+            const star = stars[i];
+            star.isActive = false;
+        }
+    }
     
     free() {
         this._objectController = null;

@@ -12,12 +12,13 @@ import { Signal } from "../../monax/events/Signal.js";
 import { RecordWinnerWithChoose } from "../../blockchain/boxes/boxes.js";
 import { GameClientData } from "./clientData/GameClientData.js";
 import { PackSender } from "../services/PackSender.js";
+import { TGInitData } from "../data/TGTypes.js";
 
 export class Client implements ILogger {
     protected _className: string;
     protected _socket: Socket;
     protected _connectionId: string;
-    protected _walletId: string;
+    // protected _walletId: string;
 
     // player data
     private _gameData: GameClientData;
@@ -79,7 +80,8 @@ export class Client implements ILogger {
             // this._isDuelMode = aData?.isChallenge;
             this._isFreeConnection = aData?.isFreeConnect;
             if (this._isFreeConnection) {
-                this._walletId = "0x0";
+                // this._walletId = "0x0";
+                this._gameData.walletId = "0x0";
             }
             if (this._isWithBot) {
                 this.logDebug(`search game with bot request...`);
@@ -170,11 +172,8 @@ export class Client implements ILogger {
 
     private handleClaimRewardRequest(aData: ClaimRewardData) {
         
-        let key = this._walletId;
-        if (this._gameData.tgNick?.length > 0) {
-            key = this._gameData.tgNick;
-        }
-
+        let key = this._gameData.id;
+        
         switch (aData.type) {
             
             case "reward":
@@ -197,7 +196,7 @@ export class Client implements ILogger {
                             this.logError(`RecordWinnerWithChoose: ${aReasone}`);
                             this.sendClaimRewardReject(aData.type, aReasone);
                         }
-                    ); 
+                    );
 
                 } catch (error) {
 
@@ -273,9 +272,9 @@ export class Client implements ILogger {
         this._isSignPending = value;
     }
 
-    get walletId(): string {
-        return this._walletId;
-    }
+    // get walletId(): string {
+    //     return this._walletId;
+    // }
 
     get gameData(): GameClientData {
         return this._gameData;
@@ -320,12 +319,16 @@ export class Client implements ILogger {
         this._laserSkin = value;
     }
 
-    sign(aWalletId: string, aTgData?: TGAuthData) {
-        this.logDebug(`sign: walletId = ${aWalletId}; tgData:`, aTgData);
-        this._walletId = aWalletId;
-        this._gameData.tgAuthData = aTgData;
+    sign(params: {
+        walletId?: string,
+        tgInitStr?: string,
+        tgAuthData?: TGAuthData
+    }) {
+        this.logDebug(`sign params:`, params);
+        this._gameData.walletId = params.walletId;
+        this._gameData.setTgInitData(params.tgInitStr);
+        this._gameData.tgAuthData = params.tgAuthData;
         this._isSigned = true;
-        // this.logDebug(`signed...`);
     }
 
     sendPack(aPackTitle: PackTitle, aData: any) {
@@ -452,9 +455,11 @@ export class Client implements ILogger {
     }
 
     getPlayerData(): PlayerData {
+        let isTg = this._gameData.isTg;
         return {
-            name: this._gameData.tgNick?.length > 0 ? this._gameData.tgNick : this.walletId,
-            isNick: this._gameData.tgNick?.length > 0,
+            name: this._gameData.nick,
+            isNick: isTg,
+            displayNick: this._gameData.nick,
             starName: this.starName,
             race: this._gameData.race
         }

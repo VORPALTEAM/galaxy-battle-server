@@ -229,7 +229,9 @@ export class Game implements ILogger {
     }
 
     private onClientDisconnect(aClient: Client) {
-        this.logDebug(`client (${aClient.walletId}) disconnect`);
+        const clientName = aClient.getPlayerData().displayNick;
+
+        this.logDebug(`client (${clientName}) disconnected`);
 
         let winner: Client;
         for (let i = 0; i < this._clients.length; i++) {
@@ -246,20 +248,21 @@ export class Game implements ILogger {
         switch (aData.action) {
             case "click":
                 switch (aData.skillId) {
-                    case 0:
+                    case 0: // laser
                         {
                             const dmg = this._expMng.getSkillDamage(
-                                aClient.walletId,
+                                aClient.gameData.id,
                                 aData.skillId
                             );
+                            // this.logDebug(`laser dmg:`, dmg);
                             this._abilsMng?.laserAttack(aClient, dmg);
                         }
                         break;
 
-                    case 1:
+                    case 1: // rocket
                         {
                             const dmg = this._expMng.getSkillDamage(
-                                aClient.walletId,
+                                aClient.gameData.id,
                                 aData.skillId
                             );
                             this._missilesController.launchMissile({
@@ -269,17 +272,17 @@ export class Game implements ILogger {
                         }
                         break;
 
-                    case 2:
+                    case 2: // sniper
                         {
                             let slowFactor = this._expMng.getSniperSpeedFactor(
-                                aClient.walletId
+                                aClient.gameData.id
                             );
-                            let slowTime = this._expMng.getSniperDuration(aClient.walletId);
+                            let slowTime = this._expMng.getSniperDuration(aClient.gameData.id);
                             let planet = this._objectController.getPlayerPlanet(
-                                aClient.walletId
+                                aClient.gameData.id
                             );
                             if (planet) {
-                                this.logDebug(`onSkillRequest: Sniper Activate...`);
+                                // this.logDebug(`onSkillRequest: Sniper Activate...`);
                                 planet.activateSniperSkill(slowFactor, slowTime);
                                 PackSender.getInstance().sniper(this._clients, {
                                     action: "start",
@@ -305,7 +308,7 @@ export class Game implements ILogger {
 
             case "levelUp":
                 let expData = this._expMng.upSkillLevel(
-                    aClient.walletId,
+                    aClient.gameData.id,
                     aData.skillId
                 );
                 PackSender.getInstance().exp(aClient, expData);
@@ -324,7 +327,7 @@ export class Game implements ILogger {
     }
 
     private onClientEmotion(aClient: Client, aEmotionData: EmotionData) {
-        aEmotionData.owner = aClient.walletId;
+        aEmotionData.owner = aClient.gameData.id;
         PackSender.getInstance().emotion(this._clients, aEmotionData);
     }
 
@@ -348,29 +351,49 @@ export class Game implements ILogger {
     }
 
     private async completeGame(aWinner: Client, aIsDisconnect?: boolean) {
-        this.logDebug(`completeGame: winner client: (${aWinner?.walletId})`);
 
+        this.logDebug(`--- completeGame log start ---`);
+
+        this.logDebug(`winner:`, {
+            id: aWinner?.gameData.id,
+            tgId: aWinner?.gameData?.tgAuthData?.id,
+            tgUsername: aWinner?.gameData?.tgAuthData?.username
+        });
+
+        this._starController.deactivateStars();
+        
         let isPlayWithBot = false;
+        let tgId1: number;
+        let tgId2: number; 
 
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
 
             // clear winstreak for other clients
             if (client.connectionId != aWinner.connectionId) {
-                WINSTREAKS[client.walletId] = 0;
+                WINSTREAKS[client.gameData.id] = 0;
             }
 
             // check a Bot
-            if (client.isBot) isPlayWithBot = true;
+            if (client.isBot) {
+                isPlayWithBot = true;
+            }
+            else {
+                i == 0 ?
+                    tgId1 = client.gameData.tgAuthData.id :
+                    tgId2 = client.gameData.tgAuthData.id;
+            }
         }
 
-        this.logDebug(`completeGame: isPlayWithBot: (${isPlayWithBot})`);
+        this.logDebug(`isPlayWithBot: ${isPlayWithBot}`);
+        this.logDebug(`isDisconnect: ${aIsDisconnect}`);
+        this.logDebug(`TG ids: ${tgId1}; ${tgId2};`);
 
         let isWinStreak = false;
         if (!aWinner.isBot && aWinner.isSigned) {
             // inc ws
-            let ws = WINSTREAKS[aWinner.walletId] || 0;
-            WINSTREAKS[aWinner.walletId] = ws + 1;
+            let ws = WINSTREAKS[aWinner.gameData.id] || 0;
+            WINSTREAKS[aWinner.gameData.id] = ws + 1;
             // isWinStreak = await this.isWinStreak(aWinner.walletId);
             isWinStreak = ws + 1 >= 3;
         }
@@ -380,18 +403,13 @@ export class Game implements ILogger {
             message: string;
         };
 
-        console.log(`completeGame: logins: ${this._duelData?.login1}; ${this._duelData?.login2};`);
-
         const rewardTries = 2;
         let rewardTriesCounter = 0;
 
         while (rewardTriesCounter < rewardTries) {
             try {
                 if (isPlayWithBot) break;
-                isDuelRewarded = await DuelPairRewardCondition(
-                    this._duelData?.login1,
-                    this._duelData?.login2
-                );
+                isDuelRewarded = await DuelPairRewardCondition(String(tgId1), String(tgId2));
                 if (isDuelRewarded) break;
             } catch (error) {
                 console.log("Error: ", error);
@@ -406,11 +424,13 @@ export class Game implements ILogger {
             const client = this._clients[i];
             const isWinner = aWinner && client.connectionId == aWinner.connectionId;
             const nameDisplay = client.gameData.tgAuthData
-                ? client.gameData.tgAuthData.username
-                : client.walletId;
+                ? (client.gameData.tgAuthData.username || client.gameData.tgAuthData.first_name || "Anonimous")
+                : client.gameData.id;
+            // this.logDebug("Client data: ", client.gameData.id);
+            // const nameDisplay = client.gameData.id || "Unknown";
             let data: GameCompleteData;
 
-            const expData = this._expMng.getExpInfo(client.walletId);
+            const expData = this._expMng.getExpInfo(client.gameData.id);
 
             if (isWinner) {
                 data = {
@@ -429,7 +449,8 @@ export class Game implements ILogger {
                         }
                     }
                 };
-            } else {
+            }
+            else {
                 data = {
                     status: "loss",
                     ownerName: nameDisplay,
@@ -448,7 +469,8 @@ export class Game implements ILogger {
             if (this.isDuel()) {
                 if (aIsDisconnect) {
                     data.status = "duelEnemyDisconnected";
-                } else {
+                }
+                else {
                     // 2 boxes
                     if (isDuelRewarded) {
                         // data.status = 'duelReward';
@@ -465,6 +487,7 @@ export class Game implements ILogger {
                 }
             }
 
+            // this.logDebug(`send gameComplete to client (${client.gameData.nick})`, data);
             PackSender.getInstance().gameComplete(client, data);
 
             if (duelRewardError) {
@@ -479,7 +502,7 @@ export class Game implements ILogger {
             if (aIsDisconnect) {
                 // remove duel record
                 try {
-                    this.logDebug(`CALL DeleteDuel`);
+                    this.logDebug(`call DeleteDuel for duel_id = ${this._duelData.duel_id}`);
                     DeleteDuel(this._duelData.duel_id);
                 } catch (error) {
                     PackSender.getInstance().message(this._clients, {
@@ -488,9 +511,9 @@ export class Game implements ILogger {
                     });
                 }
             } else {
-                this.logDebug(`CALL FinishDuel`);
+                this.logDebug(`call FinishDuel for duel_id = ${this._duelData.duel_id}`);
                 try {
-                    FinishDuel(this._duelData.duel_id);
+                    FinishDuel(this._duelData.duel_id, aWinner.gameData.id || "");
                 } catch (error) {
                     PackSender.getInstance().message(this._clients, {
                         msg: `FinishDuel ERROR: ${error}`,
@@ -501,6 +524,9 @@ export class Game implements ILogger {
         }
 
         this.onGameComplete.dispatch(this);
+
+        this.logDebug(`--- completeGame log end ---`);
+
     }
 
     isDuel(): boolean {
@@ -587,7 +613,7 @@ export class Game implements ILogger {
 
             let star = new Star({
                 id: this.generateObjectId(),
-                owner: this._clients[i].walletId,
+                owner: this._clients[i].gameData.id,
                 position: this._field.cellPosToGlobalVec3(starData.cellPos),
                 radius: starParams.radius,
                 hp: starParams.hp,
@@ -647,7 +673,7 @@ export class Game implements ILogger {
 
             let tower = new Tower({
                 id: this.generateObjectId(),
-                owner: this._clients[towerData.ownerId].walletId,
+                owner: this._clients[towerData.ownerId].gameData.id,
                 position: this._field.cellPosToGlobalVec3(towerData.cellPos),
                 radius: towerParams.radius,
                 hp: towerParams.hp,
@@ -672,7 +698,7 @@ export class Game implements ILogger {
     private getClientByWallet(aWalletId: string): Client | null {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
-            if (client.walletId == aWalletId) return client;
+            if (client.gameData.id == aWalletId) return client;
         }
         return null;
     }
@@ -680,7 +706,7 @@ export class Game implements ILogger {
     private getClientByEnemyWallet(aWalletId: string): Client | null {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
-            if (client.walletId != aWalletId) return client;
+            if (client.gameData.id != aWalletId) return client;
         }
         return null;
     }
@@ -698,7 +724,7 @@ export class Game implements ILogger {
         cellPos.y += aCellDeltaPos.y;
 
         if (this._field.isCellTaken(cellPos)) {
-            this.logDebug(`onStarFighterSpawn: cell taken:`, cellPos);
+            // this.logDebug(`onStarFighterSpawn: cell taken:`, cellPos);
             let neighbors = this._field.getNeighbors(cellPos, true);
             if (neighbors.length <= 0) {
                 // explosion current object on the cell
@@ -878,7 +904,7 @@ export class Game implements ILogger {
     private onObjectDamage(aSender: GameObject, aAttackInfo: DamageInfo) {
         let client = this.getClientByWallet(aSender.owner);
         if (client && !aAttackInfo.isMiss) {
-            this._expMng.addDamage(client.walletId, aAttackInfo.damage);
+            this._expMng.addDamage(client.gameData.id, aAttackInfo.damage);
         }
         PackSender.getInstance().damage(this._clients, {
             id: aSender.id,
@@ -919,11 +945,10 @@ export class Game implements ILogger {
     private async loadLaserSkinForClient(aClient: Client) {
         let lasers: number[] = [];
         let laserSkin: PlanetLaserSkin = "blue";
+        const nick = aClient.getPlayerData().displayNick;
+        const id = aClient.gameData.tgAuthData?.id || aClient.gameData.id;
 
         if (aClient.isSigned && !aClient.isBot) {
-            let login = aClient.gameData.tgAuthData
-                ? aClient.gameData.tgAuthData.username
-                : aClient.walletId;
 
             // LOCAL TEST
             // if (login == '0xbf094ffe3628041a8b7d7684e8549381136c6a17') {
@@ -932,9 +957,9 @@ export class Game implements ILogger {
 
             try {
                 // lasers = await getUserAvailableLaserLevelsWeb2(login);
-                lasers = await getUserLaserListWeb2(login);
+                lasers = await getUserLaserListWeb2(String(id));
                 lasers = lasers.map((n) => Number(n));
-                this.logDebug(`laser list for client(${aClient.walletId}):`, lasers);
+                this.logDebug(`laser list for client(${nick}):`, lasers);
                 if (lasers?.length > 0) {
                     lasers.sort((a, b) => {
                         return b - a;
@@ -962,7 +987,7 @@ export class Game implements ILogger {
         // test
         // laserSkin = 'violet';
 
-        this.logDebug(`set laser skin for client(${aClient.walletId}):`, laserSkin);
+        this.logDebug(`set laser skin for client(${nick}):`, laserSkin);
         aClient.laserSkin = laserSkin;
     }
 
@@ -998,14 +1023,14 @@ export class Game implements ILogger {
 
         PackSender.getInstance().fieldInit([cli1], {
             fieldParams: SETTINGS.field,
-            playerWalletAddr: cli1.walletId,
+            playerWalletAddr: cli1.gameData.id,
             playerPosition: "top",
             playerRace: cli1Data?.race,
             enemyRace: cli2Data?.race,
         });
         PackSender.getInstance().fieldInit([cli2], {
             fieldParams: SETTINGS.field,
-            playerWalletAddr: cli2.walletId,
+            playerWalletAddr: cli2.gameData.id,
             playerPosition: "bot",
             playerRace: cli2Data?.race,
             enemyRace: cli1Data?.race,
@@ -1120,10 +1145,10 @@ export class Game implements ILogger {
             });
         }
         
-        let goldInc = this._expMng.addGoldForObject(attackerClient.walletId, aObj, activeKill);
+        let goldInc = this._expMng.addGoldForObject(attackerClient.gameData.id, aObj, activeKill);
         
-        const prevExp = this._expMng.getExpInfo(attackerClient.walletId).exp;
-        let expData = this._expMng.addExpForObject(attackerClient.walletId, aObj, activeKill);
+        const prevExp = this._expMng.getExpInfo(attackerClient.gameData.id).exp;
+        let expData = this._expMng.addExpForObject(attackerClient.gameData.id, aObj, activeKill);
         const dtExp = expData.exp - prevExp;
 
         PackSender.getInstance().exp(attackerClient, expData);
@@ -1185,7 +1210,6 @@ export class Game implements ILogger {
                 this._fighterMng.deleteShip(obj.id);
                 this._linkorMng.deleteShip(obj.id);
                 // free the field cell
-                // this._field.takeOffCell(this._field.globalVec3ToCellPos(obj.position));
                 this._field.takeOffCellByObject(obj.id);
                 obj.free();
                 return;
