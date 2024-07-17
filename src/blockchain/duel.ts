@@ -1,7 +1,5 @@
 import Web3 from "web3";
-import fetch from "node-fetch";
-import crypto from "crypto";
-import { ERC20ABI, JournalABI } from "./ABI.js";
+// import { ERC20ABI, JournalABI } from "./ABI.js";
 import {
   admin,
   decimals,
@@ -20,8 +18,8 @@ import {
 import { GetSignedAuthMessage } from "./functions.js";
 
 const web3 = new Web3(networkParams.rpcUrl);
-const journalContract = new web3.eth.Contract(JournalABI, journal);
-const tokenContract = new web3.eth.Contract(ERC20ABI, token);
+// const journalContract = new web3.eth.Contract(JournalABI, journal);
+// const tokenContract = new web3.eth.Contract(ERC20ABI, token);
 
 export async function GetDuelData(duelId: string): Promise<BC_DuelInfo | null> {
   return new Promise(async (resolve, reject) => {
