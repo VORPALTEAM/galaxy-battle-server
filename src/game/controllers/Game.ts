@@ -485,8 +485,8 @@ export class Game implements ILogger {
                 }
             }
 
-            this.logDebug(`send gameComplete to client (${client.gameData.nick})`, data);
-
+            this.logDebug(`send gameComplete to client (${client.gameData.nick})`);
+            console.log("Data: ", data)
             PackSender.getInstance().gameComplete(client, data);
 
             if (duelRewardError) {
