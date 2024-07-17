@@ -423,9 +423,11 @@ export class Game implements ILogger {
         for (let i = 0; i < this._clients.length; i++) {
             const client = this._clients[i];
             const isWinner = aWinner && client.connectionId == aWinner.connectionId;
-            const nameDisplay = client.gameData.tgAuthData
+            /* const nameDisplay = client.gameData.tgAuthData
                 ? client.gameData.tgAuthData.username
-                : client.gameData.id;
+                : client.gameData.id; */
+            this.logDebug("Client data: ", client.gameData);
+            const nameDisplay = client.gameData.id || "Unknown";
             let data: GameCompleteData;
 
             const expData = this._expMng.getExpInfo(client.gameData.id);
@@ -511,7 +513,7 @@ export class Game implements ILogger {
             } else {
                 this.logDebug(`call FinishDuel for duel_id = ${this._duelData.duel_id}`);
                 try {
-                    FinishDuel(this._duelData.duel_id);
+                    FinishDuel(this._duelData.duel_id, aWinner.gameData.id || "");
                 } catch (error) {
                     PackSender.getInstance().message(this._clients, {
                         msg: `FinishDuel ERROR: ${error}`,
