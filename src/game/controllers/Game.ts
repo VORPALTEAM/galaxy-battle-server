@@ -3,7 +3,8 @@ import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
 import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData,
     ObjectRace, EmotionData, RocketPacket, 
-    ObjectType} from "../data/Types.js";
+    ObjectType,
+    ShopInitData} from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../../interfaces/ILogger.js";
 import { LogMng } from "../../monax/LogMng.js";
@@ -35,6 +36,7 @@ import { BC_DuelInfo } from "../../blockchain/types.js";
 import { DuelPairRewardCondition, FinishDuel } from "../../blockchain/duel.js";
 import { DeleteDuel } from "../../blockchain/functions.js";
 import { BotAI } from "./BotAI.js";
+import { ShopMng } from "../systems/ShopMng.js";
 
 const SETTINGS = {
     tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -160,6 +162,7 @@ export class Game implements ILogger {
     private _missilesController: MissileController;
     private _expMng: ExpManager;
     private _botAi: BotAI;
+    private _shopMng: ShopMng;
     // events
     onGameComplete = new Signal();
 
@@ -551,6 +554,10 @@ export class Game implements ILogger {
     }
 
     private init() {
+
+        // create shop
+        this._shopMng = new ShopMng();
+
         // create field
         this._field = new Field(SETTINGS.field);
 
@@ -1063,16 +1070,20 @@ export class Game implements ILogger {
                 }, this);
             }
         }
+        
+        let shopData = this._shopMng.getInitData();
 
         PackSender.getInstance().gameStart([cli1], {
             prerollTimerSec: SETTINGS.battlePrerollTimer,
             playerData: cli1.getPlayerData(),
             enemyData: cli2.getPlayerData(),
+            shopInitData: shopData
         });
         PackSender.getInstance().gameStart([cli2], {
             prerollTimerSec: SETTINGS.battlePrerollTimer,
             playerData: cli2.getPlayerData(),
             enemyData: cli1.getPlayerData(),
+            shopInitData: shopData
         });
 
         this._state = "clientLoading";
