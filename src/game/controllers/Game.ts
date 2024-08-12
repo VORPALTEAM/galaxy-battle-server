@@ -1088,7 +1088,7 @@ export class Game implements ILogger {
             }
         }
         
-        let shopData = this._shopMng.getInitData();
+        let shopData = this._shopMng?.getInitData();
 
         PackSender.getInstance().gameStart([cli1], {
             prerollTimerSec: SETTINGS.battlePrerollTimer,
