@@ -4,7 +4,8 @@ import { Client } from "../models/Client.js";
 import { GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData,
     ObjectRace, EmotionData, RocketPacket, 
     ObjectType,
-    ShopInitData} from "../data/Types.js";
+    ShopInitData,
+    ShopData} from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../../interfaces/ILogger.js";
 import { LogMng } from "../../monax/LogMng.js";
@@ -215,6 +216,7 @@ export class Game implements ILogger {
             client.onDisconnect.add(this.onClientDisconnect, this);
             client.onSkillRequest.add(this.onSkillRequest, this);
             client.onExitGame.add(this.onClientExitGame, this);
+            client.onShop.add(this.onClientShop, this);
             client.onEmotion.add(this.onClientEmotion, this);
             client.onDebugTest.add(this.onClientDebugTest, this);
         }
@@ -226,6 +228,7 @@ export class Game implements ILogger {
             client.onDisconnect.remove(this.onClientDisconnect, this);
             client.onSkillRequest.remove(this.onSkillRequest, this);
             client.onExitGame.remove(this.onClientExitGame, this);
+            client.onShop.remove(this.onClientShop, this);
             client.onEmotion.remove(this.onClientEmotion, this);
             client.onDebugTest.remove(this.onClientDebugTest, this);
         }
@@ -327,6 +330,20 @@ export class Game implements ILogger {
         let aWinner =
             this._clients[0] == aClient ? this._clients[1] : this._clients[0];
         this.completeGame(aWinner);
+    }
+
+    private onClientShop(client: Client, shopData: ShopData) {
+        switch (shopData.action) {
+            case 'purchase':
+                // TODO: purchase
+                break;
+            case 'sale':
+
+                break;
+            default:
+                this.logWarn(`onClientShop: unknown shopData.action:`, shopData);
+                break;
+        }
     }
 
     private onClientEmotion(aClient: Client, aEmotionData: EmotionData) {
