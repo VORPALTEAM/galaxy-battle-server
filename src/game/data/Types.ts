@@ -44,6 +44,8 @@ export enum PackTitle {
   sniper = 'sniper',
   explosion = 'explosion',
 
+  shop = 'shop',
+
   emotion = 'emotion',
 
   claimReward = 'claimReward',
@@ -139,7 +141,8 @@ export type BattleShopAction = 'purchase' | 'sale' | 'purchaseError' | 'saleErro
 
 export type ShopData = {
   action: BattleShopAction,
-  
+  itemId?: number
+
 }
 
 export type StartGameData = {

@@ -7,6 +7,7 @@ import { ClaimRewardData, DebugTestData, AcceptScreenData, PackTitle, PlanetLase
     PlayerData,
     EmotionData,
     TGAuthData,
+    ShopData,
 } from "../data/Types.js";
 import { Signal } from "../../monax/events/Signal.js";
 import { RecordWinnerWithChoose } from "../../blockchain/boxes/boxes.js";
@@ -43,6 +44,7 @@ export class Client implements ILogger {
      */
     onSceneLoaded = new Signal();
     onSkillRequest = new Signal();
+    onShop = new Signal();
     onEmotion = new Signal();
     onExitGame = new Signal();
     onDisconnect = new Signal();
@@ -125,6 +127,10 @@ export class Client implements ILogger {
 
         this._socket.on(PackTitle.skill, (aData: SkillRequest) => {
             this.onSkillRequest.dispatch(this, aData);
+        });
+
+        this._socket.on(PackTitle.shop, (aData: ShopData) => {
+            this.onShop.dispatch(this, aData);
         });
 
         this._socket.on(PackTitle.emotion, (aData: EmotionData) => {
