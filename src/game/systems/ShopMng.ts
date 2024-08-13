@@ -1,6 +1,6 @@
-import { ILogger } from "src/interfaces/ILogger";
-import { LogMng } from "src/monax/LogMng";
-import { ShopInitData, ShopItemData } from "../data/Types";
+import { ILogger } from "../../interfaces/ILogger.js";
+import { LogMng } from "../../monax/LogMng.js";
+import { ShopInitData, ShopItemData } from "../data/Types.js";
 
 const SHOP_ITEMS: ShopItemData[] = [
   {
