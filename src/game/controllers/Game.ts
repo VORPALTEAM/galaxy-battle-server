@@ -196,6 +196,7 @@ export class Game implements ILogger {
 
         this._sceneLoaded = [];
         this._expMng = new ExpManager();
+        this._shopMng = new ShopMng();
         this.initClientListeners();
         this.startLoop();
     }
@@ -336,6 +337,7 @@ export class Game implements ILogger {
         switch (shopData.action) {
             case 'purchase':
                 // TODO: purchase
+
                 break;
             case 'sale':
 
