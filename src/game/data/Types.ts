@@ -279,7 +279,7 @@ export type ClaimRewardData = {
 }
 
 export type DebugTestData = {
-  action: 'win' | 'loss'
+  action: 'win' | 'loss' | 'addGold1k'
 }
 
 export type ExplosionData = {

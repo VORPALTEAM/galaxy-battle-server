@@ -1,5 +1,6 @@
 import { ILogger } from "../../interfaces/ILogger.js";
 import { LogMng } from "../../monax/LogMng.js";
+import { Game } from "../controllers/Game.js";
 import { ObjectController } from "../controllers/ObjectController.js";
 import { ShopInitData, ShopItemData } from "../data/Types.js";
 import { Client } from "../models/Client.js";
@@ -43,13 +44,16 @@ const SHOP_ITEMS: ShopItemData[] = [
 
 export class ShopMng implements ILogger {
   private _className = 'ShopMng';
+  private _game: Game;
   private _expMng: ExpManager;
   private _objController: ObjectController;
 
   constructor(params: {
+    game: Game,
     expMng: ExpManager,
     objController: ObjectController
   }) {
+    this._game = params.game;
     this._expMng = params.expMng;
     this._objController = params.objController;
   }
@@ -83,7 +87,10 @@ export class ShopMng implements ILogger {
 
   purchase(client: Client, itemId: number): boolean {
     let itemData = this.getItemData(itemId);
+    let res = false;
+
     switch (itemData.type) {
+
       case 'instant':
         let gold = this._expMng.getExpData(client.gameData.id).gold;
         if (gold < itemData.price) return false;
@@ -96,7 +103,14 @@ export class ShopMng implements ILogger {
           case 1:
             this._objController.recoveryPlayerStarHp(client.gameData.id);
             break;
-        
+          case 2:
+            // this._objController.spawnFighter(client);
+            if (!this._game.shopFighterBuy(client)) return false;
+            break;
+          case 3:
+            // this._objController.spawnLinkor(client);
+            if (!this._game.shopLinkorBuy(client)) return false;
+            break;
           default:
             this.logWarn(`purchase: unhandled itemData.id:`, itemData);
             break;
@@ -105,9 +119,11 @@ export class ShopMng implements ILogger {
         this._expMng.addGold(client.gameData.id, -itemData.price);
         return true;
         break;
+      
       case 'permanent':
 
         break;
+      
       default:
         
         break;

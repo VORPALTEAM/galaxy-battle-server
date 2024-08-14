@@ -2,11 +2,9 @@ import * as THREE from "three";
 import { PackSender } from "../services/PackSender.js";
 import { Client } from "../models/Client.js";
 import {
-  GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo, SkillRequest, PlanetLaserSkin, DebugTestData,
-  ObjectRace, EmotionData, RocketPacket,
-  ObjectType,
-  ShopInitData,
-  ShopData
+  GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo,
+  SkillRequest, PlanetLaserSkin, DebugTestData, ObjectRace, EmotionData,
+  RocketPacket, ObjectType, ShopInitData, ShopData
 } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../../interfaces/ILogger.js";
@@ -63,6 +61,7 @@ const SETTINGS = {
     minusHpPerSec: 1,
   },
   stars: [
+    // top
     {
       cellPos: { x: 3, y: 1 },
       fightersSpawnDeltaPos: [
@@ -74,8 +73,9 @@ const SETTINGS = {
         // { x: 2, y: 2 },
         // { x: 1, y: 2 },
       ],
-      battleShipSpawnDeltaPos: [{ x: -2, y: 1 }],
+      linkorSpawnDeltaPos: [{ x: -2, y: 1 }],
     },
+    // bottom
     {
       cellPos: { x: 3, y: 9 },
       fightersSpawnDeltaPos: [
@@ -87,7 +87,7 @@ const SETTINGS = {
         // { x: 2, y: -2 },
         // { x: 1, y: -2 },
       ],
-      battleShipSpawnDeltaPos: [{ x: 3, y: -1 }],
+      linkorSpawnDeltaPos: [{ x: 3, y: -1 }],
     },
   ],
 
@@ -201,6 +201,7 @@ export class Game implements ILogger {
 
     // create shop mng
     this._shopMng = new ShopMng({
+      game: this,
       expMng: this._expMng,
       objController: this._objectController
     });
@@ -363,7 +364,7 @@ export class Game implements ILogger {
         }
 
         break;
-      
+
       case 'sale':
         // temp answer
         PackSender.getInstance().shop([client], {
@@ -371,11 +372,11 @@ export class Game implements ILogger {
           itemId: shopData.itemId
         });
         break;
-      
+
       default:
         this.logWarn(`onClientShop: unknown shopData.action:`, shopData);
         break;
-      
+
     }
   }
 
@@ -395,6 +396,9 @@ export class Game implements ILogger {
         } else {
           this.completeGame(this._clients[0]);
         }
+        break;
+      case 'addGold1k':
+        this._expMng.addGold(aClient.gameData.id, 1000);
         break;
     }
   }
@@ -677,7 +681,7 @@ export class Game implements ILogger {
         },
         isTopStar: starData.cellPos.y < SETTINGS.field.size.rows / 2,
         fightersSpawnDeltaPos: starData.fightersSpawnDeltaPos,
-        battleShipSpawnDeltaPos: starData.battleShipSpawnDeltaPos,
+        linkorSpawnDeltaPos: starData.linkorSpawnDeltaPos,
         minusHpPerSec: starParams.minusHpPerSec,
       });
 
@@ -765,15 +769,23 @@ export class Game implements ILogger {
     return null;
   }
 
+  /**
+   * 
+   * @param aStar owner star
+   * @param cellPos filed cell pos
+   * @returns 
+   */
   onStarFighterSpawn(aStar: Star, aCellDeltaPos: { x: number; y: number }) {
     const level = 1;
     const shipParams = SETTINGS.fighters;
     const shipFactoryParams = new FighterFactory().getShipParams(level);
     const yDir = aStar.isTopStar ? 1 : -1;
+
     let cellPos = this._field.globalToCellPos(
       aStar.position.x,
       aStar.position.z
     );
+
     cellPos.x += aCellDeltaPos.x;
     cellPos.y += aCellDeltaPos.y;
 
@@ -789,7 +801,8 @@ export class Game implements ILogger {
           });
         }
         return;
-      } else {
+      }
+      else {
         cellPos = neighbors[0];
       }
     }
@@ -863,6 +876,172 @@ export class Game implements ILogger {
 
     let linkor = new Linkor({
       owner: aStar.owner,
+      id: this.generateObjectId(),
+      position: this._field.cellPosToGlobalVec3(cellPos),
+      radius: shipParams.radius,
+      level: level,
+      hp: shipFactoryParams.hp,
+      shield: shipFactoryParams.shield,
+      attackParams: {
+        radius: shipParams.attackRadius,
+        damage: shipFactoryParams.damage,
+        hitPenetration: shipFactoryParams.hitPenetration,
+        crit: {
+          critChance: shipFactoryParams.critChance,
+          critFactor: shipFactoryParams.critFactor,
+        },
+      },
+      evasion: shipFactoryParams.evasion,
+      lookDir: new THREE.Vector3(0, 0, yDir),
+      attackPeriod: shipParams.attackPeriod,
+      rotationTime: shipParams.rotationTime,
+      prepareJumpTime: shipParams.prepareJumpTime,
+      jumpTime: shipParams.jumpTime,
+    });
+
+    linkor.onRotate.add(this.onShipRotate, this);
+    linkor.onJump.add(this.onShipJump, this);
+    linkor.onAttack.add(this.onShipAttack, this);
+    linkor.onRayStart.add(this.onShipRayStart, this);
+    linkor.onRayStop.add(this.onShipRayStop, this);
+    linkor.onDamage.add(this.onObjectDamage, this);
+
+    // this._field.takeCell(cellPos.x, cellPos.y);
+    this._field.takeCellByObject(linkor.id, cellPos);
+
+    this.addObject(linkor);
+    this._linkorMng.addLinkor(linkor);
+  }
+
+  shopFighterBuy(aClient: Client): boolean {
+    const level = 1;
+    const shipParams = SETTINGS.fighters;
+    const shipFactoryParams = new FighterFactory().getShipParams(level);
+    
+    let stars = this._objectController.getPlayerStars(aClient.gameData.id);
+    if (stars.length <= 0) return false;
+    let star = stars[0];
+
+    const yDir = star.isTopStar ? 1 : -1;
+
+    let cellPos = this._field.globalToCellPos(
+      star.position.x,
+      star.position.z
+    );
+
+    // pick random position
+    let starSettings = SETTINGS.stars[0];
+    if (yDir < 0) starSettings = SETTINGS.stars[1];
+    let deltaPositions = starSettings.fightersSpawnDeltaPos;
+    let deltaPosId = MyMath.randomIntInRange(0, deltaPositions.length - 1);
+    let deltaPos = deltaPositions[deltaPosId];
+
+    cellPos.x += deltaPos.x;
+    cellPos.y += deltaPos.y;
+
+    if (this._field.isCellTaken(cellPos)) {
+      // this.logDebug(`onStarFighterSpawn: cell taken:`, cellPos);
+      let neighbors = this._field.getNeighbors(cellPos, true);
+      if (neighbors.length <= 0) {
+        // explosion current object on the cell
+        let obj = this._objectController.getObjectOnCell(this._field, cellPos);
+        if (obj) {
+          obj.damage({
+            damage: obj.hp * 2,
+          });
+        }
+        return;
+      }
+      else {
+        cellPos = neighbors[0];
+      }
+    }
+
+    let fighter = new Fighter({
+      owner: star.owner,
+      id: this.generateObjectId(),
+      position: this._field.cellPosToGlobal(cellPos),
+      radius: shipParams.radius,
+      level: level,
+      hp: shipFactoryParams.hp,
+      shield: shipFactoryParams.shield,
+      attackParams: {
+        radius: shipParams.attackRadius,
+        damage: shipFactoryParams.damage,
+        hitPenetration: shipFactoryParams.hitPenetration,
+        crit: {
+          critChance: shipFactoryParams.critChance,
+          critFactor: shipFactoryParams.critFactor,
+        },
+      },
+      evasion: shipFactoryParams.evasion,
+      lookDir: new THREE.Vector3(0, 0, yDir),
+      attackPeriod: shipParams.attackPeriod,
+      rotationTime: shipParams.rotationTime,
+      prepareJumpTime: shipParams.prepareJumpTime,
+      jumpTime: shipParams.jumpTime,
+    });
+
+    fighter.onRotate.add(this.onShipRotate, this);
+    fighter.onJump.add(this.onShipJump, this);
+    fighter.onAttack.add(this.onShipAttack, this);
+    fighter.onRayStart.add(this.onShipRayStart, this);
+    fighter.onDamage.add(this.onObjectDamage, this);
+
+    // this._field.takeCell(cellPos.x, cellPos.y);
+    this._field.takeCellByObject(fighter.id, cellPos);
+
+    this.addObject(fighter);
+    this._fighterMng.addShip(fighter);
+
+    return true;
+  }
+
+  shopLinkorBuy(aClient: Client): boolean {
+    const level = 1;
+    const shipParams = SETTINGS.battleShips;
+    const shipFactoryParams = new LinkorFactory().getShipParams(level);
+
+    let stars = this._objectController.getPlayerStars(aClient.gameData.id);
+    if (stars.length <= 0) return false;
+    let star = stars[0];
+
+    const yDir = star.isTopStar ? 1 : -1;
+
+    let cellPos = this._field.globalToCellPos(
+      star.position.x,
+      star.position.z
+    );
+
+    // pick random position
+    let starSettings = SETTINGS.stars[0];
+    if (yDir < 0) starSettings = SETTINGS.stars[1];
+    let deltaPositions = starSettings.fightersSpawnDeltaPos;
+    let deltaPosId = MyMath.randomIntInRange(0, deltaPositions.length - 1);
+    let deltaPos = deltaPositions[deltaPosId];
+
+    cellPos.x += deltaPos.x;
+    cellPos.y += deltaPos.y;
+
+    if (this._field.isCellTaken(cellPos)) {
+      this.logDebug(`onStarLinkorSpawn: cell taken:`, cellPos);
+      let neighbors = this._field.getNeighbors(cellPos, true);
+      if (neighbors.length <= 0) {
+        // explosion current object on the cell
+        let obj = this._objectController.getObjectOnCell(this._field, cellPos);
+        if (obj) {
+          obj.damage({
+            damage: obj.hp * 2,
+          });
+        }
+        return;
+      } else {
+        cellPos = neighbors[0];
+      }
+    }
+
+    let linkor = new Linkor({
+      owner: star.owner,
       id: this.generateObjectId(),
       position: this._field.cellPosToGlobalVec3(cellPos),
       radius: shipParams.radius,

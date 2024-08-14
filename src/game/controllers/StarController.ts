@@ -36,11 +36,11 @@ export class StarController implements ILogger {
     }
 
     private onStarLinkorSpawn(aStar: Star, aCellDeltaPos) {
-        this._game.onStarLinkorSpawn(aStar, aCellDeltaPos)
+        this._game.onStarLinkorSpawn(aStar, aCellDeltaPos);
     }
 
     private onStarFighterSpawn(aStar: Star, aCellDeltaPos) {
-        this._game.onStarFighterSpawn(aStar, aCellDeltaPos)
+        this._game.onStarFighterSpawn(aStar, aCellDeltaPos);
     }
 
     addStar(aStar: Star) {
