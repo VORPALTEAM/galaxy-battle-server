@@ -198,7 +198,13 @@ export class Game implements ILogger {
 
     this._sceneLoaded = [];
     this._expMng = new ExpManager();
-    this._shopMng = new ShopMng();
+
+    // create shop mng
+    this._shopMng = new ShopMng({
+      expMng: this._expMng,
+      objController: this._objectController
+    });
+
     this.initClientListeners();
     this.startLoop();
   }
@@ -339,13 +345,22 @@ export class Game implements ILogger {
     switch (shopData.action) {
 
       case 'purchase':
-        // TODO: purchase
+        let res = this._shopMng.purchase(client, shopData.itemId);
 
-        // temp answer
-        PackSender.getInstance().shop([client], {
-          action: 'purchase',
-          itemId: shopData.itemId
-        });
+        // answer
+        if (res) {
+          this.sendGoldUpdate(client);
+          PackSender.getInstance().shop([client], {
+            action: 'purchase',
+            itemId: shopData.itemId
+          });
+        }
+        else {
+          PackSender.getInstance().shop([client], {
+            action: 'purchaseError',
+            msg: 'no gold'
+          });
+        }
 
         break;
       
@@ -468,7 +483,7 @@ export class Game implements ILogger {
       // const nameDisplay = client.gameData.id || "Unknown";
       let data: GameCompleteData;
 
-      const expData = this._expMng.getExpInfo(client.gameData.id);
+      const expData = this._expMng.getExpData(client.gameData.id);
 
       if (isWinner) {
         data = {
@@ -589,9 +604,6 @@ export class Game implements ILogger {
   }
 
   private init() {
-
-    // create shop
-    this._shopMng = new ShopMng();
 
     // create field
     this._field = new Field(SETTINGS.field);
@@ -1040,6 +1052,11 @@ export class Game implements ILogger {
     }
   }
 
+  private sendGoldUpdate(client: Client) {
+    let expData = this._expMng.getExpData(client.gameData.id);
+    PackSender.getInstance().exp(client, expData);
+  }
+
   get id(): number {
     return this._id;
   }
@@ -1193,11 +1210,11 @@ export class Game implements ILogger {
 
     let goldInc = this._expMng.addGoldForObject(attackerClient.gameData.id, aObj, activeKill);
 
-    const prevExp = this._expMng.getExpInfo(attackerClient.gameData.id).exp;
+    const prevExp = this._expMng.getExpData(attackerClient.gameData.id).exp;
     let expData = this._expMng.addExpForObject(attackerClient.gameData.id, aObj, activeKill);
     const dtExp = expData.exp - prevExp;
 
-    PackSender.getInstance().exp(attackerClient, expData);
+    this.sendGoldUpdate(attackerClient);
 
     PackSender.getInstance().goldText(attackerClient, {
       pos: aObj.position.clone(),
