@@ -92,7 +92,7 @@ const SETTINGS = {
   ],
 
   planet: {
-    radius: 1,
+    radius: 2,
     orbitRadius: 15, // planet orbit radius
     orbitRotationPeriod: 60, // planet orbit rotation period in sec
     rotationPeriod: 5, // planet rotation period in sec
