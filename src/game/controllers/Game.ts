@@ -96,7 +96,8 @@ const SETTINGS = {
     orbitRadius: 15, // planet orbit radius
     orbitRotationPeriod: 60, // planet orbit rotation period in sec
     rotationPeriod: 5, // planet rotation period in sec
-    aimSectorAngleDeg: 40 // in degrees
+    aimSectorAngleDeg: 40, // in degrees
+    laserAimSectorAngleDeg: 30 // in degrees
   },
 
   towerParams: {
@@ -627,7 +628,9 @@ export class Game implements ILogger {
       this._objectController.objects
     );
 
-    this._abilsMng = new AbilityManager(this._objectController.objects);
+    this._abilsMng = new AbilityManager(this._objectController.objects,
+      MyMath.toRadian(SETTINGS.planet.laserAimSectorAngleDeg)
+    );
     this._abilsMng.onLaserAttack.add(this.onPlanetLaserAttack, this);
 
     this._missilesController = new MissileController({
@@ -718,6 +721,7 @@ export class Game implements ILogger {
         startAngle: MyMath.randomInRange(0, Math.PI * 2),
         startOrbitAngle: isTopStar ? Math.PI / 2 : -Math.PI / 2,
         laserSkin: client.laserSkin,
+        planetRadius: SETTINGS.planet.radius
       });
 
       this.addObject(planet);

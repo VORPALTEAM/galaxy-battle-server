@@ -4,6 +4,7 @@ import { ObjectUpdateData, PlanetLaserSkin, StarCreateData } from "../data/Types
 import { GameObject, GameObjectParams } from "./GameObject.js";
 
 export type PlanetParams = GameObjectParams & {
+    planetRadius: number,
     orbitCenter: THREE.Vector3, // planet orbit center
     orbitRadius: number, // planet orbit radius
     startOrbitAngle: number, // start orbit angle
@@ -28,6 +29,8 @@ export class Planet extends GameObject {
 
     protected _speedFactor = 1;
 
+    protected _aimRadius: number;
+
     constructor(aParams: PlanetParams) {
         super(aParams);
         this._className = 'Planet';
@@ -43,6 +46,8 @@ export class Planet extends GameObject {
 
         this._rotationSpeed = (Math.PI * 2) / this._rotationPeriod;
         this._angle = aParams.startAngle;
+
+        this._aimRadius = aParams.planetRadius * 2;
 
         this.updatePosition();
         this.updateRotation();
@@ -65,9 +70,14 @@ export class Planet extends GameObject {
 
     getDirrection(): THREE.Vector3 {
         let dir = new THREE.Vector3(0, 0, 1);
-        // let dir = new THREE.Vector3(1, 0, 0);
         dir.applyQuaternion(this.mesh.quaternion);
         return dir;
+    }
+
+    getFirePoint(): THREE.Vector3 {
+        let dir = new THREE.Vector3(0, 0, 1);
+        dir.applyQuaternion(this.mesh.quaternion).multiplyScalar(this._aimRadius);
+        return this.position.clone().add(dir);
     }
 
     activateSniperSkill(aSpeedFactor: number, aTimeSec: number) {

@@ -11,6 +11,7 @@ import { Game } from "./Game.js";
 import { Star } from '../objects/Star.js';
 import { MissileCollisionSystem } from '../systems/MissileCollisionSystem.js';
 import { PackSender } from '../services/PackSender.js';
+import { getTargetInSector } from '../systems/Utils.js';
 
 export class MissileController implements ILogger {
   protected _className = 'MissileController';
@@ -107,67 +108,6 @@ export class MissileController implements ILogger {
     return objects;
   }
 
-  private getRocketTarget({
-    meshes,
-    center,
-    directionAngle,  // dir angle in rad
-    sectorAngle, // angle in rad
-    maxRadius,
-  }: {
-    meshes: GameObject[];
-    center: THREE.Vector3;
-    directionAngle: number;
-    // direction: THREE.Vector3;
-    sectorAngle: number;
-    maxRadius: number;
-  }): GameObject | null {
-
-    const maxSectorAngle = Math.PI * 2;  // 360 deg
-
-    const isMeshInSector = (mesh: GameObject, angle: number): {
-      inSector: boolean,
-      dist: number
-    } => {
-
-      const position = mesh.position.clone().sub(center);
-      const distance = position.length();
-
-      if (distance > maxRadius) return {
-        inSector: false,
-        dist: distance
-      }
-
-      // calc angle between sector dir and object
-      const objectAngle = Math.atan2(position.z, position.x);
-      const angleDifference = THREE.MathUtils.euclideanModulo(objectAngle - directionAngle + Math.PI, Math.PI * 2) - Math.PI;
-
-      return {
-        inSector: Math.abs(angleDifference) <= angle / 2,
-        dist: distance
-      }
-    };
-
-    // sector inc cycle
-    let lastDist = Number.MAX_SAFE_INTEGER;
-    let target: GameObject;
-    while (sectorAngle <= maxSectorAngle) {
-      for (let mesh of meshes) {
-        let inSec = isMeshInSector(mesh, sectorAngle);
-        if (inSec.inSector && inSec.dist < lastDist) {
-          lastDist = inSec.dist;
-          target = mesh;
-        }
-      }
-
-      if (target) break;
-
-      // inc sector angle
-      sectorAngle += Math.max(Math.PI / 20, sectorAngle * 1.1);
-    }
-
-    return target;
-  }
-
   private findTarget(params: {
     owner: string,
     launchPos: { x: number, y: number },
@@ -179,25 +119,22 @@ export class MissileController implements ILogger {
 
     const lookVector = new THREE.Vector3(params.dirVector.x, 0, params.dirVector.y);
     lookVector.normalize();
-    // directionAngle calc via Math.atan2()
-    // atan2 get (y, x), y - z-coordinate, x - x-coordinate
+    // calc directionAngle via Math.atan2()
     const directionAngle = Math.atan2(lookVector.z, lookVector.x);
 
     const center = new THREE.Vector3(params.launchPos.x, 0, params.launchPos.y);
-    // const dirAn = MyMath.toRadian(DATA.angle);
     const sectorRadius = 100;
     const sectorAn = params.sectorAngle;
 
     let target: GameObject | null = null;
 
-    target = this.getRocketTarget({
+    target = getTargetInSector({
       maxRadius: sectorRadius,
-      meshes: objects,
-      // { x: origin.x, y: origin.z },
+      objects: objects,
       center: center,
       directionAngle: directionAngle,
-      // direction: { x: dir.x, y: dir.z },
-      sectorAngle: sectorAn
+      sectorAngle: sectorAn,
+      isIncSectorAngle: true
     });
 
     return target;
