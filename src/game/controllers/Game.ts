@@ -629,12 +629,12 @@ export class Game implements ILogger {
     this._abilsMng = new AbilityManager(this._objectController.objects);
     this._abilsMng.onLaserAttack.add(this.onPlanetLaserAttack, this);
 
-    this._missilesController = new MissileController(
-      this,
-      this._objIdGen,
-      this._objectController.objects,
-      this._clients
-    );
+    this._missilesController = new MissileController({
+      game: this,
+      clients: this._clients,
+      objIdGen: this._objIdGen,
+      objects: this._objectController.objects,
+    });
 
     this.initStars();
     this.initTowers();
