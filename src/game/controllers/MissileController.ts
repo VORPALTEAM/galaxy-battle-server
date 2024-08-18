@@ -104,62 +104,10 @@ export class MissileController implements ILogger {
     return objects;
   }
 
-  // private findClosestObject(origin: THREE.Vector3, direction: THREE.Vector3,
-  //   objects: GameObject[], maxDistance: number): GameObject | null {
-  //   let closestPoint: GameObject | null = null;
-  //   let minWeightedDistance = Infinity;
-
-  //   // Нормализуем направление взгляда
-  //   const normalizedDirection = direction.clone().normalize();
-
-  //   objects.forEach(obj => {
-  //     const pointVector = obj.position.clone().sub(origin);
-  //     const distance = pointVector.length();
-
-  //     // Пропускаем точки, которые дальше максимального расстояния
-  //     if (distance > maxDistance) return;
-
-  //     // Нормализуем вектор к точке
-  //     const normalizedPointVector = pointVector.clone().normalize();
-
-  //     // Вычисляем угол между направлением взгляда и направлением к точке
-  //     const angle = normalizedDirection.angleTo(normalizedPointVector);
-
-  //     // Взвешенная метрика
-  //     const weightedDistance = distance * Math.cos(angle);
-
-  //     // Находим точку с минимальным взвешенным значением
-  //     if (weightedDistance < minWeightedDistance) {
-  //       minWeightedDistance = weightedDistance;
-  //       closestPoint = obj;
-  //     }
-  //   });
-
-  //   return closestPoint;
-  // }
-
-  // private findClosestTargetInSector2(
-  //   aOwner: string,
-  //   missilePosition: { x: number, y: number },
-  //   missileDirectionVector: { x: number, y: number },
-  //   sectorAngle: number
-  // ): GameObject | null {
-  //   let closestTarget: GameObject | null = null;
-  //   let closestDistance = Infinity;
-  //   let closestAngle = sectorAngle;
-  //   let objects = this.getTargetObjects(aOwner);
-
-  //   let origin = new THREE.Vector3(missilePosition.x, 0, missilePosition.y);
-  //   let dir = new THREE.Vector3(missileDirectionVector.x, 0, missileDirectionVector.y);
-  //   closestTarget = this.findClosestObject(origin, dir, objects, 1000);
-
-  //   return closestTarget;
-  // }
-
   private getRocketTarget({
     meshes,
     center,
-    directionAngle,  // Угол направления в радианах
+    directionAngle,  // dir angle in rad
     sectorAngle, // angle in rad
     maxRadius,
   }: {
@@ -173,7 +121,6 @@ export class MissileController implements ILogger {
 
     const maxSectorAngle = Math.PI * 2;  // 360 deg
 
-    // Функция для проверки, находится ли объект в секторе
     const isMeshInSector = (mesh: GameObject, angle: number): {
       inSector: boolean,
       dist: number
@@ -182,13 +129,12 @@ export class MissileController implements ILogger {
       const position = mesh.position.clone().sub(center);
       const distance = position.length();
 
-      // Если объект находится вне максимального радиуса, он не в секторе
       if (distance > maxRadius) return {
         inSector: false,
         dist: distance
       }
 
-      // Вычисление угла между направлением сектора и объектом
+      // calc angle between sector dir and object
       const objectAngle = Math.atan2(position.z, position.x);
       const angleDifference = THREE.MathUtils.euclideanModulo(objectAngle - directionAngle + Math.PI, Math.PI * 2) - Math.PI;
 
@@ -198,7 +144,7 @@ export class MissileController implements ILogger {
       }
     };
 
-    // Начинаем цикл увеличения сектора, если не нашли объект
+    // sector inc cycle
     let lastDist = Number.MAX_SAFE_INTEGER;
     let target: GameObject;
     while (sectorAngle <= maxSectorAngle) {
