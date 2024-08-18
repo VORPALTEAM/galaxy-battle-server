@@ -20,12 +20,14 @@ export class MissileController implements ILogger {
   protected _missiles: Map<number, HomingMissile>;
   protected _collisionSystem: MissileCollisionSystem;
   protected _clients: Client[];
+  protected _aimSectorAngle: number;
 
   constructor(params: {
     game: Game,
     objIdGen: IdGenerator,
     objects: Map<number, GameObject>,
-    clients: Client[]
+    clients: Client[],
+    aimSectorAngle: number // angle in rad
   }) {
     this._game = params.game;
     this._objIdGen = params.objIdGen;
@@ -34,6 +36,7 @@ export class MissileController implements ILogger {
     this._collisionSystem = new MissileCollisionSystem(this._objects, this._missiles);
     this._collisionSystem.onCollisionSignal.add(this.onMissileCollided, this);
     this._clients = params.clients;
+    this._aimSectorAngle = params.aimSectorAngle;
   }
 
   free() {
@@ -212,6 +215,7 @@ export class MissileController implements ILogger {
     let dir = planet.getDirrection();
     const origin = planet.position.clone().add(dir.clone().multiplyScalar(2));
 
+    // 1st variant
     // let target = this.findClosestTargetInSector(aParams.client.gameData.id,
     //   { x: origin.x, y: origin.z },
     //   { x: dir.x, y: dir.z },
@@ -230,7 +234,7 @@ export class MissileController implements ILogger {
       owner: aParams.client.gameData.id,
       launchPos: { x: origin.x, y: origin.z },
       dirVector: { x: dir.x, y: dir.z },
-      sectorAngle: MyMath.toRadian(30)
+      sectorAngle: this._aimSectorAngle
     });
 
     // this.logDebug(`launchMissile:`, {

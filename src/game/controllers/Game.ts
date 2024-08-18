@@ -96,6 +96,7 @@ const SETTINGS = {
     orbitRadius: 15, // planet orbit radius
     orbitRotationPeriod: 60, // planet orbit rotation period in sec
     rotationPeriod: 5, // planet rotation period in sec
+    aimSectorAngleDeg: 40 // in degrees
   },
 
   towerParams: {
@@ -634,6 +635,7 @@ export class Game implements ILogger {
       clients: this._clients,
       objIdGen: this._objIdGen,
       objects: this._objectController.objects,
+      aimSectorAngle: MyMath.toRadian(SETTINGS.planet.aimSectorAngleDeg)
     });
 
     this.initStars();
