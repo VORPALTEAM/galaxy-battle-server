@@ -334,7 +334,7 @@ export class ExpManager implements ILogger {
         return 0;
     }
 
-    getExpInfo(aClientId: string): ExpData {
+    getExpData(aClientId: string): ExpData {
         let exp = this.getExpRecord(aClientId);
         const currExp = Math.trunc(exp.exp);
         const currLevel = levelByExp(currExp);
@@ -365,7 +365,13 @@ export class ExpManager implements ILogger {
         else if (aObj instanceof Tower) {
             record.addExp(this.expForTower(aIsActiveKill));
         }
-        return this.getExpInfo(aClientId);
+        return this.getExpData(aClientId);
+    }
+
+    addGold(clientId: string, value: number): number {
+        let record = this.getExpRecord(clientId);
+        record.addGold(value);
+        return record.gold;
     }
 
     addGoldForObject(aClientId: string, aObj: GameObject, aIsActiveKill: boolean): number {
@@ -384,7 +390,7 @@ export class ExpManager implements ILogger {
     upSkillLevel(aClientId: string, aSkillId: number): ExpData {
         let exp = this.getExpRecord(aClientId);
         exp.skillLevelUp(aSkillId);
-        return this.getExpInfo(aClientId);
+        return this.getExpData(aClientId);
     }
 
     getSkillDamage(aClientId: string, aSkillId: number): number {

@@ -31,6 +31,7 @@ export type GameObjectParams = {
     radius: number,
     position?: THREE.Vector3 | { x: number, y: number },
     isImmortal?: boolean,
+    maxHp?: number,
     hp?: number,
     shield?: number,
     attackParams?: AttackParams,
@@ -49,6 +50,7 @@ export class GameObject implements IUpdatable, ILogger {
     // object radius
     private _radius: number;
     protected _hp: number;
+    protected _maxHp: number;
     protected _shield: number;
     protected _evasion: number;
     private _isImmortal = false;
@@ -70,6 +72,7 @@ export class GameObject implements IUpdatable, ILogger {
         this._id = aParams.id;
 
         this._hp = aParams.hp || 0;
+        this._maxHp = aParams.maxHp || aParams.hp;
         this._shield = aParams.shield || 0;
         this._isImmortal = aParams.isImmortal || false;
         this._attackParams = aParams.attackParams || null;
@@ -247,6 +250,12 @@ export class GameObject implements IUpdatable, ILogger {
         }
         this.onDamage.dispatch(this, aAtkInfo);
         this._lastAttackInfo = aAtkInfo;
+    }
+
+    recoverHp(value?: number) {
+        value ?
+            this._hp += value :
+            this._hp = this._maxHp;
     }
 
     lookAt(aTarget: THREE.Vector3) {

@@ -6,7 +6,7 @@ import { GameObject, GameObjectParams } from "./GameObject.js";
 export type StarParams = GameObjectParams & {
     isTopStar: boolean,
     fightersSpawnDeltaPos: { x: number, y: number }[],
-    battleShipSpawnDeltaPos: { x: number, y: number }[],
+    linkorSpawnDeltaPos: { x: number, y: number }[],
     minusHpPerSec: number
 }
 
@@ -42,6 +42,10 @@ export class Star extends GameObject {
 
     private spawnFighters() {
         const deltaPos = this._params.fightersSpawnDeltaPos;
+        if (!deltaPos) {
+            this.logError(`spawnFighters: !deltaPos`);
+            return;
+        }
         for (let i = 0; i < deltaPos.length; i++) {
             const dPos = deltaPos[i];
             setTimeout(() => {
@@ -51,8 +55,12 @@ export class Star extends GameObject {
         }
     }
 
-    private spawnBattleShip() {
-        const deltaPos = this._params.battleShipSpawnDeltaPos;
+    private spawnLinkors() {
+        const deltaPos = this._params.linkorSpawnDeltaPos;
+        if (!deltaPos) {
+            this.logError(`spawnLinkors: !deltaPos`);
+            return;
+        }
         for (let i = 0; i < deltaPos.length; i++) {
             const dPos = deltaPos[i];
             setTimeout(() => {
@@ -78,7 +86,7 @@ export class Star extends GameObject {
         this._timerBattleShipSpawn -= dt;
         if (this._timerBattleShipSpawn <= 0) {
             this._timerBattleShipSpawn = BATTLESHIP_SPAWN_PERIOD;
-            this.spawnBattleShip();
+            this.spawnLinkors();
         }
     }
 

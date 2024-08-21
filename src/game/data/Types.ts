@@ -141,8 +141,8 @@ export type BattleShopAction = 'purchase' | 'sale' | 'purchaseError' | 'saleErro
 
 export type ShopData = {
   action: BattleShopAction,
-  itemId?: number
-
+  itemId?: number,
+  msg?: string
 }
 
 export type StartGameData = {
@@ -279,7 +279,7 @@ export type ClaimRewardData = {
 }
 
 export type DebugTestData = {
-  action: 'win' | 'loss'
+  action: 'win' | 'loss' | 'addGold1k'
 }
 
 export type ExplosionData = {

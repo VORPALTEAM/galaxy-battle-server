@@ -1,7 +1,8 @@
 import {
     FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData,
     PackTitle, StarCreateData, StartGameData, AttackType, DamageInfo, ExpData,
-    ExplosionData, SniperData, AcceptScreenData, EmotionData, MessagePack, RocketPacket, DamageData, ExpTextData, GoldTextData
+    ExplosionData, SniperData, AcceptScreenData, EmotionData, MessagePack, RocketPacket, DamageData, ExpTextData, GoldTextData,
+    ShopData
 } from "../data/Types.js";
 import { Client } from "../models/Client.js";
 
@@ -124,6 +125,10 @@ export class PackSender {
 
     sniper(aClients: Client[], aData: SniperData) {
         this.sendData(aClients, PackTitle.sniper, aData);
+    }
+
+    shop(aClients: Client[], aData: ShopData) {
+        this.sendData(aClients, PackTitle.shop, aData);
     }
 
     emotion(aClients: Client[], aData: EmotionData) {
