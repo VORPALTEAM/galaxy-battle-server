@@ -361,6 +361,7 @@ export class Game implements ILogger {
         else {
           PackSender.getInstance().shop([client], {
             action: 'purchaseError',
+            itemId: shopData.itemId,
             msg: 'no gold'
           });
         }
