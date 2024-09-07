@@ -83,6 +83,7 @@ export class ClientPair implements ILogger {
 
             case 'loading':
                 this.logDebug(`loading...`);
+                if (this._loaded.get(aClient.connectionId)) return;
                 this._loaded.set(aClient.connectionId, true);
                 aClient.setPlayerData({
                     starName: aData.loadingData?.starName

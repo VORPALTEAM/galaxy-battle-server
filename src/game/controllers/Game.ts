@@ -1197,7 +1197,9 @@ export class Game implements ILogger {
 
       try {
         // lasers = await getUserAvailableLaserLevelsWeb2(login);
-        lasers = await getUserLaserListWeb2(String(id));
+        const strId = String(id);
+        this.logDebug(`getUserLaserListWeb2(${strId}) calling...`);
+        lasers = await getUserLaserListWeb2(strId);
         lasers = lasers.map((n) => Number(n));
         this.logDebug(`laser list for client(${nick}):`, lasers);
         if (lasers?.length > 0) {
@@ -1289,6 +1291,7 @@ export class Game implements ILogger {
   }
 
   start() {
+
     this.loadLaserSkins();
 
     if (!this._clients) {

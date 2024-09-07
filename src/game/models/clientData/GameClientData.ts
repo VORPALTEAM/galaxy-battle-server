@@ -100,7 +100,6 @@ export class GameClientData implements ILogger {
     setTgInitData(aTgInitData: string) {
         this._tgInitDataStr = aTgInitData;
         this._tgInitData = decodeTgInitString(aTgInitData);
-        // this._tgInitData = JSON.parse(aTgInitData);
         this.logDebug(`setTgInitData:`, this._tgInitData);
     }
 
