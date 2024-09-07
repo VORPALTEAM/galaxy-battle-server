@@ -115,24 +115,30 @@ export async function getBoxDataWeb2(_boxId: number) {
     })
 }
 
-export async function getUserLaserListWeb2(_user: string) {
+export async function getUserLaserListWeb2(_user: string): Promise<number[]> {
     // const data = await GetGameAssetsWeb2(_user);
-    const data = await Promise.all([
-        GetUserItemBalance({login: _user, itemId:8}),
-        GetUserItemBalance({login: _user, itemId:9}),
-        GetUserItemBalance({login: _user, itemId:10})
-    ])
-    const levels: number[] = [];
-    if (data[0] > 0) {
-        levels.push(0)
-    }
-    if (data[1] > 0) {
-        levels.push(1)
-    }
-    if (data[2] > 0) {
-        levels.push(2)
-    }
-    return levels;
+    return new Promise((resolve, reject) => {
+        Promise.all([
+            GetUserItemBalance({login: _user, itemId:8}),
+            GetUserItemBalance({login: _user, itemId:9}),
+            GetUserItemBalance({login: _user, itemId:10})
+        ]).then((data) => {
+            const levels: number[] = [];
+            if (data[0] > 0) {
+                levels.push(0)
+            }
+            if (data[1] > 0) {
+                levels.push(1)
+            }
+            if (data[2] > 0) {
+                levels.push(2)
+            }
+            resolve(levels);
+        }).catch((e) => {
+            console.log("Error: ", e);
+            reject(e)
+        })
+    })
 }
 
 export async function getUserAvailableLaserLevelsWeb2(_user: string): Promise<number[]> {
