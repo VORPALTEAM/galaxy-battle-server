@@ -74,11 +74,16 @@ export class DuelApiService {
   public async getUserDuelCount(userId: string): Promise<number> {
     return new Promise((resolve, reject) => {
       const url = fastServerUrl.concat(`/api/duelusercount/${userId}`);
-      fetch(url)
+      try {
+        fetch(url)
         .then((r) => r.json())
         .then((res: { count: number }) => {
           resolve(res?.count || 0);
         });
+      } catch (e) {
+        reject("Request failed")
+        return;
+      }
     });
   }
 }
