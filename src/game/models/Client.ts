@@ -408,10 +408,11 @@ export class Client implements ILogger {
         this.sendPack(PackTitle.claimReward, data);
     }
 
-    sendAcceptScreenStart(aTimer: number) {
+    sendAcceptScreenStart(aTimer: number, showTutor?: boolean) {
         let data: AcceptScreenData = {
             action: "start",
-            timer: aTimer
+            timer: aTimer,
+            showTutor: showTutor
         };
         this.sendPack(PackTitle.battleConfirmation, data);
     }

@@ -146,6 +146,10 @@ export class Matchmaker implements ILogger {
         this._duels.delete(aDuelId);
     }
 
+    private isClientReady(client: Client) {
+        return (client.isSigned || client.isFreeConnection); // && client.isTutorComplete
+    }
+
     addClient(aClient: Client) {
 
         // send game searching started
@@ -229,7 +233,7 @@ export class Matchmaker implements ILogger {
 
         // find ready clients
         this._clients.forEach(client => {
-            if (client.isSigned || client.isFreeConnection) {
+            if (this.isClientReady(client)) {
                 if (client.isWithBot) {
                     readyBotClientIds.push(client.connectionId);
                 }
@@ -280,6 +284,6 @@ export class Matchmaker implements ILogger {
         });
 
     }
-    
+
 
 }

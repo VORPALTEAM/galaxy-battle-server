@@ -106,6 +106,7 @@ export type PlayerLoadingData = {
 
 export type AcceptScreenData = {
   action: AcceptScreenAction,
+  showTutor?: boolean,
   timer?: number,
   state?: {
     current: number,
