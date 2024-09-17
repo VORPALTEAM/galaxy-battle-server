@@ -480,17 +480,30 @@ export class Game implements ILogger {
       rewardTriesCounter++;
     }
 
+    let enemy: Client;
+
     for (let i = 0; i < this._clients.length; i++) {
       const client = this._clients[i];
+      if (i > 0) {
+        enemy = this._clients[0];
+      }
+      else {
+        enemy = this._clients[1];
+      }
+
       const isWinner = aWinner && client.connectionId == aWinner.connectionId;
-      const nameDisplay = client.gameData.tgAuthData
+      const playerName = client.gameData.tgAuthData
         ? (client.gameData.tgAuthData.username || client.gameData.tgAuthData.first_name || "Anonimous")
         : client.gameData.id;
+      const enemyName = enemy.gameData.tgAuthData
+        ? (enemy.gameData.tgAuthData.username || enemy.gameData.tgAuthData.first_name || "Anonimous")
+        : enemy.gameData.id;
       // this.logDebug("Client data: ", client.gameData.id);
       // const nameDisplay = client.gameData.id || "Unknown";
       let data: GameCompleteData;
 
       const expData = this._expMng.getExpData(client.gameData.id);
+      const expDataEnemy = this._expMng.getExpData(enemy.gameData.id);
 
       if (isWinner) {
         data = {
@@ -498,8 +511,9 @@ export class Game implements ILogger {
           showBoxClaim: isPlayWithBot ? false : isWinStreak,
           boxLevel: isPlayWithBot ? null : 1,
           hideClaimBtn: isPlayWithBot,
-          ownerName: nameDisplay,
-          params: {
+          playerParams: {
+            name: playerName,
+            level: expData.level,
             damageDone: expData.damage,
             expReceived: expData.exp,
             goldEarned: expData.gold,
@@ -507,14 +521,19 @@ export class Game implements ILogger {
               previous: 0,
               current: 100
             }
+          },
+          enemyParams: {
+            name: enemyName,
+            level: expDataEnemy.level
           }
         };
       }
       else {
         data = {
           status: "loss",
-          ownerName: nameDisplay,
-          params: {
+          playerParams: {
+            name: playerName,
+            level: expData.level,
             damageDone: expData.damage,
             expReceived: expData.exp,
             goldEarned: expData.gold,
@@ -522,6 +541,10 @@ export class Game implements ILogger {
               previous: 0,
               current: 100
             }
+          },
+          enemyParams: {
+            name: enemyName,
+            level: expDataEnemy.level
           }
         };
       }
