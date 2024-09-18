@@ -142,35 +142,12 @@ export async function RecordWinnerWithChoose(address: string, _unfix: boolean = 
             return;
         }
 
-        // const gasPrice = Number(await web3.eth.getGasPrice());
-        // const winId = Number(await getNextWinId());
-
-        /* try{
-            const count = Number(await web3.eth.getTransactionCount(publicKey));
-            const txnData = {
-                from: publicKey,
-                to: contracts.RewardSender,
-                gasPrice,
-                gasLimit: web3.utils.toHex(await rewardContract.methods.noteWinner(address, _unfix).estimateGas({ from: publicKey })),
-                value: '0x00',
-                data: rewardContract.methods.noteWinner(address, _unfix).encodeABI(),
-                nonce: count
-            }
-
-            const signedTx = await web3.eth.accounts.signTransaction(txnData, privateKey);
-            const txReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-            resolve(winId);
-
-        } catch (e) {
-            // reject(`Txn failed: ${e.message}`)
-            // return;
-        } */
-        if (_unfix){ 
+        /* if (_unfix){ 
             await CreateBoxWeb2(address, _tgLogin, _boxLevel);
         } else {
             // console.log("Giving resources chosen");
             await GiveResourcesWeb2(address, _tgLogin, "token", Math.round(Math.random() * 1000))
-        }
+        } */
         // const resources = await GiveResourcesWeb2(address, _tgLogin, "token", Math.round(Math.random() * 1000))
         //resolve(gasPrice)
         resolve(1)
