@@ -87,47 +87,60 @@ export class ShopMng implements ILogger {
 
   purchase(client: Client, itemId: number): boolean {
     let itemData = this.getItemData(itemId);
+    let gold = this._expMng.getExpData(client.gameData.id).gold;
+    if (gold < itemData.price) return false;
+    this._expMng.addGold(client.gameData.id, -itemData.price);
+    return true;
+  }
+
+  activateItem(client: Client, itemId: number): boolean {
+    let itemData = this.getItemData(itemId);
     let res = false;
 
     switch (itemData.type) {
 
       case 'instant':
-        let gold = this._expMng.getExpData(client.gameData.id).gold;
-        if (gold < itemData.price) return false;
-
-        // apply purchase
         switch (itemData.id) {
+
+          // Recovery Towers
           case 0:
             this._objController.recoveryPlayerTowersHp(client.gameData.id);
             break;
+
+          // Recovery
           case 1:
             this._objController.recoveryPlayerStarHp(client.gameData.id);
             break;
+
+          // Fighter
           case 2:
-            // this._objController.spawnFighter(client);
             if (!this._game.shopFighterBuy(client)) return false;
             break;
+
+          // Linkor
           case 3:
-            // this._objController.spawnLinkor(client);
             if (!this._game.shopLinkorBuy(client)) return false;
             break;
+
           default:
             this.logWarn(`purchase: unhandled itemData.id:`, itemData);
             break;
         }
 
-        this._expMng.addGold(client.gameData.id, -itemData.price);
         return true;
         break;
-      
+
       case 'permanent':
 
         break;
-      
+
       default:
-        
+
         break;
     }
+
+    return res;
+
   }
 
 }

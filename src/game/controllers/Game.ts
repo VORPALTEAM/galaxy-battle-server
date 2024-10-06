@@ -38,6 +38,7 @@ import { DuelPairRewardCondition, FinishDuel } from "../../blockchain/duel.js";
 import { DeleteDuel } from "../../blockchain/functions.js";
 import { BotAI } from "./BotAI.js";
 import { ShopMng } from "../systems/ShopMng.js";
+import { InventoryMng } from "../systems/InventoryMng.js";
 
 const SETTINGS = {
   tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -168,6 +169,7 @@ export class Game implements ILogger {
   private _expMng: ExpManager;
   private _botAi: BotAI;
   private _shopMng: ShopMng;
+  private _inventory: InventoryMng;
   // events
   onGameComplete = new Signal();
 
@@ -206,6 +208,10 @@ export class Game implements ILogger {
       game: this,
       expMng: this._expMng,
       objController: this._objectController
+    });
+
+    this._inventory = new InventoryMng({
+      game: this
     });
 
     this.initClientListeners();
@@ -345,18 +351,32 @@ export class Game implements ILogger {
   }
 
   private onClientShop(client: Client, shopData: ShopData) {
+
     switch (shopData.action) {
 
-      case 'purchase':
+      case 'purchase': {
+        const isInventoryFull = this._inventory.isFull(client);
+
+        if (isInventoryFull) {
+          PackSender.getInstance().shop([client], {
+            action: 'purchaseError',
+            itemId: shopData.itemId,
+            msg: 'The inventory is full'
+          });
+          return;
+        }
+
         let res = this._shopMng.purchase(client, shopData.itemId);
 
         // answer
         if (res) {
+          this._inventory.addItem(client, shopData.itemId);
           this.sendGoldUpdate(client);
           PackSender.getInstance().shop([client], {
             action: 'purchase',
             itemId: shopData.itemId
           });
+          this._inventory.sendUpdateData(client);
         }
         else {
           PackSender.getInstance().shop([client], {
@@ -366,15 +386,31 @@ export class Game implements ILogger {
           });
         }
 
-        break;
+      } break;
 
-      case 'sale':
+      case 'sale': {
         // temp answer
         PackSender.getInstance().shop([client], {
           action: 'sale',
           itemId: shopData.itemId
         });
-        break;
+      } break;
+      
+      case 'inventoryItemActivate': {
+        let res = this._shopMng.activateItem(client, shopData.itemId);
+        // answer
+        if (res) {
+          this._inventory.removeItem(client, shopData.itemId);
+          this._inventory.sendUpdateData(client);
+        }
+        else {
+          PackSender.getInstance().shop([client], {
+            action: 'error',
+            itemId: shopData.itemId,
+            msg: 'item activation error'
+          });
+        }
+      } break;
 
       default:
         this.logWarn(`onClientShop: unknown shopData.action:`, shopData);

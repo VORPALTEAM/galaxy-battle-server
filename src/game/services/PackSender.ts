@@ -134,8 +134,7 @@ export class PackSender {
     emotion(aClients: Client[], aData: EmotionData) {
         this.sendData(aClients, PackTitle.emotion, aData);
     }
-
-
+    
 
     message(aClients: Client[], aData: MessagePack) {
         this.sendData(aClients, PackTitle.message, aData);
