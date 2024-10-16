@@ -76,12 +76,10 @@ export class InventoryMng implements ILogger {
   }
 
   removeItem(aClient: Client, aItemId: number) {
-    if (this.isFull(aClient)) return false;
     let rec = this.getClientRecord(aClient);
-
     for (let i = 0; i < MAX_ITEMS; i++) {
-      if (!rec.items[i]) {
-        rec.items[i] = aItemId;
+      if (rec.items[i] == aItemId) {
+        rec.items[i] = null;
         return true;
       }
     }

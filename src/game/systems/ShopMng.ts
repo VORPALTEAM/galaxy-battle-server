@@ -95,6 +95,11 @@ export class ShopMng implements ILogger {
 
   activateItem(client: Client, itemId: number): boolean {
     let itemData = this.getItemData(itemId);
+    if (!itemData) {
+      // TODO: log 
+      this.logWarn(`activateItem(): getItemData(${itemId}) == null`);
+      return false;
+    }
     let res = false;
 
     switch (itemData.type) {
