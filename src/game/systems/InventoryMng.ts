@@ -53,7 +53,13 @@ export class InventoryMng implements ILogger {
 
   isFull(client: Client): boolean {
     let rec = this.getClientRecord(client);
-    return rec.items.length >= MAX_ITEMS;
+    let itemCount = 0;
+    for (let i = 0; i < MAX_ITEMS; i++) {
+      if (rec.items[i] != null) {
+        itemCount++;
+      }
+    }
+    return itemCount >= MAX_ITEMS;
   }
 
   /**
@@ -67,7 +73,7 @@ export class InventoryMng implements ILogger {
     let rec = this.getClientRecord(client);
     
     for (let i = 0; i < MAX_ITEMS; i++) {
-      if (!rec.items[i]) {
+      if (rec.items[i] == null) {
         rec.items[i] = itemId;
         return true;
       }

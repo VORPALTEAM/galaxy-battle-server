@@ -438,6 +438,7 @@ export class Game implements ILogger {
         break;
       case 'addGold1k':
         this._expMng.addGold(aClient.gameData.id, 1000);
+        this.sendGoldUpdate(aClient);
         break;
     }
   }
