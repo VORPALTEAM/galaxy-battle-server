@@ -1063,7 +1063,7 @@ export class Game implements ILogger {
     return true;
   }
 
-  shopLinkorBuy(aClient: Client): boolean {
+  inventoryLinkorActivate(aClient: Client): boolean {
     const level = 1;
     const shipParams = SETTINGS.battleShips;
     const shipFactoryParams = new LinkorFactory().getShipParams(level);
@@ -1143,6 +1143,8 @@ export class Game implements ILogger {
 
     this.addObject(linkor);
     this._linkorMng.addLinkor(linkor);
+
+    return true;
   }
 
   private onShipRotate(aShip: SpaceShip, aPoint: THREE.Vector3, aDur: number) {

@@ -124,7 +124,7 @@ export class ShopMng implements ILogger {
 
           // Linkor
           case 3:
-            if (!this._game.shopLinkorBuy(client)) return false;
+            if (!this._game.inventoryLinkorActivate(client)) return false;
             break;
 
           default:
