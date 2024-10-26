@@ -13,7 +13,16 @@ export class BotClient extends Client {
         super(null);
         this._className = 'BotClient';
         this._isBot = true;
-        this.sign({ walletId: this.generateWalletId(10)});
+        this.sign({
+            walletId: this.generateWalletId(10),
+            tgAuthData: {
+                first_name: 'Bot',
+                username: 'Bot',
+                auth_date: 0,
+                hash: '',
+                id: 0
+            }
+        });
     }
 
     private generateId(aLength = 10): string {

@@ -529,14 +529,8 @@ export class Game implements ILogger {
       }
 
       const isWinner = aWinner && client.connectionId == aWinner.connectionId;
-      const playerName = client.gameData.tgAuthData
-        ? (client.gameData.tgAuthData.username || client.gameData.tgAuthData.first_name || "Anonimous")
-        : client.gameData.id;
-      const enemyName = enemy.gameData.tgAuthData
-        ? (enemy.gameData.tgAuthData.username || enemy.gameData.tgAuthData.first_name || "Anonimous")
-        : enemy.gameData.id;
-      // this.logDebug("Client data: ", client.gameData.id);
-      // const nameDisplay = client.gameData.id || "Unknown";
+      const playerName = client.gameData.nick;
+      const enemyName = enemy.gameData.nick;
       let data: GameCompleteData;
 
       const expData = this._expMng.getExpData(client.gameData.id);

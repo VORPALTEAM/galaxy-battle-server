@@ -90,28 +90,6 @@ export class Client implements ILogger {
             } else {
                 this.logDebug(`search game request...`);
             }
-
-            // if (this._isDuelMode) {
-            //     switch (aData.duelCmd) {
-            //         case "create":
-            //             this.logDebug(`challenge create game request...`);
-            //             // this.onCreateChallengeGame.dispatch(this);
-            //             // this._isDuelCreator = true;
-            //             // this._duelId = MyMath.randomIntInRange(
-            //             //     1,
-            //             //     Number.MAX_SAFE_INTEGER
-            //             // );
-            //             // send code to client
-            //             // this.sendDuelNumber(String(this._duelId));
-            //             break;
-            //         case "connect":
-            //             this.logDebug(`challenge connect game request...`);
-            //             // this._duelId = aData.duelNumber;
-            //             // this.onConnectChallengeGame.dispatch(this);
-            //             break;
-            //     }
-            // }
-
             this.onStartSearchGame.dispatch(this);
         });
 
@@ -286,21 +264,13 @@ export class Client implements ILogger {
         return this._gameData;
     }
 
-    protected get starName(): string {
+    get starName(): string {
         return this._gameData.starName;
     }
 
     get isDisconnected() {
         return this._isDisconnected;
     }
-
-    // get isDuelMode() {
-    //     return this._isDuelMode;
-    // }
-
-    // get duelId() {
-    //     return this._duelId;
-    // }
 
     get isDuelCreator() {
         return this._isDuelCreator;

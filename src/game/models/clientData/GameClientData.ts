@@ -69,7 +69,7 @@ export class GameClientData implements ILogger {
 
     get id(): string {
         let id = DEFAULT_ID;
-        if (this._tgInitData || this._tgAuthData) {
+        if (this.isTg) {
             id = String(this._tgAuthData?.id || this._tgInitData?.user?.id);
         }
         else if (this._walletId) {
@@ -88,11 +88,11 @@ export class GameClientData implements ILogger {
 
     get nick(): string {
         let nick = DEFAULT_NICK;
-        if (this._tgAuthData || this._tgInitData) {
-            nick = this._tgAuthData?.username || this._tgAuthData?.first_name;
+        if (this.isTg) {
+            nick = this._tgAuthData?.username || this._tgAuthData?.first_name || DEFAULT_NICK;
         }
-        else if (this._walletId) {
-            nick = this._walletId;
+        else {
+            nick = this.id;
         }
         return nick;
     }
