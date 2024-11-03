@@ -148,6 +148,7 @@ export type ShopData = {
   action: BattleShopAction,
   clientId?: string,
   itemId?: number,
+  invCellId?: number,
   msg?: string,
   inventory?: number[] // item id
 }

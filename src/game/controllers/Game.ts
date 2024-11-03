@@ -397,19 +397,42 @@ export class Game implements ILogger {
       } break;
       
       case 'inventoryItemActivate': {
-        let res = this._shopMng.activateItem(client, shopData.itemId);
-        // answer
-        if (res) {
-          this._inventory.removeItem(client, shopData.itemId);
-          this._inventory.sendUpdateData(client);
+
+        // check item exist
+        const isExists = this._inventory.isItemExist(client, shopData.itemId, shopData.invCellId);
+        if (!isExists) {
+          PackSender.getInstance().shop([client], {
+            action: 'error',
+            itemId: shopData.itemId,
+            msg: `Item doesn't exists!`
+          });
+          return;
         }
-        else {
+
+        // remove item from inventory
+        let isRemoved = this._inventory.removeItem(client, shopData.invCellId);
+        if (!isRemoved) {
+          PackSender.getInstance().shop([client], {
+            action: 'error',
+            itemId: shopData.itemId,
+            msg: 'item remove error'
+          });
+          return;
+        }
+
+        this._inventory.sendUpdateData(client);
+
+        // activate item
+        let res = this._shopMng.activateItem(client, shopData.itemId);
+        if (!res) {
           PackSender.getInstance().shop([client], {
             action: 'error',
             itemId: shopData.itemId,
             msg: 'item activation error'
           });
+          return;
         }
+        
       } break;
 
       default:
@@ -417,6 +440,7 @@ export class Game implements ILogger {
         break;
 
     }
+
   }
 
   private onClientEmotion(aClient: Client, aEmotionData: EmotionData) {

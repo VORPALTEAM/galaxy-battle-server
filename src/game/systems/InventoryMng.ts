@@ -81,14 +81,18 @@ export class InventoryMng implements ILogger {
 
   }
 
-  removeItem(aClient: Client, aItemId: number) {
+  removeItem(aClient: Client, aCellId: number) {
     let rec = this.getClientRecord(aClient);
-    for (let i = 0; i < MAX_ITEMS; i++) {
-      if (rec.items[i] == aItemId) {
-        rec.items[i] = null;
-        return true;
-      }
-    }
+    rec.items[aCellId] = null;
+    return true;
+  }
+
+  isItemExist(aClient: Client, aItemId: number, aCellId: number): boolean {
+    let rec = this.getClientRecord(aClient);
+    if (!rec) return false;
+    const item = rec.items[aCellId];
+    if (item == null) return false;
+    return item == aItemId;
   }
 
   /**
