@@ -118,7 +118,7 @@ export class ObjectController implements ILogger {
     let towers = this.getPlayerTowers(clientId);
     for (let i = 0; i < towers.length; i++) {
       const tower = towers[i];
-      tower.recoverHp();
+      tower.recoverHpPercent(.2);
     }
   }
 
@@ -126,7 +126,7 @@ export class ObjectController implements ILogger {
     let stars = this.getPlayerStars(clientId);
     for (let i = 0; i < stars.length; i++) {
       const star = stars[i];
-      star.recoverHp();
+      star.recoverHpPercent(.2);
     }
   }
 

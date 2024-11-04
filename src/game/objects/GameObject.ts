@@ -258,6 +258,11 @@ export class GameObject implements IUpdatable, ILogger {
             this._hp = this._maxHp;
     }
 
+    recoverHpPercent(aPercentFactor: number) {
+        const incVal = this._maxHp * aPercentFactor;
+        this._hp = Math.min(this._maxHp, this._hp + incVal);
+    }
+
     lookAt(aTarget: THREE.Vector3) {
         this._mesh.lookAt(aTarget);
     }

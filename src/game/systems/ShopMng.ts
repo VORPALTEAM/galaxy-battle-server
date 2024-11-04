@@ -13,7 +13,7 @@ const SHOP_ITEMS: ShopItemData[] = [
     name: 'Recovery Towers',
     description: 'Fully restores the energy of your towers',
     icon: 'recoveryTowers',
-    price: 500
+    price: 300
   },
   {
     id: 1,
