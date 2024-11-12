@@ -11,7 +11,7 @@ export class GameClientData implements ILogger {
     private _walletId: string;
     private _race: ObjectRace;
     private _starName: string;
-    public _tgInitDataStr: string;
+    private _tgInitDataStr: string;
     private _tgInitData: TGInitData;
     private _tgAuthData: TGAuthData;
     

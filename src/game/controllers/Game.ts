@@ -437,9 +437,6 @@ export class Game implements ILogger {
       // check a Bot
       if (client.isBot) {
         isPlayWithBot = true;
-        if (aWinner?.gameData?._tgInitDataStr) {
-          statService.loadPlayWithBotStats(aWinner.gameData._tgInitDataStr )
-        }
       }
       else {
         i == 0 ?
@@ -1287,6 +1284,17 @@ export class Game implements ILogger {
     setTimeout(() => {
       this.init();
     }, SETTINGS.battlePrerollTimer * 1000);
+
+    // send stat
+    if ((cli1.isBot && !cli2.isBot) ||
+      (cli2.isBot && !cli1.isBot)) {
+      if (!cli1.isBot) {
+        statService.loadPlayWithBotStats(cli1.gameData.tgInitDataStr);
+      }
+      else {
+        statService.loadPlayWithBotStats(cli2.gameData.tgInitDataStr);
+      }
+    }
 
     this._state = "init";
   }
