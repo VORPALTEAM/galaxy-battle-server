@@ -38,6 +38,7 @@ import { DuelPairRewardCondition, FinishDuel } from "../../blockchain/duel.js";
 import { DeleteDuel } from "../../blockchain/functions.js";
 import { BotAI } from "./BotAI.js";
 import { ShopMng } from "../systems/ShopMng.js";
+import { statService } from "../../blockchain/services/stats.js";
 
 const SETTINGS = {
   tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -1283,6 +1284,17 @@ export class Game implements ILogger {
     setTimeout(() => {
       this.init();
     }, SETTINGS.battlePrerollTimer * 1000);
+
+    // send stat
+    if ((cli1.isBot && !cli2.isBot) ||
+      (cli2.isBot && !cli1.isBot)) {
+      if (!cli1.isBot) {
+        statService.loadPlayWithBotStats(cli1.gameData.tgInitDataStr);
+      }
+      else {
+        statService.loadPlayWithBotStats(cli2.gameData.tgInitDataStr);
+      }
+    }
 
     this._state = "init";
   }
