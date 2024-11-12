@@ -1286,14 +1286,13 @@ export class Game implements ILogger {
     }, SETTINGS.battlePrerollTimer * 1000);
 
     // send stat
-    if ((cli1.isBot && !cli2.isBot) ||
-      (cli2.isBot && !cli1.isBot)) {
-      if (!cli1.isBot) {
-        statService.loadPlayWithBotStats(cli1.gameData.tgInitDataStr);
-      }
-      else {
-        statService.loadPlayWithBotStats(cli2.gameData.tgInitDataStr);
-      }
+    if (cli1.isBot && !cli2.isBot) {
+      this.logDebug(`Send PlayWithBotStats for: ${cli2.gameData.tgInitDataStr}`);
+      statService.loadPlayWithBotStats(cli2.gameData.tgInitDataStr);
+    }
+    if (cli2.isBot && !cli1.isBot) {
+      this.logDebug(`Send PlayWithBotStats for: ${cli1.gameData.tgInitDataStr}`);
+      statService.loadPlayWithBotStats(cli1.gameData.tgInitDataStr);
     }
 
     this._state = "init";
