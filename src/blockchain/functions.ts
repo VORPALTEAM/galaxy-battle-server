@@ -168,6 +168,9 @@ export async function GetUserItemBalance(data: {login: string, itemId: number}):
           return res.json()
       }).then((res: { balance: number }) => {
           resolve(res.balance)
+      }).catch(e => {
+        console.log("error: ", e)
+        reject("")
       })
   })
 }
