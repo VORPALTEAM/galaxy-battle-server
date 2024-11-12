@@ -38,6 +38,7 @@ import { DuelPairRewardCondition, FinishDuel } from "../../blockchain/duel.js";
 import { DeleteDuel } from "../../blockchain/functions.js";
 import { BotAI } from "./BotAI.js";
 import { ShopMng } from "../systems/ShopMng.js";
+import { statService } from "../../blockchain/services/stats.js";
 
 const SETTINGS = {
   tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -436,6 +437,9 @@ export class Game implements ILogger {
       // check a Bot
       if (client.isBot) {
         isPlayWithBot = true;
+        if (aWinner?.gameData?._tgInitDataStr) {
+          statService.loadPlayWithBotStats(aWinner.gameData._tgInitDataStr )
+        }
       }
       else {
         i == 0 ?
