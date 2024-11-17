@@ -14,18 +14,18 @@ export type web2assets = {
     carbon: number;
 }
 
-export async function getUserBoxesToOpenWeb2 ( ownerAddress: string ) {
+export async function getUserBoxesToOpenWeb2(ownerAddress: string) {
     return new Promise((resolve, reject) => {
         const url = fastServerUrl.concat('api/boxes/available');
         fetch(url, {
             method: 'post',
             headers: {
-              "Content-Type": "application/json"
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              ownerAddress: ownerAddress, 
+                ownerAddress: ownerAddress,
             })
-          }).then(res => {
+        }).then(res => {
             if (res.status !== 200) {
                 reject("Api reqest failed")
             }
@@ -33,40 +33,42 @@ export async function getUserBoxesToOpenWeb2 ( ownerAddress: string ) {
         }).then(res => {
             resolve(res)
             return res
-          })
+        })
     })
 }
 
-export async function GetGameAssetsWeb2 ( ownerAddress: string ): Promise<web2assets> {
+export async function GetGameAssetsWeb2(ownerAddress: string): Promise<web2assets> {
     return new Promise((resolve, reject) => {
         const url = fastServerUrl.concat('api/boxes/assets');
         fetch(url, {
             method: 'post',
             headers: {
-              "Content-Type": "application/json"
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              ownerAddress: ownerAddress, 
+                ownerAddress: ownerAddress,
             })
-          }).then(res => {
+        }).then(res => {
             if (res.status !== 200) {
                 reject("Api reqest failed")
             }
             return res.json()
-        }).then((res: {assets: {
-            laser1: number;
-            laser2: number;
-            laser3: number;
-            token: number;
-            spice: number;
-            spore: number;
-            metal: number;
-            biomass: number;
-            carbon: number;
-        }}) => {
-             resolve(res.assets)
-             return res.assets;
-          })
+        }).then((res: {
+            assets: {
+                laser1: number;
+                laser2: number;
+                laser3: number;
+                token: number;
+                spice: number;
+                spore: number;
+                metal: number;
+                biomass: number;
+                carbon: number;
+            }
+        }) => {
+            resolve(res.assets)
+            return res.assets;
+        })
     })
 }
 
@@ -81,18 +83,18 @@ export async function getBoxDataWeb2(_boxId: number) {
         fetch(url, {
             method: 'post',
             headers: {
-              "Content-Type": "application/json"
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              boxId: _boxId, 
+                boxId: _boxId,
             })
-          }).then(res => {
+        }).then(res => {
             if (res.status !== 200) {
                 reject("Api reqest failed")
             }
             return res.json()
         }).then((res: any) => {
-             if (!res.data) {
+            if (!res.data) {
                 resolve(
                     {
                         type: "0x0000000000000000000000",
@@ -101,7 +103,7 @@ export async function getBoxDataWeb2(_boxId: number) {
                         isPaid: false
                     }
                 )
-             } else {
+            } else {
                 const data = {
                     type: res.data.openresult.indexOf("laser") > -1 ? "laser" : res.data.openresult,
                     value: res.data.openresult.indexOf("laser") > -1 ? null : res.data.openamount,
@@ -109,9 +111,9 @@ export async function getBoxDataWeb2(_boxId: number) {
                     isPaid: true
                 }
                 resolve(data);
-             }
-             return res.assets;
-          })
+            }
+            return res.assets;
+        })
     })
 }
 
@@ -119,9 +121,9 @@ export async function getUserLaserListWeb2(_user: string): Promise<number[]> {
     // const data = await GetGameAssetsWeb2(_user);
     return new Promise((resolve, reject) => {
         Promise.all([
-            GetUserItemBalance({login: _user, itemId:8}),
-            GetUserItemBalance({login: _user, itemId:9}),
-            GetUserItemBalance({login: _user, itemId:10})
+            GetUserItemBalance({ login: _user, itemId: 8 }),
+            GetUserItemBalance({ login: _user, itemId: 9 }),
+            GetUserItemBalance({ login: _user, itemId: 10 })
         ]).then((data) => {
             const levels: number[] = [];
             if (data[0] > 0) {
@@ -144,9 +146,9 @@ export async function getUserLaserListWeb2(_user: string): Promise<number[]> {
 export async function getUserAvailableLaserLevelsWeb2(_user: string): Promise<number[]> {
     const list: number[] = [];
     const lasers = await Promise.all([
-        GetUserItemBalance({login: _user, itemId:8}),
-        GetUserItemBalance({login: _user, itemId:9}),
-        GetUserItemBalance({login: _user, itemId:10})
+        GetUserItemBalance({ login: _user, itemId: 8 }),
+        GetUserItemBalance({ login: _user, itemId: 9 }),
+        GetUserItemBalance({ login: _user, itemId: 10 })
     ]);
     return lasers
 }

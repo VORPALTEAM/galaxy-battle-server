@@ -70,6 +70,30 @@ export class StatService {
             })
         })
     }
+
+    public async loadPlayWithBotStats (telegramInitData: string): Promise<any> {
+        const url = fastServerUrl.concat(`/api/playwithbot/set`);
+        return new Promise((resolve, reject) => {
+            fetch(url, {
+                method: "post",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+            body: JSON.stringify({
+                telegramInitData
+            })
+            }).then((res) => {
+                if (res.status !== 200) {
+                    resolve(null);
+                    return;
+                }
+                return res.json();
+            }).then(() => {
+               resolve(true);
+               return;
+            })
+        })
+    }
 }
 
 export const statService = StatService.getInstance();

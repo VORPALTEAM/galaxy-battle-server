@@ -41,6 +41,7 @@ import { BotAI } from "./BotAI.js";
 import { ShopMng } from "../systems/ShopMng.js";
 import { InventoryMng } from "../systems/InventoryMng.js";
 import { ReplayMng } from "../systems/ReplayMng.js";
+import { statService } from "../../blockchain/services/stats.js";
 
 const SETTINGS = {
   tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -1384,6 +1385,16 @@ export class Game implements ILogger {
     setTimeout(() => {
       this.init();
     }, SETTINGS.battlePrerollTimer * 1000);
+
+    // send stat
+    if (cli1.isBot && !cli2.isBot) {
+      this.logDebug(`Send PlayWithBotStats for: ${cli2.gameData.tgInitDataStr}`);
+      statService.loadPlayWithBotStats(cli2.gameData.tgInitDataStr);
+    }
+    if (cli2.isBot && !cli1.isBot) {
+      this.logDebug(`Send PlayWithBotStats for: ${cli1.gameData.tgInitDataStr}`);
+      statService.loadPlayWithBotStats(cli1.gameData.tgInitDataStr);
+    }
 
     this._state = "init";
   }

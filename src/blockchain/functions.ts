@@ -169,8 +169,8 @@ export async function GetUserItemBalance(data: {login: string, itemId: number}):
       }).then((res: { balance: number }) => {
           resolve(res.balance)
       }).catch(e => {
-          console.log("error: ", e)
-          reject("")
+        console.log("error: ", e)
+        reject("")
       })
   })
 }
