@@ -39,16 +39,14 @@ export enum PackTitle {
   goldText = 'goldText',
   exp = 'exp',
   skill = 'skill',
-
+  // rocket
   rocket = 'rocket',
   sniper = 'sniper',
   explosion = 'explosion',
-
   shop = 'shop',
-
   emotion = 'emotion',
-
   claimReward = 'claimReward',
+  replay = 'replay',
 
   debugTest = 'debugTest',
 
@@ -317,6 +315,16 @@ export type EmotionData = {
   emotion: Emotion
 }
 
+export type ReplayData = {
+  action: 'clientClicked' | 'update' | 'start',
+  serverData?: {
+    playerChecks: {
+      playerId: string,
+      playerName: string,
+      isReady: boolean
+    }[]
+  }
+}
 
 // message pack
 export type MessagePackInfoType = 'info' | 'warning' | 'error';

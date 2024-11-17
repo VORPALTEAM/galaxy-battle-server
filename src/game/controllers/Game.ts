@@ -4,7 +4,8 @@ import { Client } from "../models/Client.js";
 import {
   GameCompleteData, PlanetLaserData, ObjectUpdateData, AttackType, DamageInfo,
   SkillRequest, PlanetLaserSkin, DebugTestData, ObjectRace, EmotionData,
-  RocketPacket, ObjectType, ShopInitData, ShopData
+  RocketPacket, ObjectType, ShopInitData, ShopData,
+  ReplayData
 } from "../data/Types.js";
 import { Field } from "../objects/Field.js";
 import { ILogger } from "../../interfaces/ILogger.js";
@@ -39,6 +40,7 @@ import { DeleteDuel } from "../../blockchain/functions.js";
 import { BotAI } from "./BotAI.js";
 import { ShopMng } from "../systems/ShopMng.js";
 import { InventoryMng } from "../systems/InventoryMng.js";
+import { ReplayMng } from "../systems/ReplayMng.js";
 
 const SETTINGS = {
   tickRate: 1000 / 10, // 1000 / t - t ticks per sec
@@ -170,6 +172,7 @@ export class Game implements ILogger {
   private _botAi: BotAI;
   private _shopMng: ShopMng;
   private _inventory: InventoryMng;
+  private _replayMng: ReplayMng;
   // events
   onGameComplete = new Signal();
 
@@ -214,6 +217,10 @@ export class Game implements ILogger {
       game: this
     });
 
+    this._replayMng = new ReplayMng({
+      game: this
+    });
+
     this.initClientListeners();
     this.startLoop();
   }
@@ -236,6 +243,7 @@ export class Game implements ILogger {
       client.onExitGame.add(this.onClientExitGame, this);
       client.onShop.add(this.onClientShop, this);
       client.onEmotion.add(this.onClientEmotion, this);
+      client.onReplay.add(this.onClientReplay, this);
       client.onDebugTest.add(this.onClientDebugTest, this);
     }
   }
@@ -248,6 +256,7 @@ export class Game implements ILogger {
       client.onExitGame.remove(this.onClientExitGame, this);
       client.onShop.remove(this.onClientShop, this);
       client.onEmotion.remove(this.onClientEmotion, this);
+      client.onReplay.remove(this.onClientReplay, this);
       client.onDebugTest.remove(this.onClientDebugTest, this);
     }
   }
@@ -446,6 +455,15 @@ export class Game implements ILogger {
   private onClientEmotion(aClient: Client, aEmotionData: EmotionData) {
     aEmotionData.owner = aClient.gameData.id;
     PackSender.getInstance().emotion(this._clients, aEmotionData);
+  }
+
+  private onClientReplay(aClient: Client, aData: ReplayData) {
+    this._replayMng.clientClick(aClient);
+    // check
+    if (this._replayMng.isAllAgree) {
+      // restart the game
+      
+    }
   }
 
   private onClientDebugTest(aClient: Client, aData: DebugTestData) {
