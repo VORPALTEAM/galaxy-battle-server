@@ -1,5 +1,5 @@
-import { GetSignedAuthMessage } from "../functions";
-import { fastServerUrl } from "../network";
+import { GetSignedAuthMessage } from "../functions.js";
+import { fastServerUrl } from "../network.js";
 
 export class DuelApiService {
   private constructor() {}
