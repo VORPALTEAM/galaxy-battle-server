@@ -72,8 +72,10 @@ export class StatService {
     }
 
     public async loadPlayWithBotStats (telegramInitData: string): Promise<any> {
+        console.log("Bot data stats called")
         const url = fastServerUrl.concat(`/api/playwithbot/set`);
         return new Promise((resolve, reject) => {
+            console.log("Fetched")
             fetch(url, {
                 method: "post",
                 headers: {
@@ -83,6 +85,7 @@ export class StatService {
                 telegramInitData
             })
             }).then((res) => {
+                console.log("Status: ", res.status)
                 if (res.status !== 200) {
                     resolve(null);
                     return;
