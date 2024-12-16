@@ -1,6 +1,7 @@
 import { ILogger } from "../../interfaces/ILogger.js";
 import { LogMng } from "../../monax/LogMng.js";
 import { Game } from "../controllers/Game.js";
+import { ReplayData, ReplayPlayerCheck } from "../data/Types.js";
 import { Client } from "../models/Client.js";
 
 type ClientRecord = {
@@ -13,10 +14,12 @@ export class ReplayMng implements ILogger {
   private _records: Map<Client, ClientRecord>;
   
   constructor(params: {
-    game: Game
+    game: Game,
+    clients: Client[]
   }) {
     this._game = params.game;
     this._records = new Map();
+    params.clients.forEach(client => this.initClientRecord(client));
   }
 
   logDebug(aMsg: string, aData?: any): void {
@@ -29,14 +32,14 @@ export class ReplayMng implements ILogger {
     LogMng.error(`${this._className}: ${aMsg}`, aData);
   }
 
-  
-  get isAllAgree(): boolean {
-    // TODO:
-    return false;
+  private initClientRecord(client: Client) {
+    let rec = {
+      isClicked: false
+    }
+    this._records.set(client, rec);
   }
-  
 
-  private getClientRecord(client: Client) {
+  private getClientRecord(client: Client): ClientRecord {
     let rec = this._records.get(client);
     if (!rec) {
       rec = {
@@ -46,10 +49,37 @@ export class ReplayMng implements ILogger {
     }
     return rec;
   }
+  
+  get isAllAgree(): boolean {
+    let res = true;
+    this._records.forEach(rec => {
+      if (!rec.isClicked) res = false;
+    });
+    return res;
+  }
 
   clientClick(aClient: Client) {
     let rec = this.getClientRecord(aClient);
     rec.isClicked = !rec.isClicked;
+  }
+
+  getReplayPackData(aClients: Client[]): ReplayData {
+    let recs: ReplayPlayerCheck[] = [];
+    let id = 0;
+    aClients.forEach(client => {
+      let rec = this.getClientRecord(client);
+      recs.push({
+        playerId: client.gameData.id,
+        playerName: client.getPlayerData().displayNick,
+        isReady: rec.isClicked
+      });
+    });
+    return {
+      action: 'update',
+      serverData: {
+        playerChecks: recs
+      }
+    }
   }
 
 }

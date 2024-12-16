@@ -174,8 +174,11 @@ export class Game implements ILogger {
   private _shopMng: ShopMng;
   private _inventory: InventoryMng;
   private _replayMng: ReplayMng;
+  // flags
+  private _isPause = false;
   // events
-  onGameComplete = new Signal();
+  onGameCompleteSignal = new Signal();
+  onReplaySignal = new Signal();
 
   constructor(aParams: {
     gameId: number;
@@ -219,7 +222,8 @@ export class Game implements ILogger {
     });
 
     this._replayMng = new ReplayMng({
-      game: this
+      game: this,
+      clients: this._clients
     });
 
     this.initClientListeners();
@@ -459,12 +463,45 @@ export class Game implements ILogger {
   }
 
   private onClientReplay(aClient: Client, aData: ReplayData) {
-    this._replayMng.clientClick(aClient);
-    // check
-    if (this._replayMng.isAllAgree) {
-      // restart the game
-      
+    this.logDebug(`onClientReplay...`);
+    switch (aData.action) {
+      case 'clientClicked':
+        this._replayMng.clientClick(aClient);
+        if (this.isGameWithBot()) {
+          let bot = this.getBotClient();
+          this._replayMng.clientClick(bot);
+        }
+        // update clients
+        PackSender.getInstance().replay(this._clients, this._replayMng.getReplayPackData(this._clients));
+        this.logDebug(`replay update sent...`);
+        // check
+        if (this._replayMng.isAllAgree) {
+          setTimeout(() => {
+            if (this._replayMng.isAllAgree) {
+              // restart the game
+              this.logDebug(`replay game called...`);
+              this.onReplaySignal.dispatch(this, this._clients[0], this._clients[1]);
+            }
+          }, 3000);
+        }
+        break;
     }
+  }
+
+  getBotClient(): Client {
+    let res: Client;
+    this._clients.forEach(client => {
+      if (client.isBot) res = client;
+    });
+    return res;
+  }
+  
+  isGameWithBot(): boolean {
+    let res = false;
+    this._clients.forEach(client => {
+      if (client.isBot) res = true;
+    });
+    return res;
   }
 
   private onClientDebugTest(aClient: Client, aData: DebugTestData) {
@@ -680,10 +717,24 @@ export class Game implements ILogger {
       }
     }
 
-    this.onGameComplete.dispatch(this);
+    // this.onGameCompleteSignal.dispatch(this);
+
+    // TODO: stop game or pause
+    this.pauseGame();
 
     this.logDebug(`--- completeGame log end ---`);
 
+  }
+
+  pauseGame() {
+    this._isPause = true;
+  }
+
+  /**
+   * Complete Game
+   */
+  complete() {
+    this.onGameCompleteSignal.dispatch(this);
   }
 
   isDuel(): boolean {
@@ -1536,6 +1587,8 @@ export class Game implements ILogger {
         return;
     }
 
+    if (this._isPause) return;
+
     let updateData: ObjectUpdateData[] = [];
     let destroyList: number[] = [];
 
@@ -1601,7 +1654,7 @@ export class Game implements ILogger {
     this.clearAllClientListeners();
     this.stopLoop();
     this._loopInterval = null;
-    this.onGameComplete.removeAll();
+    this.onGameCompleteSignal.removeAll();
     this._starController?.free();
     this._fighterMng?.free();
     this._linkorMng?.free();

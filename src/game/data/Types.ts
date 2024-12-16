@@ -315,14 +315,15 @@ export type EmotionData = {
   emotion: Emotion
 }
 
+export type ReplayPlayerCheck = {
+  playerId: string,
+  playerName: string,
+  isReady: boolean
+}
 export type ReplayData = {
   action: 'clientClicked' | 'update' | 'start',
   serverData?: {
-    playerChecks: {
-      playerId: string,
-      playerName: string,
-      isReady: boolean
-    }[]
+    playerChecks: ReplayPlayerCheck[]
   }
 }
 

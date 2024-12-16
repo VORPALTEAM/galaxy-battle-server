@@ -65,11 +65,11 @@ export class BattleServer implements ILogger {
         this._matchmaker.addClient(aClient);
     }
 
-    onDuelFound(aClient: Client, aInfo: BC_DuelInfo) {
+    private onDuelFound(aClient: Client, aInfo: BC_DuelInfo) {
         this._matchmaker.addDuelClient(aClient, aInfo);
     }
 
-    onDuelCancel(aClient: Client) {
+    private onDuelCancel(aClient: Client) {
         this.logDebug(`onDuelCancel...`);
         this._matchmaker.removeClient(aClient);
     }

@@ -2,7 +2,8 @@ import {
     FieldInitData, GameCompleteData, PlanetLaserData, ObjectType, ObjectUpdateData,
     PackTitle, StarCreateData, StartGameData, AttackType, DamageInfo, ExpData,
     ExplosionData, SniperData, AcceptScreenData, EmotionData, MessagePack, RocketPacket, DamageData, ExpTextData, GoldTextData,
-    ShopData
+    ShopData,
+    ReplayData
 } from "../data/Types.js";
 import { Client } from "../models/Client.js";
 
@@ -133,6 +134,10 @@ export class PackSender {
 
     emotion(aClients: Client[], aData: EmotionData) {
         this.sendData(aClients, PackTitle.emotion, aData);
+    }
+
+    replay(aClients: Client[], aData: ReplayData) {
+        this.sendData(aClients, PackTitle.replay, aData);
     }
     
 

@@ -125,7 +125,7 @@ export class Client implements ILogger {
         });
 
         this._socket.on(PackTitle.replay, (aData: ReplayData) => {
-            this.logDebug(`onSocket PackTitle.replay: ${aData}`);
+            this.logDebug(`onSocket PackTitle.replay:`, aData);
             this.onReplay.dispatch(this, aData);
         });
 

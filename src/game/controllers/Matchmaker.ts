@@ -127,9 +127,25 @@ export class Matchmaker implements ILogger {
             clientB: aClientB,
             duelData: aDuelInfo
         });
-        game.onGameComplete.addOnce(this.onGameComplete, this);
+        game.onReplaySignal.add(this.onGameReplay, this);
+        game.onGameCompleteSignal.addOnce(this.onGameComplete, this);
         game.start();
         this._games.set(game.id, game);
+    }
+
+    private onGameReplay(aGame: Game, aClient1: Client, aClient2: Client) {
+        console.log(`onGameReplay:`, aClient1, aClient2);
+        
+        if (aClient1.isBot) {
+            this.addClient(aClient2);
+        }
+        else if (aClient2.isBot) {
+            this.addClient(aClient1);
+        }
+        else {
+            this.createPair(aClient1, aClient2);
+        }
+        aGame.complete();
     }
 
     private onGameComplete(aGame: Game) {
